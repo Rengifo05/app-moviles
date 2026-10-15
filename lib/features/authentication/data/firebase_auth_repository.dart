@@ -178,6 +178,18 @@ final class FirebaseAuthRepository implements AuthRepository {
     await _auth.signOut();
     return const Ok(null);
   }
+
+  @override
+  Future<VoidResult> signOutEverywhere() async {
+    if (_auth.currentUser == null) return const Err(Failure.unauthenticated());
+    final result = await _functions.call(
+      BackendFunctions.signOutEverywhere,
+      {},
+    );
+    if (result case Err(:final failure)) return Err(failure);
+    await _auth.signOut();
+    return const Ok(null);
+  }
 }
 
 /// Errores de Firebase Auth → [Failure]. Correo inexistente y contraseña

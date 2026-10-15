@@ -12,6 +12,8 @@ import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/core/id_generator.dart';
 import 'package:nexo_familia/core/logging/console_log_sink.dart';
 import 'package:nexo_familia/core/logging/safe_logger.dart';
+import 'package:nexo_familia/features/activity/data/activity_repository_impl.dart';
+import 'package:nexo_familia/features/activity/presentation/activity_providers.dart';
 import 'package:nexo_familia/features/authentication/data/demo_auth_repository.dart';
 import 'package:nexo_familia/features/authentication/data/firebase_auth_repository.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
@@ -190,6 +192,10 @@ final class AppComposition {
         preferencesRepositoryProvider.overrideWithValue(
           DriftPreferencesRepository(db),
         ),
+        // Cerrar sesión descarta lo pendiente (ADR-004 §8): Cuenta avisa antes.
+        pendingOutboxCountProvider.overrideWith(
+          (ref) => outboxStore.watch().map((entries) => entries.length),
+        ),
         authRepositoryProvider.overrideWithValue(auth),
         familyRepositoryProvider.overrideWithValue(
           FamilyRepositoryImpl(
@@ -202,6 +208,9 @@ final class AppComposition {
           LocationRepositoryImpl(remote: remote, cache: cache, currentUid: uid),
         ),
         deviceLocationServiceProvider.overrideWithValue(device),
+        activityRepositoryProvider.overrideWithValue(
+          ActivityRepositoryImpl(cache: cache, clock: clock),
+        ),
         checkInRepositoryProvider.overrideWithValue(checkIns),
         retryCheckInProvider.overrideWithValue(checkIns.retry),
         discardCheckInProvider.overrideWithValue(checkIns.discard),

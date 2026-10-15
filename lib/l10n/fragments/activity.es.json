@@ -1,0 +1,131 @@
+{
+  "activityEmptyTitle": "Aún no hay actividad",
+  "@activityEmptyTitle": {
+    "description": "Título del estado vacío de la pestaña Actividad."
+  },
+  "activityEmptyBody": "Aquí verás check-ins, alertas y cambios en la familia de los últimos 30 días.",
+  "activityNoFamilyTitle": "Sin familia activa",
+  "activityNoFamilyBody": "Crea una familia o únete a una para ver su actividad.",
+  "activityNoFamilyAction": "Crear o unirme a una familia",
+  "activityRetentionNote": "Se muestran los últimos 30 días. Los eventos más antiguos se borran solos.",
+  "@activityRetentionNote": {
+    "description": "Nota al final del historial sobre la retención de 30 días."
+  },
+  "activityToday": "Hoy",
+  "activityYesterday": "Ayer",
+  "activityDay": "{date}",
+  "@activityDay": {
+    "description": "Encabezado de un día anterior a ayer, p. ej. «martes, 10 de marzo».",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMMEEEEd"
+      }
+    }
+  },
+  "activityFormerMember": "Un ex integrante",
+  "@activityFormerMember": {
+    "description": "Nombre que se muestra para alguien que ya no pertenece a la familia, al inicio de la frase."
+  },
+  "activityFormerMemberObject": "un ex integrante",
+  "@activityFormerMemberObject": {
+    "description": "Igual que activityFormerMember, en medio de la frase (complemento)."
+  },
+  "activityUnknownMember": "Un integrante",
+  "@activityUnknownMember": {
+    "description": "Nombre genérico cuando no se pudo leer la lista de integrantes o la persona no tiene nombre."
+  },
+  "activityUnknownMemberObject": "un integrante",
+  "activityCheckInOk": "{name}: Estoy bien",
+  "@activityCheckInOk": {
+    "description": "Check-in «Estoy bien» de un integrante.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityCheckInNeedHelp": "{name}: Necesito ayuda",
+  "@activityCheckInNeedHelp": {
+    "description": "Check-in «Necesito ayuda» (no es un SOS).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityCheckInMessage": "“{message}”",
+  "@activityCheckInMessage": {
+    "description": "Mensaje opcional del check-in, entre comillas.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "activitySos": "{name} pidió ayuda (SOS)",
+  "@activitySos": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityGeofenceEnter": "{name} entró a {zone}",
+  "@activityGeofenceEnter": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "activityGeofenceExit": "{name} salió de {zone}",
+  "@activityGeofenceExit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "activityJoined": "{name} se unió a la familia",
+  "@activityJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityLeft": "{name} salió de la familia",
+  "@activityLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityRemoved": "{actor} quitó a {target} de la familia",
+  "@activityRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "activityRemovedNoTarget": "{actor} quitó a un integrante de la familia",
+  "@activityRemovedNoTarget": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  }
+}

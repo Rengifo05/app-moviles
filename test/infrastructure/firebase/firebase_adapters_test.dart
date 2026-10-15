@@ -486,6 +486,22 @@ void main() {
       expect((await repo.sendPasswordReset('nadie@y.co')).isOk, isTrue);
     });
 
+    test('cerrar sesión en todos llama a la función y cierra sesión', () async {
+      final functions = _NoFunctions();
+      final auth = MockFirebaseAuth(
+        signedIn: true,
+        mockUser: MockUser(uid: 'u1', email: 'ana@example.com'),
+      );
+      final repo = FirebaseAuthRepository(
+        auth: auth,
+        remote: FirestoreRemoteStore(_Firestore()),
+        functions: functions,
+      );
+      expect((await repo.signOutEverywhere()).isOk, isTrue);
+      expect(functions.calls, ['signOutEverywhere']);
+      expect(repo.currentUser, isNull);
+    });
+
     test('eliminar la cuenta llama a la función y cierra sesión', () async {
       final functions = _NoFunctions();
       final auth = MockFirebaseAuth(

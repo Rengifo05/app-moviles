@@ -1,5 +1,134 @@
 {
   "@@locale": "es",
+  "@activityCheckInMessage": {
+    "description": "Mensaje opcional del check-in, entre comillas.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityCheckInNeedHelp": {
+    "description": "Check-in «Necesito ayuda» (no es un SOS).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityCheckInOk": {
+    "description": "Check-in «Estoy bien» de un integrante.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityDay": {
+    "description": "Encabezado de un día anterior a ayer, p. ej. «martes, 10 de marzo».",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMMEEEEd"
+      }
+    }
+  },
+  "@activityEmptyTitle": {
+    "description": "Título del estado vacío de la pestaña Actividad."
+  },
+  "@activityFormerMember": {
+    "description": "Nombre que se muestra para alguien que ya no pertenece a la familia, al inicio de la frase."
+  },
+  "@activityFormerMemberObject": {
+    "description": "Igual que activityFormerMember, en medio de la frase (complemento)."
+  },
+  "@activityGeofenceEnter": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityGeofenceExit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "zone": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityRemoved": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityRemovedNoTarget": {
+    "placeholders": {
+      "actor": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityRetentionNote": {
+    "description": "Nota al final del historial sobre la retención de 30 días."
+  },
+  "@activitySos": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@activityUnknownMember": {
+    "description": "Nombre genérico cuando no se pudo leer la lista de integrantes o la persona no tiene nombre."
+  },
+  "activityCheckInMessage": "“{message}”",
+  "activityCheckInNeedHelp": "{name}: Necesito ayuda",
+  "activityCheckInOk": "{name}: Estoy bien",
+  "activityDay": "{date}",
+  "activityEmptyBody": "Aquí verás check-ins, alertas y cambios en la familia de los últimos 30 días.",
+  "activityEmptyTitle": "Aún no hay actividad",
+  "activityFormerMember": "Un ex integrante",
+  "activityFormerMemberObject": "un ex integrante",
+  "activityGeofenceEnter": "{name} entró a {zone}",
+  "activityGeofenceExit": "{name} salió de {zone}",
+  "activityJoined": "{name} se unió a la familia",
+  "activityLeft": "{name} salió de la familia",
+  "activityNoFamilyAction": "Crear o unirme a una familia",
+  "activityNoFamilyBody": "Crea una familia o únete a una para ver su actividad.",
+  "activityNoFamilyTitle": "Sin familia activa",
+  "activityRemoved": "{actor} quitó a {target} de la familia",
+  "activityRemovedNoTarget": "{actor} quitó a un integrante de la familia",
+  "activityRetentionNote": "Se muestran los últimos 30 días. Los eventos más antiguos se borran solos.",
+  "activitySos": "{name} pidió ayuda (SOS)",
+  "activityToday": "Hoy",
+  "activityUnknownMember": "Un integrante",
+  "activityUnknownMemberObject": "un integrante",
+  "activityYesterday": "Ayer",
   "authEmailLabel": "Correo electrónico",
   "authErrorEmailInUse": "Ya existe una cuenta con ese correo. Inicia sesión o restablece tu contraseña.",
   "authErrorInvalidCredentials": "Correo o contraseña incorrectos.",
@@ -756,6 +885,94 @@
   "geofenceUpdatedAgo": "Modificada {time}",
   "geofenceUseMyLocation": "Usar mi ubicación actual",
   "geofenceVisibilityNote": "Las zonas son visibles para toda la familia.",
+  "@homeFailedCheckIns": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@homeFamilyName": {
+    "description": "Nombre de la familia activa bajo el saludo.",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "@homeGreeting": {
+    "description": "Saludo de Inicio con el nombre de la persona.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@homeMemberRecent": {
+    "description": "Estado honesto de la ubicación de un integrante. {time} es una hora relativa, p. ej. «hace 3 min».",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@homeMemberRecentApprox": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@homeMemberStaleSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@homePendingCheckIns": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@homeSosHint": {
+    "description": "Explica que el botón de Inicio solo abre la pantalla SOS; la alerta se confirma allí."
+  },
+  "@homeStaleExplanation": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCheckInAction": "Check-in",
+  "homeCheckInHint": "Cuéntale a tu familia cómo estás.",
+  "homeFailedCheckIns": "{count, plural, =1{1 check-in no se pudo enviar.} other{{count} check-ins no se pudieron enviar.}}",
+  "homeFamilyName": "Familia activa: {family}",
+  "homeGreeting": "Hola, {name}",
+  "homeGreetingNoName": "Hola",
+  "homeMemberLocationLoading": "Consultando ubicación…",
+  "homeMemberLocationUnavailable": "No pudimos leer su ubicación",
+  "homeMemberNotSharing": "No comparte su ubicación",
+  "homeMemberOpenHint": "Ver detalles del integrante",
+  "homeMemberRecent": "Ubicación actualizada {time}",
+  "homeMemberRecentApprox": "Ubicación aproximada actualizada {time}",
+  "homeMemberStale": "Sin actualización reciente",
+  "homeMemberStaleSince": "Sin actualización reciente (última: {time})",
+  "homeMembersEmpty": "Aún no hay más integrantes. Invita a alguien para que vean su ubicación entre ustedes.",
+  "homeMembersInvite": "Invitar",
+  "homeMembersTitle": "Tu familia",
+  "homeNoFamilyAction": "Crear o unirme a una familia",
+  "homeNoFamilyBody": "Crea una familia o únete con un código de invitación para empezar.",
+  "homeNoFamilyTitle": "Aún no estás en una familia",
+  "homePendingCheckIns": "{count, plural, =1{Tienes 1 check-in guardado en el teléfono que aún no se envía.} other{Tienes {count} check-ins guardados en el teléfono que aún no se envían.}}",
+  "homePendingCheckInsAction": "Revisar",
+  "homeQuickActionsTitle": "Acciones rápidas",
+  "homeSosAction": "SOS",
+  "homeSosHint": "SOS abre la pantalla de emergencia: nada se envía hasta que lo confirmes allí.",
+  "homeStaleExplanation": "«Sin actualización reciente» significa que no llega una ubicación nueva hace más de {minutes} min. No indica cómo está la persona.",
   "@locationCardAudience": {
     "description": "Cuántas personas, aparte de quien comparte, pueden ver su ubicación.",
     "placeholders": {
@@ -932,5 +1149,218 @@
   "onboarding4Title": "Un apoyo, no un servicio de emergencias",
   "onboardingNext": "Siguiente",
   "onboardingStart": "Entendido, empezar",
-  "onboardingStep": "Paso {current} de {total}"
+  "onboardingStep": "Paso {current} de {total}",
+  "@settingsAboutDisclaimer": {
+    "description": "Aviso legal en Acerca de.",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Nexo Familia"
+      },
+      "number": {
+        "type": "String",
+        "example": "123"
+      }
+    }
+  },
+  "@settingsAboutVersion": {
+    "description": "Versión de la app en Acerca de.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "0.1.0"
+      }
+    }
+  },
+  "@settingsAccountDeleteFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsAccountDeleteFinalBody": {
+    "placeholders": {
+      "word": {
+        "type": "String",
+        "example": "ELIMINAR"
+      }
+    }
+  },
+  "@settingsAccountEverywhereFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsAccountPending": {
+    "description": "Aviso de operaciones de la bandeja de salida sin enviar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@settingsAccountSignOutFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsPrivacyHeading": {
+    "description": "Título del centro de privacidad para la familia activa.",
+    "placeholders": {
+      "family": {
+        "type": "String",
+        "example": "Familia Rojas"
+      }
+    }
+  },
+  "@settingsPrivacyKeepPausedFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsPrivacyPauseFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsPrivacyPrecisionFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsPrivacyShareFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsShareSheetWho": {
+    "placeholders": {
+      "family": {
+        "type": "String",
+        "example": "Familia Rojas"
+      }
+    }
+  },
+  "settingsAboutDisclaimer": "{appName} no sustituye a los servicios oficiales de emergencia. En una emergencia, llama al {number}.",
+  "settingsAboutPrivacySummary": "Resumen de privacidad",
+  "settingsAboutVersion": "Versión {version}",
+  "settingsAccountDelete": "Eliminar mi cuenta",
+  "settingsAccountDeleteAudit": "El registro de cambios del grupo deja de identificarte y se borra a los 180 días.",
+  "settingsAccountDeleteBackups": "Las copias de seguridad del proveedor pueden tardar hasta 30 días en borrarse.",
+  "settingsAccountDeleteConfirmTitle": "¿Eliminar tu cuenta?",
+  "settingsAccountDeleteContinue": "Continuar",
+  "settingsAccountDeleteEvents": "Tus check-ins y avisos de zonas se borran de inmediato. Tus alertas SOS quedan para tu familia, sin ubicación, hasta cumplir 90 días.",
+  "settingsAccountDeleteFailed": "No pudimos completar la eliminación de tu cuenta. {reason} Puedes volver a intentarlo: continuaremos desde donde quedó.",
+  "settingsAccountDeleteFamilies": "Saldrás de todas tus familias y dejarás de compartir tu ubicación con ellas.",
+  "settingsAccountDeleteField": "Palabra de confirmación",
+  "settingsAccountDeleteFinalBody": "Esta acción no se puede deshacer. Escribe {word} para eliminar tu cuenta definitivamente.",
+  "settingsAccountDeleteFinalConfirm": "Eliminar definitivamente",
+  "settingsAccountDeleteFinalTitle": "Confirma la eliminación",
+  "settingsAccountDeleteIntro": "Borra tu cuenta y tus datos personales. No se puede deshacer.",
+  "settingsAccountDeleteOwner": "Si administras un grupo, pasará a la persona con más antigüedad. Si eres la única persona, el grupo se elimina.",
+  "settingsAccountDeleteProfile": "Borraremos tu perfil, tu última ubicación y los teléfonos registrados.",
+  "settingsAccountDeleteTitle": "Borrar tus datos",
+  "settingsAccountDeleteWord": "ELIMINAR",
+  "settingsAccountDeleted": "Eliminamos tu cuenta.",
+  "settingsAccountEmailLabel": "Correo de la cuenta",
+  "settingsAccountEverywhere": "Cerrar sesión en todos los dispositivos",
+  "settingsAccountEverywhereAlerts": "Dejarán de recibir alertas SOS de tu familia.",
+  "settingsAccountEverywhereConfirm": "Cerrar sesión en todos",
+  "settingsAccountEverywhereDevices": "Tus otros teléfonos no podrán renovar la sesión: se cerrará en ellos en menos de una hora.",
+  "settingsAccountEverywhereFailed": "No pudimos cerrar la sesión en tus otros dispositivos. {reason}",
+  "settingsAccountEverywhereHere": "También se cerrará la sesión en este teléfono.",
+  "settingsAccountEverywhereInvites": "Se anulan los códigos de invitación que creaste y nadie ha usado.",
+  "settingsAccountEverywhereTitle": "¿Cerrar sesión en todos los dispositivos?",
+  "settingsAccountNameLabel": "Nombre",
+  "settingsAccountNoUser": "No hay una sesión iniciada.",
+  "settingsAccountPending": "{count, plural, =1{Hay 1 envío pendiente, como un check-in. Si cierras sesión ahora, no se enviará.} other{Hay {count} envíos pendientes, como check-ins. Si cierras sesión ahora, no se enviarán.}}",
+  "settingsAccountSignOut": "Cerrar sesión",
+  "settingsAccountSignOutAnyway": "Cerrar sesión",
+  "settingsAccountSignOutFailed": "No pudimos cerrar la sesión. {reason}",
+  "settingsAccountSignOutNote": "Al cerrar sesión, borramos de este teléfono los datos guardados de tus familias.",
+  "settingsAccountSignOutPendingTitle": "¿Cerrar sesión con envíos pendientes?",
+  "settingsAccountTile": "Tu cuenta",
+  "settingsAccountTileSubtitle": "Cerrar sesión o eliminar tu cuenta.",
+  "settingsAccountTitle": "Cuenta",
+  "settingsHideDetails": "Ocultar detalles en la pantalla de bloqueo",
+  "settingsHideDetailsError": "No pudimos guardar este ajuste. Inténtalo de nuevo.",
+  "settingsHideDetailsSubtitle": "Los avisos nunca incluyen ubicaciones. Con esta opción, tampoco mostrarán nombres ni detalles con el teléfono bloqueado.",
+  "settingsPrivacyAudienceEmpty": "Por ahora no hay más integrantes en esta familia. Si alguien se une, podrá ver tu ubicación mientras la compartas.",
+  "settingsPrivacyAudienceError": "No pudimos cargar los integrantes.",
+  "settingsPrivacyAudienceNotSharing": "Si compartes, podrán ver tu ubicación:",
+  "settingsPrivacyAudienceSharing": "Estas personas pueden ver tu ubicación:",
+  "settingsPrivacyAudienceTitle": "Quién puede verte",
+  "settingsPrivacyDataAudit": "Registro de cambios del grupo (altas, bajas e invitaciones): 180 días. Al eliminar tu cuenta, deja de identificarte.",
+  "settingsPrivacyDataEncryption": "Los datos viajan y se guardan cifrados por el proveedor del servicio, pero no usamos cifrado de extremo a extremo.",
+  "settingsPrivacyDataEvents": "Check-ins y avisos de zonas: 30 días.",
+  "settingsPrivacyDataLocation": "Tu ubicación: solo la última que envías, sin historial. Se borra al pausar, al salir de la familia o al eliminar tu cuenta.",
+  "settingsPrivacyDataSos": "Alertas SOS: 90 días. Si eliminas tu cuenta, se les quita la ubicación.",
+  "settingsPrivacyDataTitle": "Qué guardamos y por cuánto tiempo",
+  "settingsPrivacyGoToMap": "Ir al Mapa",
+  "settingsPrivacyHeading": "Tu ubicación en {family}",
+  "settingsPrivacyHeadingGeneric": "Tu ubicación en esta familia",
+  "settingsPrivacyIntro": "Solo tú decides si compartes tu ubicación con esta familia. Nadie puede activarla por ti y puedes pausarla cuando quieras.",
+  "settingsPrivacyKeepPaused": "No compartir por ahora",
+  "settingsPrivacyKeepPausedFailed": "No se guardó tu decisión. {reason}",
+  "settingsPrivacyKeptPausedOk": "Guardado: no compartes tu ubicación con esta familia.",
+  "settingsPrivacyLeave": "Salir de esta familia",
+  "settingsPrivacyNoFamily": "Cuando pertenezcas a una familia, aquí decidirás si compartes tu ubicación con ella.",
+  "settingsPrivacyPause": "Pausar",
+  "settingsPrivacyPauseFailed": "No se pausó: tu familia aún puede ver la última ubicación que enviaste. {reason}",
+  "settingsPrivacyPausedOk": "Pausado: borramos tu ubicación de esta familia.",
+  "settingsPrivacyPermissionMissing": "Tu ubicación no se compartirá hasta que concedas el permiso.",
+  "settingsPrivacyPrecisionApprox": "Aproximada (≈ 1 km)",
+  "settingsPrivacyPrecisionApproxDetail": "Redondeamos tu ubicación a cerca de 1 km antes de que salga de tu teléfono. Sirve para saber la zona, no la dirección.",
+  "settingsPrivacyPrecisionExact": "Exacta",
+  "settingsPrivacyPrecisionExactDetail": "Tu familia ve dónde estás con la precisión que da tu teléfono.",
+  "settingsPrivacyPrecisionFailed": "No se cambió la precisión. {reason}",
+  "settingsPrivacyPrecisionOkApprox": "Guardado: compartirás tu ubicación aproximada.",
+  "settingsPrivacyPrecisionOkApproxSharing": "Guardado: ahora compartes tu ubicación aproximada. Si habías enviado una ubicación exacta, la borramos; tu familia verá la aproximada cuando envíes una nueva.",
+  "settingsPrivacyPrecisionOkExact": "Guardado: compartirás tu ubicación exacta.",
+  "settingsPrivacyPrecisionTitle": "Precisión",
+  "settingsPrivacyRejected": "El servidor no aceptó el cambio. Puede que ya no pertenezcas a esta familia.",
+  "settingsPrivacyServiceDisabled": "La ubicación de tu teléfono está apagada. Tu ubicación no se compartirá hasta que la actives.",
+  "settingsPrivacyShare": "Compartir mi ubicación",
+  "settingsPrivacyShareFailed": "No se activó la compartición. {reason}",
+  "settingsPrivacySharedOk": "Listo: compartes tu ubicación con esta familia. La verán cuando la envíes desde el Mapa.",
+  "settingsPrivacyStateError": "No pudimos leer si compartes tu ubicación.",
+  "settingsPrivacyStateNotConfigured": "Aún no decides si compartes tu ubicación",
+  "settingsPrivacyStateNotConfiguredDetail": "Mientras no decidas, tu ubicación no se comparte.",
+  "settingsPrivacyStatePaused": "En pausa: no compartes tu ubicación",
+  "settingsPrivacyStatePausedDetail": "Tu familia no ve tu ubicación. Puedes reanudarla cuando quieras.",
+  "settingsPrivacyStateSharingApprox": "Compartes tu ubicación aproximada (≈ 1 km)",
+  "settingsPrivacyStateSharingDetail": "Tu familia ve la última ubicación que envías, con la hora en que se tomó.",
+  "settingsPrivacyStateSharingExact": "Compartes tu ubicación exacta",
+  "settingsPrivacyTile": "Privacidad y ubicación",
+  "settingsPrivacyTileSubtitle": "Decide si compartes tu ubicación, con qué precisión y quién la ve.",
+  "settingsPrivacyTitle": "Privacidad",
+  "settingsPushUnavailable": "Las notificaciones push se activan cuando se configure el servicio de avisos. Por ahora, las alertas solo se ven con la app abierta.",
+  "settingsSectionAbout": "Acerca de",
+  "settingsSectionAccount": "Cuenta",
+  "settingsSectionNotifications": "Notificaciones",
+  "settingsSectionPrivacy": "Privacidad",
+  "settingsShareSheetCancel": "Ahora no",
+  "settingsShareSheetNobody": "Por ahora no hay más integrantes en esta familia. La verán quienes se unan mientras la compartas.",
+  "settingsShareSheetPause": "Puedes pausarla cuando quieras desde aquí. Al pausar, borramos tu ubicación de esta familia.",
+  "settingsShareSheetPermission": "Si tu teléfono te lo pide, concede el permiso de ubicación.",
+  "settingsShareSheetTitle": "Antes de compartir tu ubicación",
+  "settingsShareSheetWhatApprox": "Tu familia verá en el mapa la última ubicación que envíes, redondeada a cerca de 1 km, con la hora en que se tomó.",
+  "settingsShareSheetWhatExact": "Tu familia verá en el mapa la última ubicación que envíes, con la hora en que se tomó.",
+  "settingsShareSheetWhen": "Solo se usa mientras tienes la app abierta.",
+  "settingsShareSheetWho": "La verán estas personas de {family}:",
+  "settingsShareSheetWhoGeneric": "La verán estas personas de esta familia:",
+  "settingsSystemSettingsNotOpened": "No pudimos abrir los ajustes. Búscalos en la configuración de tu teléfono."
 }

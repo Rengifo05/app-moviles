@@ -101,6 +101,15 @@ final class DemoAuthRepository implements AuthRepository {
     return const Ok(null);
   }
 
+  @override
+  Future<VoidResult> signOutEverywhere() async {
+    if (_current == null) return const Err(Failure.unauthenticated());
+    final result = await _callFunction('signOutEverywhere', const {});
+    if (result case Err(:final failure)) return Err(failure);
+    await signOut();
+    return const Ok(null);
+  }
+
   AuthUser _setCurrent(String email) {
     final account = _accounts[email]!;
     final user = AuthUser(

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:clock/clock.dart' as fake_time;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,11 +9,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nexo_familia/app/app.dart';
 import 'package:nexo_familia/app/composition.dart';
 import 'package:nexo_familia/app/session_providers.dart';
+import 'package:nexo_familia/core/clock.dart';
 import 'package:nexo_familia/core/config/app_config.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 
 import '../helpers/fakes.dart';
+
+/// Reloj que sigue el tiempo simulado de `testWidgets` (FakeAsync lo expone
+/// por `package:clock`): las cuentas atrás y los reintentos avanzan con cada
+/// `pump`, igual que los temporizadores.
+final class _TestTimeClock implements Clock {
+  const new();
+
+  @override
+  DateTime now() => fake_time.clock.now().toUtc();
+}
 
 const e2eConfig = AppConfig(
   appName: 'Nexo Familia',
@@ -41,6 +53,7 @@ final class E2EApp {
     final db = AppDatabase(NativeDatabase.memory());
     final composition = AppComposition.demo(
       db: db,
+      clock: const _TestTimeClock(),
       logSink: MemoryLogSink(),
       random: math.Random(42),
     );

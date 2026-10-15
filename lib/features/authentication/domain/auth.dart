@@ -61,6 +61,12 @@ abstract interface class AuthRepository {
 
   /// Elimina la cuenta y sus datos personales en el servidor.
   Future<VoidResult> deleteAccount();
+
+  /// Cierra la sesión en todos los dispositivos (cuenta comprometida o
+  /// teléfono perdido): el servidor revoca las sesiones, olvida los
+  /// dispositivos de avisos y anula las invitaciones activas; después se
+  /// cierra la sesión aquí.
+  Future<VoidResult> signOutEverywhere();
 }
 
 /// Reglas de validación compartidas por la UI y los casos de uso. Devuelven

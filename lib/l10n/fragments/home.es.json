@@ -1,0 +1,90 @@
+{
+  "homeGreeting": "Hola, {name}",
+  "@homeGreeting": {
+    "description": "Saludo de Inicio con el nombre de la persona.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeGreetingNoName": "Hola",
+  "homeFamilyName": "Familia activa: {family}",
+  "@homeFamilyName": {
+    "description": "Nombre de la familia activa bajo el saludo.",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNoFamilyTitle": "Aún no estás en una familia",
+  "homeNoFamilyBody": "Crea una familia o únete con un código de invitación para empezar.",
+  "homeNoFamilyAction": "Crear o unirme a una familia",
+  "homeQuickActionsTitle": "Acciones rápidas",
+  "homeCheckInAction": "Check-in",
+  "homeCheckInHint": "Cuéntale a tu familia cómo estás.",
+  "homeSosAction": "SOS",
+  "homeSosHint": "SOS abre la pantalla de emergencia: nada se envía hasta que lo confirmes allí.",
+  "@homeSosHint": {
+    "description": "Explica que el botón de Inicio solo abre la pantalla SOS; la alerta se confirma allí."
+  },
+  "homeMembersTitle": "Tu familia",
+  "homeMembersEmpty": "Aún no hay más integrantes. Invita a alguien para que vean su ubicación entre ustedes.",
+  "homeMembersInvite": "Invitar",
+  "homeMemberRecent": "Ubicación actualizada {time}",
+  "@homeMemberRecent": {
+    "description": "Estado honesto de la ubicación de un integrante. {time} es una hora relativa, p. ej. «hace 3 min».",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMemberRecentApprox": "Ubicación aproximada actualizada {time}",
+  "@homeMemberRecentApprox": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMemberStale": "Sin actualización reciente",
+  "homeMemberStaleSince": "Sin actualización reciente (última: {time})",
+  "@homeMemberStaleSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "homeMemberNotSharing": "No comparte su ubicación",
+  "homeMemberLocationLoading": "Consultando ubicación…",
+  "homeMemberLocationUnavailable": "No pudimos leer su ubicación",
+  "homeMemberOpenHint": "Ver detalles del integrante",
+  "homeStaleExplanation": "«Sin actualización reciente» significa que no llega una ubicación nueva hace más de {minutes} min. No indica cómo está la persona.",
+  "@homeStaleExplanation": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "homePendingCheckIns": "{count, plural, =1{Tienes 1 check-in guardado en el teléfono que aún no se envía.} other{Tienes {count} check-ins guardados en el teléfono que aún no se envían.}}",
+  "@homePendingCheckIns": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeFailedCheckIns": "{count, plural, =1{1 check-in no se pudo enviar.} other{{count} check-ins no se pudieron enviar.}}",
+  "@homeFailedCheckIns": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homePendingCheckInsAction": "Revisar"
+}

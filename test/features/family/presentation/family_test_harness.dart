@@ -239,6 +239,9 @@ final class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<VoidResult> deleteAccount() => throw UnimplementedError();
+
+  @override
+  Future<VoidResult> signOutEverywhere() => throw UnimplementedError();
 }
 
 final class FakeLocationRepository implements LocationRepository {

@@ -115,6 +115,14 @@ void main() {
     expect(again.isOk, isFalse);
   });
 
+  test('cerrar sesión en todos los dispositivos llama a la función y cierra '
+      'la sesión aquí', () async {
+    await repo.signUp(request);
+    expect((await repo.signOutEverywhere()).isOk, isTrue);
+    expect(calls, ['signOutEverywhere']);
+    expect(repo.currentUser, isNull);
+  });
+
   test('restablecer contraseña no revela si el correo existe', () async {
     expect((await repo.sendPasswordReset('nadie@example.com')).isOk, isTrue);
   });

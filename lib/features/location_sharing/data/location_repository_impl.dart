@@ -60,6 +60,12 @@ final class LocationRepositoryImpl implements LocationRepository {
       return const Err(Failure.permissionDenied('not-own-consent'));
     }
     final familyId = consent.familyId;
+    // Pasar a "aproximada" no debe dejar visible la última ubicación EXACTA
+    // ya enviada: si la hay, se borra en la misma operación.
+    final dropExact =
+        consent.isSharing &&
+        consent.precision == LocationPrecision.approximate &&
+        await _publishedIsExact(familyId, uid);
     return await _remote.commit([
       RemoteWrite.merge(BackendPaths.consent(familyId, uid), {
         'state': _stateValue(consent.state),
@@ -68,9 +74,16 @@ final class LocationRepositoryImpl implements LocationRepository {
       }),
       // Dejar de compartir borra la ubicación publicada en la misma
       // operación (amenaza 5): o se aplican las dos escrituras o ninguna.
-      if (!consent.isSharing)
+      if (!consent.isSharing || dropExact)
         RemoteWrite.remove(BackendPaths.location(familyId, uid)),
     ]);
+  }
+
+  Future<bool> _publishedIsExact(String familyId, String uid) async {
+    final cached = await _cache
+        .watchDoc(BackendPaths.locations(familyId), uid)
+        .first;
+    return cached != null && cached.data['approximate'] != true;
   }
 
   @override

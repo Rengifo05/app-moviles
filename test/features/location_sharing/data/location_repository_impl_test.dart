@@ -270,6 +270,27 @@ void main() {
     expect(saved['updatedAt'], clock.now());
   });
 
+  test(
+    'pasar a aproximada borra la última ubicación exacta ya enviada',
+    () async {
+      final repository = repo();
+      await repository.updateConsent(consent(SharingState.sharing));
+      await repository.publishMyLocation(familyId, location());
+      // Espera a que el espejo la refleje en la copia local.
+      await cache
+          .watchDoc(BackendPaths.locations(familyId), 'ana')
+          .firstWhere((doc) => doc != null);
+
+      final result = await repository.updateConsent(
+        consent(SharingState.sharing, LocationPrecision.approximate),
+      );
+      expect(result.isOk, isTrue);
+      expect(store.serverRead(BackendPaths.location(familyId, 'ana')), isNull);
+      final saved = store.serverRead(BackendPaths.consent(familyId, 'ana'))!;
+      expect(saved['precision'], 'approximate');
+    },
+  );
+
   test('una ubicación aproximada nunca sale con más detalle', () async {
     final repository = repo();
     await repository.updateConsent(
