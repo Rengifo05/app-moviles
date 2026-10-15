@@ -27,6 +27,7 @@
   "resetSent": "If an account exists for that email, you'll receive instructions in a few minutes.",
   "authErrorInvalidCredentials": "Incorrect email or password.",
   "authErrorEmailInUse": "An account with that email already exists. Sign in or reset your password.",
+  "authErrorSignupIncomplete": "Your sign-up didn't finish. Go to \"Create account\" again with the same email and password to complete it.",
   "validationEmailRequired": "Enter your email.",
   "validationEmailInvalid": "Check the email format.",
   "validationPasswordRequired": "Enter your password.",

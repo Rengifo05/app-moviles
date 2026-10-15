@@ -3,6 +3,7 @@
   "authEmailLabel": "Correo electrónico",
   "authErrorEmailInUse": "Ya existe una cuenta con ese correo. Inicia sesión o restablece tu contraseña.",
   "authErrorInvalidCredentials": "Correo o contraseña incorrectos.",
+  "authErrorSignupIncomplete": "Tu registro no terminó. Vuelve a «Crear cuenta» con el mismo correo y contraseña para completarlo.",
   "authHidePassword": "Ocultar contraseña",
   "authNameHint": "Así te verá tu familia. Puede ser un apodo.",
   "authNameLabel": "Tu nombre",

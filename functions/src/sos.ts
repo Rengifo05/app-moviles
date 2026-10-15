@@ -103,7 +103,7 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
             { familyId, alertId },
           );
     notifiedCount = result.accepted;
-    await forgetInvalidDevices(ctx, devices, result.invalidTokens);
+    await forgetInvalidDevices(devices, result.invalidTokens);
   } catch {
     // Se libera el lease y el conteo sigue «desconocido» (null): el cliente
     // recibe un error transitorio y su bandeja de salida reintenta, y ese
@@ -118,6 +118,8 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
 interface Device {
   token: string;
   ref: DocumentReference;
+  /** Para no borrar un dispositivo que renovó su token mientras tanto. */
+  updateTime: Timestamp;
 }
 
 /** Dispositivos de los DEMÁS integrantes. */
@@ -129,7 +131,9 @@ async function recipientDevices(ctx: Ctx, familyId: string): Promise<Device[]> {
     const devices = await ctx.db.collection(paths.devices(member.id)).get();
     for (const device of devices.docs) {
       const token = device.get('token');
-      if (typeof token === 'string' && token.length > 0) result.push({ token, ref: device.ref });
+      if (typeof token === 'string' && token.length > 0) {
+        result.push({ token, ref: device.ref, updateTime: device.updateTime });
+      }
     }
   }
   return result;
@@ -140,14 +144,15 @@ async function recipientDevices(ctx: Ctx, familyId: string): Promise<Device[]> {
  * vuelven a contarse ni a intentarse. Es una limpieza: si falla, el aviso
  * ya se envió y no debe convertirse en error.
  */
-async function forgetInvalidDevices(ctx: Ctx, devices: Device[], invalid: string[]): Promise<void> {
+async function forgetInvalidDevices(devices: Device[], invalid: string[]): Promise<void> {
   if (invalid.length === 0) return;
   const stale = new Set(invalid);
-  try {
-    const batch = ctx.db.batch();
-    for (const device of devices) if (stale.has(device.token)) batch.delete(device.ref);
-    await batch.commit();
-  } catch {
-    // Se reintentará con la siguiente alerta.
-  }
+  // Solo si el documento no cambió desde que se leyó: si el teléfono renovó
+  // su token en paralelo, el documento nuevo se conserva. Los fallos se
+  // ignoran (se reintentará con la siguiente alerta).
+  await Promise.allSettled(
+    devices
+      .filter((d) => stale.has(d.token))
+      .map((d) => d.ref.delete({ lastUpdateTime: d.updateTime })),
+  );
 }

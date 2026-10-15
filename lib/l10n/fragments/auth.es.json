@@ -27,6 +27,7 @@
   "resetSent": "Si existe una cuenta con ese correo, recibirás instrucciones en unos minutos.",
   "authErrorInvalidCredentials": "Correo o contraseña incorrectos.",
   "authErrorEmailInUse": "Ya existe una cuenta con ese correo. Inicia sesión o restablece tu contraseña.",
+  "authErrorSignupIncomplete": "Tu registro no terminó. Vuelve a «Crear cuenta» con el mismo correo y contraseña para completarlo.",
   "validationEmailRequired": "Escribe tu correo.",
   "validationEmailInvalid": "Revisa el formato del correo.",
   "validationPasswordRequired": "Escribe tu contraseña.",

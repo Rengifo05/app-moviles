@@ -61,3 +61,18 @@ Revisión del integrador al conectar Firebase. Defectos encontrados y corregidos
 | `batch.commit()` de Firestore no falla sin conexión: queda en la cola interna y las escuchas lo muestran como aplicado. Un check-in en la bandeja habría bloqueado el SOS de detrás, y la interfaz podría confirmar lo que el servidor aún no aceptó | El adaptador escribe con **transacciones** (fallan sin conexión) y un tiempo límite de 15 s |
 | El ADR prometía que «un `set` repetido es inocuo», pero las reglas de eventos solo permiten crear: el reintento de un check-in que sí llegó acababa en `permission-denied` (fallo permanente) | `RemoteWrite.create`: si el documento ya existe, el reintento se da por entregado. Las ubicaciones admiten reenviar la misma captura (`capturedAt >=`) |
 | Con la caché de Firestore, una escucha sin red entrega datos locales sin error: la app nunca habría mostrado «Sin conexión» | Las instantáneas `isFromCache` se convierten en una señal no terminal; el espejo pasa a `offline` y la interfaz lo muestra tras 3 s de gracia (sin parpadeo al arrancar) |
+
+## Revisión adversarial de la integración (2026-10-15)
+
+Dos revisores (sincronización y adaptador de Firebase; seguridad y privacidad del backend) y un escéptico por hallazgo: 6 confirmados (dos con la misma causa), 1 refutado y 1 que el escéptico no llegó a verificar por el límite de uso (lo comprobó el integrador leyendo FlutterFire).
+
+| Hallazgo | Resolución |
+|---|---|
+| `deleteAccount` solo limpiaba las familias de las membresías **actuales**: si la persona había salido antes, o el borrado fallaba a mitad y se reintentaba, quedaban sus mensajes, lugares y coordenadas | La limpieza busca en **todas** las familias con consultas de grupo de colecciones (índices `COLLECTION_GROUP` declarados y validados). Es idempotente y tolera una expulsión concurrente (`not-member`) |
+| El `uid` de la cuenta borrada quedaba sin TTL en `createdBy` de familias y zonas, y sus invitaciones seguían existiendo | Se anonimiza `createdBy` (la zona sube de versión) y se borran sus invitaciones |
+| La limpieza de tokens FCM inválidos podía borrar un dispositivo que acababa de renovar su token | Se borra con la precondición `lastUpdateTime` |
+| El registro con Firebase podía dejar la cuenta sin perfil y con la sesión abierta (fallo de red, falla de `updateDisplayName`, app cerrada a mitad), sin forma de repararla | Perfil primero, todo lo demás sin bloquear. Repetir el registro con el mismo correo y contraseña lo completa, y al iniciar sesión sin perfil se pide completarlo |
+| La caché en disco de Firestore conservaba datos de la familia tras cerrar sesión, salir o borrar la cuenta | Caché solo en memoria (ADR-004 §7) |
+| El tiempo límite de las transacciones no acotaba la confirmación nativa | Se acota también en Dart |
+| Refutado como defecto de este cambio: `signOutEverywhere` no corta lo que dura más que el ID token (≤ 1 h) | Mejora de todos modos: revoca las invitaciones activas que creó la cuenta |
+

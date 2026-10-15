@@ -1117,6 +1117,20 @@ void main() {
   });
 
   group('signOutEverywhere', () {
+    test('revoca las invitaciones activas que creó', () async {
+      final familyId = await createFamily('ana');
+      final code =
+          (await ok(
+                callAs('ana', 'createInvitation', {'familyId': familyId}),
+              ))['code']!
+              as String;
+      expect(await callAs('ana', 'signOutEverywhere'), _isOk({}));
+      expect(
+        await callAs('bruno', 'acceptInvitation', {'code': code}),
+        const Err<Json>(Failure(FailureKind.notFound, 'invitation-invalid')),
+      );
+    });
+
     test('borra solo los dispositivos de avisos de quien la llama', () async {
       store
         ..serverWrite('users/ana', {'displayName': 'Ana'})
@@ -1207,6 +1221,40 @@ void main() {
       );
       expect(store.snapshot.toString(), isNot(contains('Llegué')));
       expect(store.snapshot.toString(), isNot(contains('Colegio')));
+    });
+
+    test('limpia también las familias de las que ya había salido, anonimiza '
+        'createdBy y borra sus invitaciones', () async {
+      final familyId = await familyOf('ana', ['bruno']);
+      final events = 'families/$familyId/events';
+      store
+        ..serverWrite('$events/c1', {
+          'type': 'checkIn',
+          'actorUid': 'bruno',
+          'message': 'Llegué',
+        })
+        ..serverWrite('families/$familyId/geofences/g1', {
+          'name': 'Casa',
+          'createdBy': 'bruno',
+          'version': 1,
+        })
+        ..serverWrite('invitations/inv-bruno', {
+          'familyId': familyId,
+          'createdBy': 'bruno',
+          'status': 'active',
+        });
+      await ok(callAs('bruno', 'leaveFamily', {'familyId': familyId}));
+
+      expect(await callAs('bruno', 'deleteAccount'), _isOk({}));
+
+      expect(store.serverRead('$events/c1'), isNull);
+      expect(store.serverRead('families/$familyId/geofences/g1'), {
+        'name': 'Casa',
+        'createdBy': deletedUser,
+        'version': 2,
+      });
+      expect(store.serverRead('invitations/inv-bruno'), isNull);
+      expect(store.snapshot.toString(), isNot(contains('Llegué')));
     });
 
     test('una membresía huérfana no impide borrar la cuenta', () async {

@@ -349,6 +349,13 @@ final class DemoFunctionsClient implements FunctionsClient {
   /// dispositivos registrados para avisos.
   Json _signOutEverywhere(String uid) => _store.serverTransaction(() {
     _store.serverList('users/$uid/devices').forEach(_store.serverDelete);
+    // Las invitaciones activas que creó se revocan.
+    for (final path in _store.serverList('invitations')) {
+      final invitation = _store.serverRead(path)!;
+      if (invitation['createdBy'] == uid && invitation['status'] == 'active') {
+        _store.serverWrite(path, {...invitation, 'status': 'revoked'});
+      }
+    }
     return <String, Object?>{};
   });
 
@@ -358,7 +365,6 @@ final class DemoFunctionsClient implements FunctionsClient {
       if (_roleOf(familyId, uid) != null &&
           _store.serverRead('families/$familyId') != null) {
         _leaveFamily(uid, familyId);
-        _scrubFamily(uid, familyId);
       } else {
         // Restos inconsistentes (sin integrante o sin familia): se limpian
         // sin impedir el borrado de la cuenta.
@@ -367,6 +373,16 @@ final class DemoFunctionsClient implements FunctionsClient {
           ..serverDelete('families/$familyId/members/$uid')
           ..serverDelete('families/$familyId/locations/$uid')
           ..serverDelete('families/$familyId/consents/$uid');
+      }
+    }
+    // Como en las Functions: la limpieza alcanza TODAS las familias,
+    // también aquellas de las que ya había salido.
+    for (final path in _store.serverList('families')) {
+      _scrubFamily(uid, path.split('/').last);
+    }
+    for (final path in _store.serverList('invitations')) {
+      if (_store.serverRead(path)!['createdBy'] == uid) {
+        _store.serverDelete(path);
       }
     }
     // Perfil con todas sus subcolecciones y los contadores de frecuencia.
@@ -378,8 +394,24 @@ final class DemoFunctionsClient implements FunctionsClient {
 
   /// Como en las Functions: lo que la cuenta eliminada deja en una familia.
   /// Sus check-ins y eventos de zona se borran ya; sus alertas se conservan
-  /// sin coordenadas hasta su retención; la auditoría se anonimiza.
+  /// sin coordenadas hasta su retención; la auditoría y `createdBy` (familia
+  /// y zonas, que suben de versión) se anonimizan.
   void _scrubFamily(String uid, String familyId) {
+    final familyPath = 'families/$familyId';
+    final family = _store.serverRead(familyPath);
+    if (family != null && family['createdBy'] == uid) {
+      _store.serverWrite(familyPath, {...family, 'createdBy': deletedUser});
+    }
+    for (final path in _store.serverList('$familyPath/geofences')) {
+      final zone = _store.serverRead(path)!;
+      if (zone['createdBy'] == uid) {
+        _store.serverWrite(path, {
+          ...zone,
+          'createdBy': deletedUser,
+          'version': ((zone['version'] as num?) ?? 0).toInt() + 1,
+        });
+      }
+    }
     for (final path in _store.serverList('families/$familyId/events')) {
       final event = _store.serverRead(path)!;
       if (event['actorUid'] == uid &&

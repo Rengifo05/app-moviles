@@ -32,15 +32,27 @@ final class FirebaseAuthRepository implements AuthRepository {
     required String email,
     required String password,
   }) async {
+    final fb.User user;
     try {
       final credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      return Ok(_map(credential.user)!);
+      user = credential.user!;
     } on fb.FirebaseAuthException catch (e) {
       return Err(mapAuthError(e.code, e));
     }
+    // Una cuenta sin perfil es un registro que no terminó (sin conexión o
+    // app cerrada a mitad): no se entra sin los consentimientos guardados.
+    // Si no se puede comprobar (red), se deja entrar: no se bloquea a nadie
+    // por un fallo transitorio.
+    if (await _remote.getDoc(BackendPaths.user(user.uid)) case Ok(
+      value: null,
+    )) {
+      await _auth.signOut();
+      return const Err(Failure(FailureKind.conflict, 'signup-incomplete'));
+    }
+    return Ok(_map(user)!);
   }
 
   @override
@@ -48,47 +60,95 @@ final class FirebaseAuthRepository implements AuthRepository {
     final errors = AuthValidators.signUp(request);
     if (errors.isNotEmpty) return Err(Failure.validation(errors.first));
     final name = request.displayName.trim();
+    final email = request.email.trim();
+    final fb.User user;
     try {
       final credential = await _auth.createUserWithEmailAndPassword(
-        email: request.email.trim(),
+        email: email,
         password: request.password,
       );
-      final user = credential.user!;
-      await user.updateDisplayName(name);
-      final profile = await _remote.commit([
-        RemoteWrite.put(BackendPaths.user(user.uid), {
-          'displayName': name,
-          'createdAt': serverTimestamp,
-          'adultConfirmedAt': serverTimestamp,
-          'privacyAcceptedAt': serverTimestamp,
-          'privacyPolicyVersion': '2026-10',
-        }),
-      ]);
-      if (profile case Err(:final failure)) {
-        // Sin perfil, la cuenta quedaría a medias y reintentar el registro
-        // daría "correo en uso": se deshace (y, si tampoco se puede borrar,
-        // al menos se cierra la sesión).
+      user = credential.user!;
+    } on fb.FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        return await _resumeIncompleteSignUp(email, request.password, name);
+      }
+      return Err(mapAuthError(e.code, e));
+    }
+    return await _finishSignUp(user, name, undoOnFailure: true);
+  }
+
+  /// Guarda el perfil **antes** que nada más: es lo que leen las Functions
+  /// (nombre) y lo que prueba los consentimientos. Si no se guarda, la
+  /// cuenta no queda a medias con la sesión abierta: se deshace (o, si ni
+  /// eso se puede, se cierra la sesión y reintentar el registro la repara;
+  /// ver [_resumeIncompleteSignUp]). El nombre en Auth y la verificación de
+  /// correo (amenaza 2) van después y no bloquean.
+  Future<Result<AuthUser>> _finishSignUp(
+    fb.User user,
+    String name, {
+    required bool undoOnFailure,
+  }) async {
+    final profile = await _remote.commit([
+      RemoteWrite.put(BackendPaths.user(user.uid), {
+        'displayName': name,
+        'createdAt': serverTimestamp,
+        'adultConfirmedAt': serverTimestamp,
+        'privacyAcceptedAt': serverTimestamp,
+        'privacyPolicyVersion': '2026-10',
+      }),
+    ]);
+    if (profile case Err(:final failure)) {
+      if (undoOnFailure) {
         try {
           await user.delete();
         } on Object {
-          // Se cierra la sesión abajo.
+          // Sin red tampoco se puede borrar: se repara al reintentar.
         }
-        await _auth.signOut();
-        return Err(failure);
       }
-      // Verificación de correo (amenaza 2). No bloquea el registro: si el
-      // envío falla, la cuenta funciona igual.
-      try {
-        await user.sendEmailVerification();
-      } on Object {
-        // Sin verificación enviada; la persona puede pedirla más adelante.
-      }
-      return Ok(
-        AuthUser(uid: user.uid, email: user.email ?? '', displayName: name),
-      );
-    } on fb.FirebaseAuthException catch (e) {
-      return Err(mapAuthError(e.code, e));
+      await _auth.signOut();
+      return Err(failure);
     }
+    for (final step in [
+      () => user.updateDisplayName(name),
+      user.sendEmailVerification,
+    ]) {
+      try {
+        await step();
+      } on Object {
+        // No bloquea: el perfil ya tiene el nombre y la cuenta funciona.
+      }
+    }
+    return Ok(
+      AuthUser(uid: user.uid, email: user.email ?? '', displayName: name),
+    );
+  }
+
+  /// "Correo en uso" puede ser un registro anterior que creó la cuenta pero
+  /// no el perfil. Si la contraseña coincide y no hay perfil, se completa con
+  /// los consentimientos de ESTE formulario; en cualquier otro caso responde
+  /// "correo en uso", como siempre.
+  Future<Result<AuthUser>> _resumeIncompleteSignUp(
+    String email,
+    String password,
+    String name,
+  ) async {
+    const inUse = Failure(FailureKind.conflict, 'email-in-use');
+    final fb.User user;
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      user = credential.user!;
+    } on fb.FirebaseAuthException {
+      return const Err(inUse);
+    }
+    final existing = await _remote.getDoc(BackendPaths.user(user.uid));
+    if (existing case Ok(value: null)) {
+      return await _finishSignUp(user, name, undoOnFailure: false);
+    }
+    await _auth.signOut();
+    return Err(existing.failureOrNull ?? inUse);
   }
 
   @override

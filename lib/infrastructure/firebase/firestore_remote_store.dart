@@ -83,28 +83,34 @@ final class FirestoreRemoteStore implements RemoteStore {
   Future<VoidResult> commit(List<RemoteWrite> writes) async {
     if (writes.isEmpty) return const Ok(null);
     try {
-      await _db.runTransaction<void>((tx) async {
-        // Firestore exige hacer todas las lecturas antes de escribir.
-        final existing = <String>{};
-        for (final w in writes) {
-          if (w.op != RemoteOp.create) continue;
-          if ((await tx.get(_db.doc(w.path))).exists) existing.add(w.path);
-        }
-        for (final w in writes) {
-          final ref = _db.doc(w.path);
-          switch (w.op) {
-            case RemoteOp.put:
-              tx.set(ref, _toMap(w.data!));
-            case RemoteOp.merge:
-              tx.set(ref, _toMap(w.data!), fs.SetOptions(merge: true));
-            case RemoteOp.remove:
-              tx.delete(ref);
-            case RemoteOp.create:
-              // Ya existe: un reintento de algo que el servidor ya aceptó.
-              if (!existing.contains(w.path)) tx.set(ref, _toMap(w.data!));
-          }
-        }
-      }, timeout: commitTimeout);
+      await _db
+          .runTransaction<void>((tx) async {
+            // Firestore exige hacer todas las lecturas antes de escribir.
+            final existing = <String>{};
+            for (final w in writes) {
+              if (w.op != RemoteOp.create) continue;
+              if ((await tx.get(_db.doc(w.path))).exists) existing.add(w.path);
+            }
+            for (final w in writes) {
+              final ref = _db.doc(w.path);
+              switch (w.op) {
+                case RemoteOp.put:
+                  tx.set(ref, _toMap(w.data!));
+                case RemoteOp.merge:
+                  tx.set(ref, _toMap(w.data!), fs.SetOptions(merge: true));
+                case RemoteOp.remove:
+                  tx.delete(ref);
+                case RemoteOp.create:
+                  // Ya existe: un reintento de algo que el servidor ya aceptó.
+                  if (!existing.contains(w.path)) tx.set(ref, _toMap(w.data!));
+              }
+            }
+          }, timeout: commitTimeout)
+          // El `timeout` de FlutterFire solo acota a este manejador en Dart, no
+          // la confirmación nativa: se acota aquí todo. Si vence, el resultado
+          // es ambiguo (el servidor pudo aplicarlo) y por eso todas las
+          // escrituras de la app son idempotentes.
+          .timeout(commitTimeout);
       return const Ok(null);
     } on TimeoutException catch (e) {
       return Err(Failure.unavailable('timeout', e));

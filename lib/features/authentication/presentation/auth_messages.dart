@@ -23,6 +23,7 @@ String authFailureMessage(AppLocalizations l10n, Failure failure) =>
     switch (failure.code) {
       'invalid-credentials' => l10n.authErrorInvalidCredentials,
       'email-in-use' => l10n.authErrorEmailInUse,
+      'signup-incomplete' => l10n.authErrorSignupIncomplete,
       _ when failure.kind == FailureKind.validation => authValidationMessage(
         l10n,
         failure.code,

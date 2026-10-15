@@ -145,6 +145,18 @@ describe('raiseSos', () => {
     expect(notifier.calls.at(-1)!.tokens).toEqual(['tok-ana']);
   });
 
+  it('no olvida un dispositivo que renovó su token mientras se enviaba', async () => {
+    notifier.invalid = ['tok-sofia'];
+    const original = notifier.notifySos.bind(notifier);
+    notifier.notifySos = async (tokens, data) => {
+      // El teléfono de Sofía renueva su token en paralelo al envío.
+      await db.doc('users/sofia/devices/s1').set({ token: 'tok-sofia-nuevo', platform: 'ios' });
+      return original(tokens, data);
+    };
+    await raiseSos(as('luis'), { familyId, alertId: 'race-1' }, notifier);
+    expect((await db.doc('users/sofia/devices/s1').get()).get('token')).toBe('tok-sofia-nuevo');
+  });
+
   it('rechaza a quien no es integrante y alertId de otra persona', async () => {
     expect(await reason(raiseSos(as('mallory'), { familyId, alertId: 'x' }, notifier))).toBe('not-member');
     await raiseSos(as('luis'), { familyId, alertId: 'sos-1' }, notifier);

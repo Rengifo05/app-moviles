@@ -89,7 +89,9 @@ Future<FirebaseHandles> initializeFirebase(
     await auth.useAuthEmulator(config.emulatorHost, 9099);
     functions.useFunctionsEmulator(config.emulatorHost, 5001);
   }
-  // Caché de Firestore acotada: la UI lee de Drift (ADR-004).
-  firestore.settings = const Settings(cacheSizeBytes: 20 * 1024 * 1024);
+  // Caché de Firestore solo en memoria (ADR-004 §7): la UI lee de Drift, que
+  // se purga al cerrar sesión o salir de una familia. Una caché en disco
+  // conservaría datos de la familia que Firestore nunca borra por sí solo.
+  firestore.settings = const Settings(persistenceEnabled: false);
   return FirebaseHandles(firestore, auth, functions);
 }

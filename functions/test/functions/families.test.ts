@@ -224,7 +224,73 @@ describe('deleteAccount', () => {
   });
 });
 
+describe('deleteAccount en familias de las que ya salió', () => {
+  it('limpia también las familias que dejó antes (y es idempotente)', async () => {
+    const familyId = await setupFamily();
+    await join(familyId, 'luis');
+    const events = db.collection(`families/${familyId}/events`);
+    await events.doc('c1').set({ type: 'checkIn', actorUid: 'luis', message: 'Llegué', lat: 1, lng: 2 });
+    await db.doc(`families/${familyId}/emergencies/a1`).set({ uid: 'luis', lat: 1, lng: 2, acks: {} });
+    // Sale antes de borrar la cuenta: su membresía ya no existe.
+    await leaveFamily(as('luis'), { familyId });
+
+    await deleteAccount(as('luis'), { deleteUser: async () => {} });
+    // Un reintento no falla ni deja nada.
+    await deleteAccount(as('luis'), { deleteUser: async () => {} });
+
+    expect((await events.doc('c1').get()).exists).toBe(false);
+    expect((await db.doc(`families/${familyId}/emergencies/a1`).get()).data()).toEqual({ uid: 'luis', acks: {} });
+    const audit = await db.collection(`families/${familyId}/audit`).get();
+    expect(audit.docs.flatMap((d) => [d.get('actorUid'), d.get('targetUid')])).not.toContain('luis');
+    expect(await dumpAll(db)).not.toContain('Llegué');
+  });
+
+  it('anonimiza createdBy en familias y zonas y borra sus invitaciones', async () => {
+    await db.doc('users/luis').set({ displayName: 'Luis' });
+    await db.doc('users/ana').set({ displayName: 'Ana' });
+    const { familyId } = await createFamily(as('luis'), { name: 'Familia Luis' });
+    const { code } = await createInvitation(as('luis'), { familyId });
+    await acceptInvitation(as('ana'), { code });
+    await createInvitation(as('luis'), { familyId });
+    await db.doc(`families/${familyId}/geofences/g1`).set({ name: 'Casa', createdBy: 'luis', version: 1 });
+
+    await deleteAccount(as('luis'), { deleteUser: async () => {} });
+
+    expect((await db.doc(`families/${familyId}`).get()).get('createdBy')).toBe('deleted-user');
+    const zone = (await db.doc(`families/${familyId}/geofences/g1`).get()).data();
+    expect(zone).toMatchObject({ createdBy: 'deleted-user', version: 2 });
+    expect((await db.collection('invitations').where('createdBy', '==', 'luis').get()).size).toBe(0);
+    // Solo queda su uid (ya sin perfil) en los eventos de membresía, que
+    // vencen por TTL a los 30 días.
+    const leftovers = JSON.parse(await dumpAll(db)) as { path: string; data: Record<string, unknown> }[];
+    expect(
+      leftovers
+        .filter((d) => JSON.stringify(d.data).includes('"luis"'))
+        .every((d) => d.data.type === 'membership' && d.data.expireAt !== undefined),
+    ).toBe(true);
+  });
+
+  it('una expulsión concurrente (not-member) no impide borrar la cuenta', async () => {
+    await db.doc('users/luis').set({ displayName: 'Luis' });
+    // Membresía que quedó sin integrante: leaveFamily responde not-member.
+    await db.doc('families/fx').set({ name: 'X', memberCount: 1 });
+    await db.doc('users/luis/memberships/fx').set({ familyId: 'fx', role: 'member' });
+    const deleted: string[] = [];
+    await deleteAccount(as('luis'), { deleteUser: async (uid) => void deleted.push(uid) });
+    expect(deleted).toEqual(['luis']);
+    expect((await db.doc('users/luis').get()).exists).toBe(false);
+  });
+});
+
 describe('signOutEverywhere', () => {
+  it('revoca las invitaciones activas que creó', async () => {
+    const familyId = await setupFamily();
+    const { code } = await createInvitation(as('ana'), { familyId });
+    await signOutEverywhere(as('ana'), { revokeRefreshTokens: async () => {} });
+    expect((await db.doc(`invitations/${hashCode(code)}`).get()).get('status')).toBe('revoked');
+    expect(await reason(acceptInvitation(as('luis'), { code }))).toBe('invitation-invalid');
+  });
+
   it('revoca las sesiones y borra los dispositivos de avisos', async () => {
     await db.doc('users/luis').set({ displayName: 'Luis' });
     await db.doc('users/luis/devices/d1').set({ token: 't1', platform: 'ios' });

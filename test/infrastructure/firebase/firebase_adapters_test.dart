@@ -78,6 +78,7 @@ final class _RecordingUser extends MockUser {
   new() : super(uid: 'u-nuevo', email: 'ana@example.com');
 
   final calls = <String>[];
+  bool failDisplayName = false;
 
   @override
   Future<void> delete() async => calls.add('delete');
@@ -88,7 +89,11 @@ final class _RecordingUser extends MockUser {
   ]) async => calls.add('sendEmailVerification');
 
   @override
-  Future<void> updateDisplayName(String? displayName) async {}
+  Future<void> updateDisplayName(String? displayName) async {
+    if (failDisplayName) {
+      throw fb.FirebaseAuthException(code: 'network-request-failed');
+    }
+  }
 }
 
 final class _Credential extends Mock implements fb.UserCredential {
@@ -117,6 +122,18 @@ final class _CreatingAuth extends MockFirebaseAuth {
     signedOut = true;
     await super.signOut();
   }
+}
+
+/// La cuenta ya existe en Auth (registro anterior) y `user` es quien inicia
+/// sesión con la contraseña correcta.
+final class _ExistingAuth extends MockFirebaseAuth {
+  new(MockUser user) : super(mockUser: user);
+
+  @override
+  Future<fb.UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) => throw fb.FirebaseAuthException(code: 'email-already-in-use');
 }
 
 /// Almacén cuyas escrituras fallan como sin conexión.
@@ -361,6 +378,74 @@ void main() {
       expect(user.calls, ['delete']);
       expect(auth.signedOut, isTrue);
     });
+
+    test('el perfil se guarda aunque falle el nombre en Auth', () async {
+      final user = _RecordingUser()..failDisplayName = true;
+      final db = _Firestore();
+      final repo = FirebaseAuthRepository(
+        auth: _CreatingAuth(user),
+        remote: FirestoreRemoteStore(db),
+        functions: _NoFunctions(),
+      );
+      expect((await repo.signUp(request)).isOk, isTrue);
+      expect(
+        (await db.doc('users/u-nuevo').get()).data()?['displayName'],
+        'Ana',
+      );
+    });
+
+    test('repetir un registro que quedó sin perfil lo completa', () async {
+      final db = _Firestore();
+      final auth = _ExistingAuth(
+        MockUser(uid: 'u-huerfano', email: 'ana@example.com'),
+      );
+      final repo = FirebaseAuthRepository(
+        auth: auth,
+        remote: FirestoreRemoteStore(db),
+        functions: _NoFunctions(),
+      );
+      final result = await repo.signUp(request);
+      expect(result.valueOrNull?.uid, 'u-huerfano');
+      final profile = (await db.doc('users/u-huerfano').get()).data()!;
+      expect(profile['displayName'], 'Ana');
+      expect(profile['adultConfirmedAt'], isNotNull);
+    });
+
+    test('con perfil existente sigue siendo "correo en uso" y no deja la '
+        'sesión abierta', () async {
+      final db = _Firestore();
+      await db.doc('users/u-existe').set({'displayName': 'Ana'});
+      final auth = _ExistingAuth(
+        MockUser(uid: 'u-existe', email: 'ana@example.com'),
+      );
+      final repo = FirebaseAuthRepository(
+        auth: auth,
+        remote: FirestoreRemoteStore(db),
+        functions: _NoFunctions(),
+      );
+      expect((await repo.signUp(request)).failureOrNull?.code, 'email-in-use');
+      expect(auth.currentUser, isNull);
+    });
+
+    test(
+      'iniciar sesión en una cuenta sin perfil pide completar el registro',
+      () async {
+        final auth = MockFirebaseAuth(
+          mockUser: MockUser(uid: 'u-huerfano', email: 'ana@example.com'),
+        );
+        final repo = FirebaseAuthRepository(
+          auth: auth,
+          remote: FirestoreRemoteStore(_Firestore()),
+          functions: _NoFunctions(),
+        );
+        final result = await repo.signIn(
+          email: 'ana@example.com',
+          password: 'contraseña-segura',
+        );
+        expect(result.failureOrNull?.code, 'signup-incomplete');
+        expect(auth.currentUser, isNull);
+      },
+    );
 
     test('valida antes de llamar a Firebase', () async {
       final repo = FirebaseAuthRepository(

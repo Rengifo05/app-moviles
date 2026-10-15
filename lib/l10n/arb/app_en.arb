@@ -3,6 +3,7 @@
   "authEmailLabel": "Email",
   "authErrorEmailInUse": "An account with that email already exists. Sign in or reset your password.",
   "authErrorInvalidCredentials": "Incorrect email or password.",
+  "authErrorSignupIncomplete": "Your sign-up didn't finish. Go to \"Create account\" again with the same email and password to complete it.",
   "authHidePassword": "Hide password",
   "authNameHint": "This is how your family will see you. It can be a nickname.",
   "authNameLabel": "Your name",
