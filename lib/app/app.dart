@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
+import 'package:nexo_familia/design_system/theme/nx_theme.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
 const supportedAppLocales = [Locale('es'), Locale('en')];
@@ -16,6 +17,8 @@ class NexoApp extends ConsumerWidget {
     return MaterialApp(
       title: config.appName,
       debugShowCheckedModeBanner: false,
+      theme: NxTheme.light(),
+      darkTheme: NxTheme.dark(),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
