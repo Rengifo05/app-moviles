@@ -1,6 +1,6 @@
 # ADR-001 · Backend administrado: Firebase frente a Supabase
 
-- **Estado:** Propuesto. Pendiente de aprobación, porque implica una cuenta de facturación y credenciales.
+- **Estado:** Aceptado (2026-10-15). Activar Blaze y crear credenciales sigue pendiente (D7).
 - **Fecha:** 2026-10-15
 - **Decisores:** propietario del producto y responsable técnico
 
@@ -45,7 +45,7 @@ Motivos:
 - La app no importa `cloud_firestore` ni `firebase_auth` fuera de `features/*/data/` y `app/bootstrap`. Una prueba de arquitectura (T1.4) lo hace cumplir.
 - Los contratos de repositorio y los DTO se mapean a entidades de dominio puras.
 - Drift es la fuente local de verdad para la UI (ADR-004). El backend se puede sustituir reimplementando la capa `data`.
-- El runbook de exportación (`docs/runbooks/`, Día 7) documenta cómo exportar a JSON o CSV y la ruta de migración a Postgres.
+- El runbook de exportación (`docs/runbooks/`, incremento 7) documenta cómo exportar a JSON o CSV y la ruta de migración a Postgres.
 
 ## Consecuencias
 

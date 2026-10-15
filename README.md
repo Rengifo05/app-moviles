@@ -6,7 +6,29 @@ Aplicación móvil (Flutter, iOS y Android) para compartir ubicación de forma v
 
 ## Estado actual
 
-**Fase 0: descubrimiento y propuesta de arquitectura.** Este repositorio todavía no contiene código de la aplicación. El primer paso fue inspeccionar el entorno, verificar versiones y dependencias, y documentar la arquitectura, los riesgos y el plan para su aprobación.
+**En desarrollo, por incrementos.** La arquitectura se aprobó el 2026-10-15. El avance de cada incremento y lo que está o no listo para producción se registra en [docs/architecture/04-plan-y-criterios.md](docs/architecture/04-plan-y-criterios.md). Nada de esta app está listo para producción todavía.
+
+## Cómo empezar
+
+Requisitos: Flutter **3.47.7** (Dart 3.13.5). En Linux, `tool/install_flutter.sh` instala exactamente esa versión y verifica su SHA-256.
+
+```bash
+tool/install_flutter.sh            # opcional: instala Flutter en /opt/flutter
+export PATH=/opt/flutter/bin:$PATH
+flutter pub get                    # dependencias + localización generada
+tool/check.sh                      # formato, análisis estricto y pruebas (igual que CI)
+```
+
+Para ejecutar la app en un dispositivo o emulador (requiere Android Studio o Xcode):
+
+```bash
+cp config/env.example.json config/env.dev.json   # no se versiona
+flutter run --dart-define-from-file=config/env.dev.json
+```
+
+Con `NX_BACKEND=demo` la app funciona sin red ni credenciales, con datos en memoria. El backend de Firebase se documenta en el incremento 4.
+
+## Documentación
 
 | Documento | Contenido |
 |---|---|
@@ -14,7 +36,7 @@ Aplicación móvil (Flutter, iOS y Android) para compartir ubicación de forma v
 | [docs/architecture/01-arquitectura-propuesta.md](docs/architecture/01-arquitectura-propuesta.md) | Capas, estructura de carpetas, estado, navegación, dirección visual y riesgos |
 | [docs/architecture/02-modelo-de-datos.md](docs/architecture/02-modelo-de-datos.md) | Entidades, estructura en Firestore, matriz de acceso, máquina de estados del SOS y retención |
 | [docs/architecture/03-costos.md](docs/architecture/03-costos.md) | Estimación de costos por familia, costos fijos y controles |
-| [docs/architecture/04-plan-y-criterios.md](docs/architecture/04-plan-y-criterios.md) | Plan de 7 días con tareas y criterios de aceptación |
+| [docs/architecture/04-plan-y-criterios.md](docs/architecture/04-plan-y-criterios.md) | Plan por incrementos con tareas y criterios de aceptación |
 | [docs/architecture/adr-00*.md](docs/architecture/) | Decisiones: backend, mapas, ubicación y sincronización |
 | [docs/privacy/](docs/privacy/) | Modelo de amenazas; datos, permisos y marco legal |
 | [docs/decisions/README.md](docs/decisions/README.md) | Índice de ADR y **decisiones pendientes de aprobación** |

@@ -1,6 +1,6 @@
 # ADR-003 · Ubicación, segundo plano y geocercas
 
-- **Estado:** Propuesto. La opción de pago queda pendiente de aprobación.
+- **Estado:** Aceptado (2026-10-15). La opción de pago queda pendiente de aprobación.
 - **Fecha:** 2026-10-15
 
 ## Contexto y restricciones de plataforma (fuentes oficiales citadas en buscadores; reconfirmar)
@@ -21,7 +21,7 @@
 
 ## Decisión propuesta (por fases)
 
-**Fase 1 del MVP (esta semana): sin ubicación continua en segundo plano.**
+**Fase 1 del MVP: sin ubicación continua en segundo plano.**
 
 - La ubicación se comparte **en primer plano**: al abrir la app, al hacer check-in o SOS, y con un "Actualizar mi ubicación" explícito.
 - La UI siempre muestra **"Ubicación actualizada hace X min"** o **"Sin actualización reciente"**, nunca "a salvo".

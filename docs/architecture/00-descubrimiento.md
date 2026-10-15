@@ -58,7 +58,7 @@ Se creó un proyecto temporal **fuera del repositorio** para comprobar que las d
 | mocktail | 1.0.5 | felangel.dev | 160/160 | |
 | flutter_background_geolocation | 5.9.0 | transistorsoft.com | 160/160 | **Requiere licencia de pago para compilaciones *release*** (iOS y Android). Ver ADR-003 |
 
-Backend (npm, consultado el 2026-10-15): `firebase-functions` 7.4.0, `firebase-admin` 14.5.0, `@firebase/rules-unit-testing` 6.0.0, `typescript` 7.0.2 y `vitest` 5.0.4. Se fijarán en el Día 4, tras verificar su compatibilidad.
+Backend (npm, consultado el 2026-10-15): `firebase-functions` 7.4.0, `firebase-admin` 14.5.0, `@firebase/rules-unit-testing` 6.0.0, `typescript` 7.0.2 y `vitest` 5.0.4. Se fijarán en el incremento 4, tras verificar su compatibilidad.
 
 ## Skills, agentes y plugins de Claude Code
 

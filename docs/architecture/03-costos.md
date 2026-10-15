@@ -25,14 +25,14 @@
 
 | Concepto | Costo aproximado | Cuándo |
 |---|---|---|
-| Cuenta de facturación de Google Cloud (Blaze) | USD 0 de base, pago por uso, con tarjeta | Para desplegar Functions (Día 4 o posterior) |
+| Cuenta de facturación de Google Cloud (Blaze) | USD 0 de base, pago por uso, con tarjeta | Para desplegar Functions (incremento 4 o posterior) |
 | Apple Developer Program | ~USD 99 al año (reconfirmar) | Para probar en iPhone físico con capacidades como push, y para publicar |
 | Cuenta de desarrollador de Google Play | ~USD 25, pago único (reconfirmar) | Para publicar o usar pruebas internas |
 | Minutos de CI en macOS (GitHub Actions) | Según el plan de GitHub y la visibilidad del repo | Para compilar iOS en CI |
 | Licencia de `flutter_background_geolocation` | Según el proveedor | Solo si la Fase 2 lo justifica (ADR-003) |
 | Revisión legal (Ley 1581, menores, términos) | Variable | Antes de publicar |
 
-## Controles de costo (se implementan en el Día 4)
+## Controles de costo (se implementan en el incremento 4)
 
 - *Listeners* solo de la familia activa y solo con la app en primer plano; se cancelan en `paused`.
 - Consultas siempre con `limit()` y paginación en el historial.

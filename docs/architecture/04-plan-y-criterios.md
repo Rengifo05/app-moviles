@@ -1,10 +1,10 @@
-# 04 · Plan de trabajo y criterios de aceptación
+# 04 · Plan de trabajo por incrementos y criterios de aceptación
 
 Leyenda: 🔒 = requiere aprobación (alcance, costo o credenciales). 📱 = solo verificable en dispositivo o máquina local. Lo que no esté marcado se puede verificar en la sesión en la nube.
 
 Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo → `dart format` + `flutter analyze` → pruebas → revisión de UI (si aplica) → documentación → informe.
 
-## Día 1 · Base del proyecto (tras aprobar la arquitectura)
+## Incremento 1 · Base del proyecto (tras aprobar la arquitectura)
 
 | ID | Tarea | Criterios de aceptación |
 |---|---|---|
@@ -17,9 +17,9 @@ Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo �
 | T1.7 | CI básica (GitHub Actions): formato, análisis y pruebas en Linux | El workflow pasa en la rama. 🔒 Los *runners* de macOS y Android quedan para cuando se aprueben sus minutos |
 | T1.8 | `.gitignore` de secretos y README de instalación | `git check-ignore` confirma `env.*.json`, `google-services.json`, `GoogleService-Info.plist` y `*.keystore` |
 
-**Salida del Día 1:** estructura compilable, análisis estricto en verde y límites entre capas verificados automáticamente.
+**Resultado del incremento 1:** estructura compilable, análisis estricto en verde y límites entre capas verificados automáticamente.
 
-## Día 2 · Sistema de diseño y navegación
+## Incremento 2 · Sistema de diseño y navegación
 
 | ID | Tarea | Criterios |
 |---|---|---|
@@ -28,7 +28,7 @@ Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo �
 | T2.3 | Shell de GoRouter con 5 pestañas y la ruta modal de SOS | Pruebas de navegación: cada pestaña conserva su estado; el SOS abre un modal; el botón atrás funciona |
 | T2.4 | Las 10 pantallas con datos ficticios, incluidos sus estados (carga, vacío, sin conexión, permiso denegado, datos antiguos, error, éxito) | Capturas de cada pantalla y estado revisadas; ninguna pantalla dice "a salvo" ni "seguro" como estado de una persona |
 
-## Día 3 · Dominio y persistencia local
+## Incremento 3 · Dominio y persistencia local
 
 | ID | Tarea | Criterios |
 |---|---|---|
@@ -37,7 +37,7 @@ Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo �
 | T3.3 | Drift: esquema v1, cachés, bandeja de salida y migraciones probadas | Pruebas con `NativeDatabase.memory()`; prueba de migración generada con `drift_dev` |
 | T3.4 | Sincronizador con espera exponencial, clasificación de errores e idempotencia | Pruebas con reloj falso: reintentos, prioridad del SOS, error permanente → `failed`, duplicado → una sola operación |
 
-## Día 4 · Identidad, grupos y reglas (🔒 credenciales para desplegar; el emulador no las necesita)
+## Incremento 4 · Identidad, grupos y reglas (🔒 credenciales para desplegar; el emulador no las necesita)
 
 | ID | Tarea | Criterios |
 |---|---|---|
@@ -46,7 +46,7 @@ Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo �
 | T4.3 | `firestore.rules` y pruebas de aislamiento | Todos los casos negativos de la matriz de `02-modelo-de-datos.md` están **denegados** y los positivos permitidos; se ejecutan en CI |
 | T4.4 | 🔒 Proyecto Firebase real (staging), plan Blaze, presupuesto y *spend cap* | Solo con aprobación y credenciales del propietario |
 
-## Día 5 · Ubicación, mapa, geocercas y check-ins
+## Incremento 5 · Ubicación, mapa, geocercas y check-ins
 
 | ID | Tarea | Criterios |
 |---|---|---|
@@ -55,7 +55,7 @@ Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo �
 | T5.3 | `FamilyMap` con el adaptador de lista y 🔒📱 el de Google Maps (API key) | Pruebas de widget con el adaptador de lista; 📱 captura del mapa real |
 | T5.4 | UI de geocercas, eventos con bandera desactivada y check-in | Pruebas de widget y de casos de uso; flujo sin conexión → bandeja de salida |
 
-## Día 6 · SOS y resiliencia
+## Incremento 6 · SOS y resiliencia
 
 | ID | Tarea | Criterios |
 |---|---|---|
@@ -63,7 +63,7 @@ Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo �
 | T6.2 | Function `raiseSos` (idempotente, límite de frecuencia, *payload* FCM sin coordenadas) y *ack* | Pruebas en el emulador: doble envío → una notificación; sin tokens → `notified` con N = 0 |
 | T6.3 | 📱 Push real (requiere la clave APNs 🔒) | Verificación manual documentada |
 
-## Día 7 · Endurecimiento y entrega
+## Incremento 7 · Endurecimiento y entrega
 
 | ID | Tarea | Criterios |
 |---|---|---|

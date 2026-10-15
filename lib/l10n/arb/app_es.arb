@@ -1,0 +1,11 @@
+{
+  "@@locale": "es",
+  "appTagline": "La seguridad de tu familia, en un solo lugar.",
+  "@appTagline": {
+    "description": "Propuesta de valor mostrada en la bienvenida."
+  },
+  "notEmergencyServiceDisclaimer": "Nexo Familia no sustituye a los servicios oficiales de emergencia.",
+  "@notEmergencyServiceDisclaimer": {
+    "description": "Aviso legal visible en la bienvenida y en el flujo SOS."
+  }
+}

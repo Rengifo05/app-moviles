@@ -1,6 +1,6 @@
 # ADR-002 · Proveedor de mapas y abstracción
 
-- **Estado:** Propuesto. **Requiere aprobación**, porque se aparta parcialmente del prompt maestro, que pedía MapKit en iOS.
+- **Estado:** Aceptado (2026-10-15). Se aparta parcialmente del prompt maestro, que pedía MapKit en iOS.
 - **Fecha:** 2026-10-15
 
 ## Contexto
@@ -29,7 +29,7 @@ MapKit nativo se incluye con la membresía del Apple Developer Program; Apple pu
 
 ## Decisión propuesta
 
-**Abstracción desde el día 1, implementación inicial con la opción A, y la opción C como fase posterior opcional.**
+**Abstracción desde el primer incremento, implementación inicial con la opción A, y la opción C como fase posterior opcional.**
 
 ```text
 lib/features/location_sharing/presentation/map/

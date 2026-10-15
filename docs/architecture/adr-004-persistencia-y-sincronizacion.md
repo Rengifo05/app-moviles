@@ -1,6 +1,6 @@
 # ADR-004 · Persistencia local y sincronización
 
-- **Estado:** Propuesto
+- **Estado:** Aceptado (2026-10-15)
 - **Fecha:** 2026-10-15
 
 ## Contexto
