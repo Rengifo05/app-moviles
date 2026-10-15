@@ -35,6 +35,14 @@ void main() {
       );
     });
 
+    test('la igualdad es simétrica respecto al argumento de tipo', () {
+      const Result<int> a = Ok(1);
+      const Result<num> b = Ok<num>(1);
+      expect(a == b, b == a);
+      expect(a, b);
+      expect(a.hashCode, b.hashCode);
+    });
+
     test('then encadena y corta en el primer fallo', () async {
       var called = false;
       final ok = await const Ok(2).then((v) async => Ok('v$v'));

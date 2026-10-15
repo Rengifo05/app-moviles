@@ -10,6 +10,17 @@ ARCHIVE="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
 URL="https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${ARCHIVE}"
 
 DEST="${1:-/opt/flutter}"
+
+# Protección ante rutas peligrosas: el destino se borra antes de instalar.
+case "$DEST" in
+  /*) ;;
+  *) echo "ERROR: el destino debe ser una ruta absoluta" >&2; exit 1 ;;
+esac
+DEST="${DEST%/}"
+if [[ -z "$DEST" || "$DEST" == "/" || "$DEST" == "${HOME%/}" ]]; then
+  echo "ERROR: destino no permitido: '${1:-}'" >&2
+  exit 1
+fi
 PARENT="$(dirname "$DEST")"
 
 installed_version() {
@@ -26,6 +37,15 @@ if [[ "$(installed_version)" == "$FLUTTER_VERSION" ]]; then
   exit 0
 fi
 
+# Solo se reemplaza un directorio vacío o un SDK de Flutter existente; se
+# comprueba antes de descargar nada.
+if [[ -e "$DEST" ]] &&
+   ! [[ -x "$DEST/bin/flutter" && -d "$DEST/packages/flutter" ]] &&
+   ! [[ -d "$DEST" && -z "$(ls -A "$DEST")" ]]; then
+  echo "ERROR: $DEST existe y no es un SDK de Flutter; no se borrará" >&2
+  exit 1
+fi
+
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
@@ -35,7 +55,9 @@ echo "$FLUTTER_SHA256  $WORK/$ARCHIVE" | sha256sum --check --status ||
   { echo "ERROR: el SHA-256 del archivo no coincide" >&2; exit 1; }
 
 mkdir -p "$PARENT"
-rm -rf "$DEST"
+if [[ -e "$DEST" ]]; then
+  rm -rf "$DEST"
+fi
 tar -xJf "$WORK/$ARCHIVE" -C "$WORK"
 mv "$WORK/flutter" "$DEST"
 git config --global --add safe.directory "$DEST" || true

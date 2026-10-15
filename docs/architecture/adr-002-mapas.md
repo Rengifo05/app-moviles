@@ -32,17 +32,21 @@ MapKit nativo se incluye con la membresía del Apple Developer Program; Apple pu
 **Abstracción desde el primer incremento, implementación inicial con la opción A, y la opción C como fase posterior opcional.**
 
 ```text
-lib/features/location_sharing/presentation/map/
-  family_map.dart              # widget público: FamilyMap(markers, zones, onTap…)
-  family_map_controller.dart   # contrato: moveTo(), fitBounds(), selectMember()
-  adapters/
-    google_family_map.dart     # implementación con google_maps_flutter
-    list_family_map.dart       # implementación sin mapa (pruebas, accesibilidad, sin API key)
+lib/design_system/components/map/
+  nx_map.dart                # contrato visual: NxMapMarker, NxMapZone, NxMapBuilder
+  nx_list_map.dart           # alternativa sin mapa (pruebas, accesibilidad, sin API key)
+lib/infrastructure/maps/
+  google_nx_map.dart         # implementación con google_maps_flutter
+lib/features/location_sharing/presentation/
+  family_map_view.dart       # usa el NxMapBuilder que inyecta app/bootstrap
 ```
 
-- Los tipos del contrato (`GeoPoint`, `MemberMarker`, `ZoneOverlay` y `CameraTarget`) son de dominio y no importan nada del proveedor.
-- El adaptador `list_family_map` permite probar los widgets en el host (los *platform views* no se renderizan en `flutter test`). También sirve como vista accesible alternativa ("Ver como lista") y como respaldo si no hay API key.
-- Si se aprueba la opción C más adelante, `apple_family_map.dart` implementará el mismo contrato sin tocar la lógica de negocio.
+> Actualización (incremento 1): la revisión adversarial detectó que la ubicación original (`presentation/map/adapters/`) contradecía la regla de que `presentation` no importa plugins. Ahora el contrato visual vive en `design_system` y el adaptador del plugin en `infrastructure/maps`; la raíz de composición lo inyecta.
+
+
+- El contrato (`NxMapMarker`, `NxMapZone` y `NxMapBuilder`) no importa nada del proveedor.
+- El adaptador de lista permite probar los widgets en el host (los *platform views* no se renderizan en `flutter test`). También sirve como vista accesible alternativa ("Ver como lista") y como respaldo si no hay API key.
+- Si se aprueba la opción C más adelante, `infrastructure/maps/apple_nx_map.dart` implementará el mismo contrato sin tocar la lógica de negocio.
 
 ## Consecuencias
 

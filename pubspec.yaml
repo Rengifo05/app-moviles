@@ -19,9 +19,11 @@ dependencies:
   uuid: ^4.6.0
 
 dev_dependencies:
+  analyzer: ^14.5.0
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5
+  path: ^1.9.1
   very_good_analysis: ^11.0.0
 
 flutter:

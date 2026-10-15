@@ -52,6 +52,29 @@ void main() {
       expect(config(emergencyNumber: '1').validate(), hasLength(1));
     });
 
+    test('release no admite demo sin permiso explícito ni emuladores', () {
+      AppConfig release({
+        BackendMode backend = BackendMode.demo,
+        bool emulators = false,
+        bool allowDemo = false,
+      }) => AppConfig(
+        appName: 'Nexo',
+        environment: AppEnvironment.staging,
+        backend: backend,
+        useFirebaseEmulators: emulators,
+        emergencyNumber: '123',
+        isReleaseBuild: true,
+        allowDemoInRelease: allowDemo,
+      );
+      expect(release().validate(), hasLength(1));
+      expect(release(allowDemo: true).validate(), isEmpty);
+      expect(
+        release(backend: BackendMode.firebase, emulators: true).validate(),
+        hasLength(1),
+      );
+      expect(release(backend: BackendMode.firebase).validate(), isEmpty);
+    });
+
     test('emuladores solo con backend firebase', () {
       expect(config(useFirebaseEmulators: true).validate(), hasLength(1));
     });

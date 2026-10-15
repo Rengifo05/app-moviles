@@ -21,13 +21,17 @@ presentation ──▶ domain ◀── data
 app/ (bootstrap, router, DI) conoce a todas para cablearlas.
 ```
 
-| Capa | Contiene | Puede importar |
+| Capa | Contiene | Puede importar (lista de permitidos) |
 |---|---|---|
-| `domain` | Entidades, objetos de valor (`GeoPoint`, `Radius`, `FamilyId`…), contratos de repositorio, casos de uso y `Failure` | `core` (tipos puros) y `meta` |
-| `data` | DTO, tablas de Drift, mapeadores, repositorios concretos y fuentes remotas y locales | `domain`, `core`, SDKs |
-| `presentation` | Pantallas, widgets, controladores de Riverpod y estado de UI | `domain`, `core`, `design_system` |
-| `design_system` | Tokens, `ThemeData`, componentes (`NxButton`, `NxStatusPill`, `NxSosButton`…) | Flutter |
-| `core` | `Result`, `Failure` base, `Clock`, `IdGenerator`, logger seguro y utilidades de permisos | Dart, y Flutter solo en `core/platform` |
+| `features/*/domain` | Entidades, objetos de valor, contratos de repositorio, casos de uso y reglas | `dart:` puros, `meta`, `lib/core/` (salvo `core/di`) y otros dominios |
+| `features/*/data` | Repositorios concretos, DTO y mapeadores | Dominio, core e infraestructura. **No** Flutter UI, `presentation`, `design_system`, `l10n` ni `app` |
+| `features/*/presentation` | Pantallas, widgets y controladores de Riverpod | Flutter, Riverpod, go_router, intl, `core`, `design_system`, `l10n`, dominios y otras `presentation` |
+| `infrastructure` | Adaptadores de SDK y plugins: Firestore, Functions, Drift, sincronización, ubicación, mapas y backend de demostración | Todo salvo `app`, `features/*/data`, `features/*/presentation` y `l10n` |
+| `design_system` | Tokens, `ThemeData` y componentes, incluido el contrato visual del mapa | Flutter, `meta`, `core` y `design_system` |
+| `core` | `Result`, `Failure`, `Clock`, `IdGenerator`, `GeoPoint`, `AppConfig`, logger seguro y `di` (Riverpod puro) | `dart:` puros, `meta`, `uuid`, `riverpod` y `core` |
+| `app` y `main.dart` | Raíz de composición: arranque, router y cableado de dependencias | Todo |
+
+`test/architecture/layer_boundaries_test.dart` lo hace cumplir con el AST de `package:analyzer`. También revisa las importaciones condicionales y trabaja en **mundo cerrado**: cualquier archivo fuera de estas ubicaciones hace fallar la prueba.
 
 ## Estructura de carpetas propuesta
 
@@ -40,12 +44,12 @@ lib/
     bootstrap.dart             # inicializa Firebase (o emuladores), Drift y el logger
     app.dart                   # MaterialApp.router + tema + localización
     router.dart                # GoRouter: shell con barra inferior + rutas modales (SOS)
+  infrastructure/              # adaptadores: remote/, database/, sync/, demo/, location/, maps/
   core/
-    result.dart  failure.dart  clock.dart  id_generator.dart
+    result.dart  failure.dart  clock.dart  id_generator.dart  geo/
     config/app_config.dart     # nombre de la app, entorno, backend y validación
     di/core_providers.dart     # providers transversales (config, reloj, IDs, logger)
-    logging/safe_logger.dart   # redacta coordenadas, tokens y correos
-    platform/permissions.dart  # envoltorio de permission_handler
+    logging/safe_logger.dart   # esquema cerrado por campo: nunca emite datos privados
   design_system/
     tokens/{colors,typography,spacing,radii,motion}.dart
     theme/nx_theme.dart
@@ -75,7 +79,7 @@ El onboarding no tiene capa `data` propia: solo persiste un indicador local que 
 - Cada funcionalidad declara en `presentation/` los *providers* de sus contratos de dominio (repositorios, casos de uso). Por defecto lanzan `UnimplementedError`.
 - `app/bootstrap.dart` es la **raíz de composición**: el único lugar que importa la capa `data` y sobrescribe esos *providers* con las implementaciones de Firebase o de demostración (`BackendMode`).
 - Las pruebas sobrescriben los mismos *providers* con dobles. Así `presentation` depende solo del dominio, y la prueba `test/architecture/layer_boundaries_test.dart` lo hace cumplir.
-- `core/` puede usar `package:riverpod` (Dart puro), pero no Flutter, salvo `core/platform/`.
+- `core/` puede usar `package:riverpod` (Dart puro), pero no Flutter. Los adaptadores que necesitan Flutter o plugins viven en `infrastructure/`.
 
 ## Convenciones de código
 

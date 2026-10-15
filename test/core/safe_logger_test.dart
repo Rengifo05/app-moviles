@@ -4,6 +4,9 @@ import 'package:nexo_familia/core/logging/safe_logger.dart';
 
 import '../helpers/fakes.dart';
 
+const String redacted = SafeLogger.redactedValue;
+const uuidV7 = '0192f1c4-7a2b-7c3d-8e4f-0123456789ab';
+
 void main() {
   late MemoryLogSink sink;
   late SafeLogger logger;
@@ -18,8 +21,8 @@ void main() {
     return sink.entries.last.fields;
   }
 
-  group('SafeLogger', () {
-    test('descarta campos fuera de la lista blanca y los cuenta', () {
+  group('campos', () {
+    test('descarta campos fuera del esquema y los cuenta', () {
       final fields = logged({
         'lat': 4.7110,
         'lng': -74.0721,
@@ -29,51 +32,102 @@ void main() {
       expect(fields, {'operation': 'check_in', 'redacted': 3});
     });
 
-    test('redacta decimales que podrían ser coordenadas', () {
-      expect(logged({'count': 4.7110})['count'], SafeLogger.redactedValue);
-      expect(logged({'count': 3.0})['count'], 3);
-    });
-
-    test('redacta texto con forma de coordenada en campos permitidos', () {
-      expect(
-        logged({'status': '4.71100,-74.07210'})['status'],
-        SafeLogger.redactedValue,
-      );
-      expect(logged({'code': '-74.0721'})['code'], SafeLogger.redactedValue);
-    });
-
-    test('redacta correos, teléfonos y tokens en campos permitidos', () {
-      expect(logged({'code': 'ana@example.com'})['code'], '[redacted]');
-      expect(logged({'code': '+573001234567'})['code'], '[redacted]');
-      expect(
-        logged({
-          'code': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload',
-        })['code'],
-        '[redacted]',
-      );
-    });
-
-    test('redacta texto libre con espacios', () {
-      expect(logged({'status': 'Ana está en casa'})['status'], '[redacted]');
-    });
-
-    test('conserva identificadores técnicos, UUID, enteros y enums', () {
+    test('conserva identificadores técnicos válidos', () {
       final fields = logged({
-        'opId': '0192f1c4-7a2b-7c3d-8e4f-0123456789ab',
+        'opId': uuidV7,
         'attempt': 3,
-        'kind': FailureKind.network,
+        'kind': FailureKind.devicePermissionDenied,
         'durationMs': const Duration(milliseconds: 250),
         'feature': 'emergency',
+        'code': 'permission-denied',
+        'status': 'needHelp',
+        'platform': 'android',
+        'count': 12.0,
       });
       expect(fields, {
-        'opId': '0192f1c4-7a2b-7c3d-8e4f-0123456789ab',
+        'opId': uuidV7,
         'attempt': 3,
-        'kind': 'network',
+        'kind': 'devicePermissionDenied',
         'durationMs': 250,
         'feature': 'emergency',
+        'code': 'permission-denied',
+        'status': 'needHelp',
+        'platform': 'android',
+        'count': 12,
       });
     });
 
+    test('los valores nulos se omiten sin contarse', () {
+      expect(logged({'code': null, 'attempt': 1}), {'attempt': 1});
+    });
+  });
+
+  group('redacta valores que no cumplen su esquema', () {
+    // Evasiones demostradas en la revisión adversarial del incremento 1.
+    final cases = <String, Map<String, Object?>>{
+      'token hex de 128 bits': {'code': '9f86d081884c7d659a2feaa0c55ad015'},
+      'token base64url de 128 bits': {'code': 'n4bQgYhMfWWaL-qgxVrQFa'},
+      'UUID v4 (no lo genera la app)': {
+        'opId': '3b241101-e2bb-4255-8caf-4136c566a962',
+      },
+      'UUID en un campo que no es opId': {'code': uuidV7},
+      'OTP de 6 dígitos': {'code': '482913'},
+      'uid de Firebase': {'opId': 'kZ3q9XyR2bT7mN4pL8sV1wQ6uE0a'},
+      'coordenada decimal': {'count': 4.7110},
+      'coordenada como texto': {'status': '4.71100,-74.07210'},
+      'coordenada en microgrados (entero)': {'count': 4711000000},
+      'coordenada negativa en microgrados': {'attempt': -74072100},
+      'teléfono como entero': {'count': 3001234567},
+      'teléfono como texto': {'code': '+573001234567'},
+      'correo': {'code': 'ana@example.com'},
+      'JWT': {'code': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload'},
+      'texto libre': {'status': 'Ana está en casa'},
+      'nombre de lugar': {'feature': 'casa_de_maria'},
+      'infinito': {'durationMs': double.infinity},
+      'menos infinito': {'count': double.negativeInfinity},
+      'NaN': {'attempt': double.nan},
+      'lista': {
+        'status': ['a'],
+      },
+      'mapa': {
+        'status': {'lat': 4.7},
+      },
+      'objeto arbitrario': {'status': Object()},
+    };
+
+    for (final MapEntry(key: name, value: fields) in cases.entries) {
+      test(name, () {
+        final result = logged(fields);
+        expect(result.values.whereType<String>(), everyElement(redacted));
+        expect(sink.entries.last.toString(), isNot(contains('4.71')));
+      });
+    }
+  });
+
+  group('eventos', () {
+    test('acepta nombres constantes con puntos y guiones bajos', () {
+      expect(
+        SafeLogger.safeEventName('outbox.retry_scheduled'),
+        'outbox.retry_scheduled',
+      );
+    });
+
+    for (final event in [
+      'Ubicación de Ana: 4.711,-74.07',
+      'invite.sent.3001234567',
+      'loc.n4711000.w74072100',
+      'auth.refresh.9f86d081884c7d659a2feaa0c55ad015',
+      'a${'b' * 64}',
+      '',
+    ]) {
+      test('rechaza "$event"', () {
+        logger.info(event);
+        expect(sink.entries.last.event, 'invalid_event');
+      });
+    }
+  });
+
+  group('fallos', () {
     test('de un Failure registra solo categoría y código, nunca la causa', () {
       logger.error(
         'sync.failed',
@@ -85,9 +139,12 @@ void main() {
       expect(entry.toString(), isNot(contains('token')));
     });
 
-    test('rechaza nombres de evento no constantes', () {
-      logger.info('Ubicación de Ana: 4.711,-74.07');
-      expect(sink.entries.single.event, 'invalid_event');
+    test('nunca lanza, aunque el destino falle', () {
+      final failing = SafeLogger(sink: _ThrowingSink(), clock: FakeClock());
+      expect(
+        () => failing.error('x.y', fields: {'durationMs': double.infinity}),
+        returnsNormally,
+      );
     });
 
     test('registra nivel y hora del reloj inyectado', () {
@@ -97,4 +154,9 @@ void main() {
       expect(entry.time, DateTime.utc(2026, 1, 1, 12));
     });
   });
+}
+
+final class _ThrowingSink implements LogSink {
+  @override
+  void write(LogEntry entry) => throw StateError('destino caído');
 }

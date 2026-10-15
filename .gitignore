@@ -77,3 +77,16 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 .firebase/
+# Variantes por entorno o flavor de la configuración de Firebase.
+**/google-services.json
+**/GoogleService-Info.plist
+lib/firebase_options*.dart
+# Credenciales del backend (cuentas de servicio, secretos de Functions).
+*-firebase-adminsdk-*.json
+**/service-account*.json
+**/serviceAccountKey*.json
+**/.secret.local
+**/.runtimeconfig.json
+*.pem
+*.key
+ios/Flutter/Secrets.xcconfig

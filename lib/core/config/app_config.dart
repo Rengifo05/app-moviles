@@ -25,6 +25,8 @@ final class AppConfig {
     required this.useFirebaseEmulators,
     required this.emergencyNumber,
     this.staleLocationAfter = const Duration(minutes: 30),
+    this.isReleaseBuild = false,
+    this.allowDemoInRelease = false,
   });
 
   /// Lee los valores definidos en compilación. Ver `config/env.example.json`.
@@ -44,6 +46,12 @@ final class AppConfig {
       const String.fromEnvironment('NX_BACKEND', defaultValue: 'demo'),
     ),
     useFirebaseEmulators: const bool.fromEnvironment('NX_USE_EMULATORS'),
+    // Dependen de la compilación aunque el analizador los vea constantes.
+    // ignore: avoid_redundant_argument_values
+    isReleaseBuild: const bool.fromEnvironment('dart.vm.product'),
+    // Igual que el anterior: depende de --dart-define.
+    // ignore: avoid_redundant_argument_values
+    allowDemoInRelease: const bool.fromEnvironment('NX_ALLOW_DEMO_RELEASE'),
     emergencyNumber: const String.fromEnvironment(
       'NX_EMERGENCY_NUMBER',
       defaultValue: '123',
@@ -63,6 +71,13 @@ final class AppConfig {
   /// "Sin actualización reciente".
   final Duration staleLocationAfter;
 
+  /// Compilación *release* (`flutter build --release`).
+  final bool isReleaseBuild;
+
+  /// Permite el backend de demostración en *release* (solo para demos
+  /// internas; requiere `NX_ALLOW_DEMO_RELEASE=true` explícito).
+  final bool allowDemoInRelease;
+
   /// Errores de configuración que impiden arrancar. Vacío si es válida.
   List<String> validate() => [
     if (appName.trim().isEmpty) 'NX_APP_NAME no puede estar vacío.',
@@ -72,6 +87,12 @@ final class AppConfig {
       'Producción no puede usar el backend de demostración.',
     if (environment == AppEnvironment.prod && useFirebaseEmulators)
       'Producción no puede usar los emuladores de Firebase.',
+    // Una compilación release sin --dart-define no debe arrancar en silencio
+    // con datos de demostración.
+    if (isReleaseBuild && backend == BackendMode.demo && !allowDemoInRelease)
+      'Release con backend demo requiere NX_ALLOW_DEMO_RELEASE=true.',
+    if (isReleaseBuild && useFirebaseEmulators)
+      'Una compilación release no puede usar los emuladores de Firebase.',
     if (backend == BackendMode.demo && useFirebaseEmulators)
       'NX_USE_EMULATORS solo aplica al backend firebase.',
   ];

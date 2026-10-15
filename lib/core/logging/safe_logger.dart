@@ -32,54 +32,131 @@ abstract interface class LogSink {
   void write(LogEntry entry);
 }
 
+/// Esquema de un campo permitido: decide qué valores son seguros.
+sealed class _FieldRule {
+  const new();
+
+  /// Valor seguro o `null` si debe redactarse.
+  Object? accept(Object value);
+}
+
+/// Entero no negativo acotado (contadores, intentos, duraciones).
+final class _BoundedInt extends _FieldRule {
+  const new(this.max);
+
+  final int max;
+
+  @override
+  Object? accept(Object value) {
+    final number = switch (value) {
+      final int v => v,
+      final Duration d => d.inMilliseconds,
+      // Solo dobles finitos y enteros; nunca lanza con infinito o NaN.
+      final double d when d.isFinite && d == d.truncateToDouble() => d.toInt(),
+      _ => null,
+    };
+    return number != null && number >= 0 && number <= max ? number : null;
+  }
+}
+
+/// Texto de un vocabulario cerrado: solo letras y separadores, sin dígitos,
+/// de longitud acotada. Acepta enums por su nombre.
+final class _Vocabulary extends _FieldRule {
+  const new(this.pattern);
+
+  final String pattern;
+
+  @override
+  Object? accept(Object value) {
+    final text = switch (value) {
+      final Enum e => e.name,
+      final String s => s,
+      _ => null,
+    };
+    return text != null && RegExp(pattern).hasMatch(text) ? text : null;
+  }
+}
+
+/// Uno de un conjunto fijo de valores.
+final class _OneOf extends _FieldRule {
+  const new(this.values);
+
+  final Set<String> values;
+
+  @override
+  Object? accept(Object value) {
+    final text = value is Enum ? value.name : value;
+    return values.contains(text) ? text : null;
+  }
+}
+
+/// Identificador de operación: solo UUID v7 (los que genera la app).
+final class _UuidV7 extends _FieldRule {
+  const new();
+
+  static final RegExp _pattern = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+  );
+
+  @override
+  Object? accept(Object value) =>
+      value is String && _pattern.hasMatch(value) ? value : null;
+}
+
 /// Registro estructurado que **por diseño** no puede emitir datos privados.
 ///
 /// Reglas (ver `docs/privacy/modelo-de-amenazas.md`, amenaza 7):
-/// * El nombre del evento debe ser un identificador `snake.case` constante;
-///   si no lo es, se sustituye por `invalid_event`.
-/// * Solo se admiten campos de una lista blanca ([allowedFields]); el resto se
-///   descarta y se cuenta en `redacted`.
-/// * Los valores permitidos deben ser números, booleanos o identificadores
-///   cortos. Cualquier texto con forma de coordenada, correo, teléfono o token
-///   se reemplaza por `[redacted]`.
+/// * El nombre del evento es un identificador constante `snake_case` con
+///   puntos, sin dígitos y de ≤ 64 caracteres; si no lo es, se sustituye por
+///   `invalid_event`.
+/// * Solo se admiten los campos de [allowedFields], cada uno con su propio
+///   esquema cerrado (lista de valores, vocabulario sin dígitos, entero
+///   acotado o UUID v7). Lo demás se
+///   descarta y se cuenta en `redacted`; un valor que no cumple su esquema se
+///   reemplaza por `[redacted]`. Así no hay heurísticas que evadir: un token,
+///   una coordenada o un nombre nunca cumplen ningún esquema.
 /// * De un [Failure] solo se registran su categoría y su código, nunca la
 ///   causa original.
+/// * El registro nunca lanza excepciones: un fallo al depurar redacta todo.
 final class SafeLogger {
   new({required this._sink, this._clock = const SystemClock()});
 
   final LogSink _sink;
   final Clock _clock;
 
-  /// Campos técnicos seguros. Ampliar esta lista requiere revisión de
+  /// Campos permitidos. Ampliar este esquema requiere revisión de
   /// privacidad: nunca añadir coordenadas, nombres, correos ni tokens.
-  static const Set<String> allowedFields = {
-    'attempt',
-    'code',
-    'count',
-    'durationMs',
-    'feature',
-    'kind',
-    'operation',
-    'opId',
-    'platform',
-    'status',
+  static const Map<String, _FieldRule> _schema = {
+    'attempt': _BoundedInt(1000),
+    'count': _BoundedInt(100000),
+    'durationMs': _BoundedInt(86400000),
+    // Códigos de Failure: kebab-case sin dígitos.
+    'code': _Vocabulary(r'^[a-z]+(-[a-z]+)*$'),
+    'kind': _Vocabulary(r'^[a-z][a-zA-Z]{0,39}$'),
+    'status': _Vocabulary(r'^[a-z][a-zA-Z_]{0,39}$'),
+    'feature': _OneOf({
+      'activity',
+      'app',
+      'authentication',
+      'check_ins',
+      'emergency',
+      'family',
+      'geofences',
+      'location_sharing',
+      'onboarding',
+      'settings',
+      'sync',
+    }),
+    'operation': _Vocabulary(r'^[a-z][a-zA-Z_]{0,39}$'),
+    'platform': _OneOf({'android', 'ios', 'linux', 'macos', 'windows', 'web'}),
+    'opId': _UuidV7(),
   };
 
-  static final RegExp _eventPattern = RegExp(
-    r'^[a-z][a-z0-9_]*(\.[a-z0-9_]+)*$',
-  );
+  /// Nombres de los campos permitidos.
+  static Set<String> get allowedFields => _schema.keys.toSet();
 
-  // Identificador corto y seguro: letras, dígitos, guiones y puntos.
-  static final RegExp _safeIdentifier = RegExp(r'^[A-Za-z0-9._:-]{1,64}$');
-  static final RegExp _coordinateLike = RegExp(r'-?\d{1,3}\.\d{3,}');
-  static final RegExp _emailLike = RegExp(r'[^\s@]+@[^\s@]+');
-  static final RegExp _phoneLike = RegExp(r'\+?\d[\d\s-]{6,}\d');
-  // Tokens/JWT/claves: cadenas largas sin espacios.
-  static final RegExp _tokenLike = RegExp(r'[A-Za-z0-9_\-+/=.]{33,}');
-  // Los UUID (IDs de operación generados en el cliente) sí son seguros.
-  static final RegExp _uuid = RegExp(
-    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-  );
+  static final RegExp _eventPattern = RegExp(r'^[a-z][a-z_]*(\.[a-z_]+)*$');
+  static const int _maxEventLength = 64;
 
   static const String redactedValue = '[redacted]';
 
@@ -109,49 +186,48 @@ final class SafeLogger {
       : {...fields, 'kind': failure.kind.name, 'code': failure.code};
 
   void _log(LogLevel level, String event, Map<String, Object?> fields) {
-    _sink.write(
-      LogEntry(
-        level: level,
-        event: _eventPattern.hasMatch(event) ? event : 'invalid_event',
-        fields: sanitize(fields),
-        time: _clock.now(),
-      ),
-    );
+    try {
+      _sink.write(
+        LogEntry(
+          level: level,
+          event: safeEventName(event),
+          fields: sanitize(fields),
+          time: _clock.now(),
+        ),
+      );
+    } on Object {
+      // Registrar nunca debe romper el flujo que lo invoca (p. ej. un
+      // manejador de errores). Si el destino falla, se descarta la entrada.
+    }
   }
 
-  /// Aplica la lista blanca y la depuración de valores.
+  @visibleForTesting
+  static String safeEventName(String event) =>
+      event.length <= _maxEventLength && _eventPattern.hasMatch(event)
+      ? event
+      : 'invalid_event';
+
+  /// Aplica el esquema por campo.
   @visibleForTesting
   static Map<String, Object> sanitize(Map<String, Object?> fields) {
     final result = <String, Object>{};
     var redacted = 0;
     for (final MapEntry(:key, :value) in fields.entries) {
-      if (!allowedFields.contains(key) || value == null) {
-        if (value != null) redacted++;
+      if (value == null) continue;
+      final rule = _schema[key];
+      if (rule == null) {
+        redacted++;
         continue;
       }
-      result[key] = _sanitizeValue(value);
+      Object? accepted;
+      try {
+        accepted = rule.accept(value);
+      } on Object {
+        accepted = null;
+      }
+      result[key] = accepted ?? redactedValue;
     }
     if (redacted > 0) result['redacted'] = redacted;
     return result;
-  }
-
-  static Object _sanitizeValue(Object value) {
-    if (value is int || value is bool) return value;
-    // Un decimal puede ser una coordenada: se permite solo si es entero.
-    if (value is double) {
-      return value == value.truncateToDouble() ? value.toInt() : redactedValue;
-    }
-    if (value is Enum) return value.name;
-    if (value is Duration) return value.inMilliseconds;
-    final text = value is String ? value : null;
-    if (text == null || !_safeIdentifier.hasMatch(text)) return redactedValue;
-    if (_uuid.hasMatch(text)) return text;
-    if (_coordinateLike.hasMatch(text) ||
-        _emailLike.hasMatch(text) ||
-        _phoneLike.hasMatch(text) ||
-        _tokenLike.hasMatch(text)) {
-      return redactedValue;
-    }
-    return text;
   }
 }
