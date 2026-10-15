@@ -336,6 +336,7 @@ void main() {
         'action': 'createFamily',
         'actorUid': 'ana',
         'createdAt': now,
+        'expireAt': now.add(const Duration(days: 180)),
       });
     });
 
@@ -500,6 +501,7 @@ void main() {
         'createdBy': 'ana',
         'createdAt': now,
         'expiresAt': expiresAt,
+        'expireAt': expiresAt.add(const Duration(days: 7)),
         'maxUses': 1,
         'uses': 0,
         'status': 'active',
@@ -508,6 +510,7 @@ void main() {
         'action': 'createInvitation',
         'actorUid': 'ana',
         'createdAt': now,
+        'expireAt': now.add(const Duration(days: 180)),
       });
     });
 
@@ -578,6 +581,9 @@ void main() {
         'expiresAt': now.add(
           const Duration(hours: 48) - const Duration(minutes: 5),
         ),
+        'expireAt': now.add(
+          const Duration(hours: 48, days: 7) - const Duration(minutes: 5),
+        ),
         'maxUses': 1,
         'uses': 1,
         'status': 'exhausted',
@@ -593,6 +599,7 @@ void main() {
         'action': 'acceptInvitation',
         'actorUid': 'bruno',
         'createdAt': now,
+        'expireAt': now.add(const Duration(days: 180)),
       });
     });
 
@@ -763,6 +770,7 @@ void main() {
         'action': 'leaveFamily',
         'actorUid': 'bruno',
         'createdAt': now,
+        'expireAt': now.add(const Duration(days: 180)),
       });
     });
 
@@ -920,6 +928,7 @@ void main() {
         'actorUid': 'ana',
         'targetUid': 'carla',
         'createdAt': now,
+        'expireAt': now.add(const Duration(days: 180)),
       });
     });
   });
@@ -966,6 +975,7 @@ void main() {
         'notifiedCount': 0,
         'acks': <String, Object?>{},
         'resolvedAt': null,
+        'expireAt': now.add(const Duration(days: 90)),
       });
       expect(eventsOf(familyId, 'sos').single, {
         'type': 'sos',
@@ -978,6 +988,7 @@ void main() {
         'action': 'raiseSos',
         'actorUid': 'ana',
         'createdAt': now,
+        'expireAt': now.add(const Duration(days: 180)),
       });
     });
 
@@ -1134,6 +1145,53 @@ void main() {
       expect(store.serverRead('families/$foreign')!['memberCount'], 1);
       expect(store.serverRead('users/bruno'), isNotNull);
       expect(store.serverRead('users/carla'), isNotNull);
+    });
+
+    test('borra sus check-ins, quita coordenadas de sus alertas y anonimiza '
+        'la auditoría', () async {
+      final familyId = await familyOf('carla', ['ana']);
+      await ok(
+        callAs('ana', 'raiseSos', {
+          'familyId': familyId,
+          'alertId': 's1',
+          'lat': 1.5,
+          'lng': 2.5,
+          'accuracyM': 10,
+        }),
+      );
+      final events = 'families/$familyId/events';
+      store
+        ..serverWrite('$events/c1', {
+          'type': 'checkIn',
+          'actorUid': 'ana',
+          'message': 'Llegué',
+        })
+        ..serverWrite('$events/g1', {
+          'type': 'geofence',
+          'actorUid': 'ana',
+          'geofenceName': 'Colegio',
+        })
+        ..serverWrite('$events/c2', {'type': 'checkIn', 'actorUid': 'carla'});
+
+      expect(await callAs('ana', 'deleteAccount'), _isOk({}));
+
+      expect(store.serverRead('$events/c1'), isNull);
+      expect(store.serverRead('$events/g1'), isNull);
+      expect(store.serverRead('$events/c2'), isNotNull);
+      final alert = store.serverRead('families/$familyId/emergencies/s1')!;
+      expect(alert['uid'], 'ana');
+      expect(alert.keys, isNot(contains('lat')));
+      expect(alert.keys, isNot(contains('accuracyM')));
+      final audit = [
+        for (final path in store.serverList('families/$familyId/audit'))
+          store.serverRead(path)!,
+      ];
+      expect(
+        audit.expand((a) => [a['actorUid'], a['targetUid']]),
+        allOf(isNot(contains('ana')), contains(deletedUser)),
+      );
+      expect(store.snapshot.toString(), isNot(contains('Llegué')));
+      expect(store.snapshot.toString(), isNot(contains('Colegio')));
     });
 
     test('una membresía huérfana no impide borrar la cuenta', () async {

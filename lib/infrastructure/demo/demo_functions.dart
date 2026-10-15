@@ -19,6 +19,9 @@ import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 /// transacción del almacén: los observadores nunca ven estados intermedios.
 /// Los contadores de frecuencia se guardan aparte, antes de la transacción,
 /// para que un intento rechazado también cuente.
+/// Sustituye el identificador de una cuenta eliminada en la auditoría.
+const deletedUser = 'deleted-user';
+
 final class DemoFunctionsClient implements FunctionsClient {
   /// Si no se indica [clock], se usa el del almacén: así los vencimientos que
   /// calcula la función y los `serverTimestamp` salen del mismo reloj.
@@ -139,6 +142,7 @@ final class DemoFunctionsClient implements FunctionsClient {
         'createdBy': uid,
         'createdAt': serverTimestamp,
         'expiresAt': expiresAt,
+        'expireAt': expiresAt.add(const Duration(days: 7)),
         'maxUses': 1,
         'uses': 0,
         'status': 'active',
@@ -331,6 +335,7 @@ final class DemoFunctionsClient implements FunctionsClient {
         'notifiedCount': 0,
         'acks': <String, Object?>{},
         'resolvedAt': null,
+        'expireAt': _clock.now().add(const Duration(days: 90)),
       });
       // El evento y la auditoría nunca llevan coordenadas.
       _event(familyId, {'type': 'sos', 'actorUid': uid, 'alertId': alertId});
@@ -345,6 +350,7 @@ final class DemoFunctionsClient implements FunctionsClient {
       if (_roleOf(familyId, uid) != null &&
           _store.serverRead('families/$familyId') != null) {
         _leaveFamily(uid, familyId);
+        _scrubFamily(uid, familyId);
       } else {
         // Restos inconsistentes (sin integrante o sin familia): se limpian
         // sin impedir el borrado de la cuenta.
@@ -361,6 +367,38 @@ final class DemoFunctionsClient implements FunctionsClient {
       ..serverDelete('rateLimits/$uid');
     return <String, Object?>{};
   });
+
+  /// Como en las Functions: lo que la cuenta eliminada deja en una familia.
+  /// Sus check-ins y eventos de zona se borran ya; sus alertas se conservan
+  /// sin coordenadas hasta su retención; la auditoría se anonimiza.
+  void _scrubFamily(String uid, String familyId) {
+    for (final path in _store.serverList('families/$familyId/events')) {
+      final event = _store.serverRead(path)!;
+      if (event['actorUid'] == uid &&
+          (event['type'] == 'checkIn' || event['type'] == 'geofence')) {
+        _store.serverDelete(path);
+      }
+    }
+    for (final path in _store.serverList('families/$familyId/emergencies')) {
+      final alert = _store.serverRead(path)!;
+      if (alert['uid'] == uid) {
+        _store.serverWrite(path, {
+          for (final MapEntry(:key, :value) in alert.entries)
+            if (key != 'lat' && key != 'lng' && key != 'accuracyM') key: value,
+        });
+      }
+    }
+    for (final path in _store.serverList('families/$familyId/audit')) {
+      final entry = _store.serverRead(path)!;
+      if (entry['actorUid'] == uid || entry['targetUid'] == uid) {
+        _store.serverWrite(path, {
+          ...entry,
+          if (entry['actorUid'] == uid) 'actorUid': deletedUser,
+          if (entry['targetUid'] == uid) 'targetUid': deletedUser,
+        });
+      }
+    }
+  }
 
   // --- Utilidades -----------------------------------------------------------
 
@@ -425,6 +463,7 @@ final class DemoFunctionsClient implements FunctionsClient {
       'actorUid': actor,
       'targetUid': ?target,
       'createdAt': serverTimestamp,
+      'expireAt': _clock.now().add(const Duration(days: 180)),
     });
   }
 
