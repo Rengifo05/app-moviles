@@ -1,0 +1,4 @@
+# Etiquetas de pruebas. `golden` marca las pruebas de capturas: se pueden
+# excluir con --exclude-tags golden o regenerar con --update-goldens.
+tags:
+  golden:

@@ -35,7 +35,10 @@ void main() {
       (ready, AppRoutes.splash, AppRoutes.home),
       (ready, AppRoutes.signIn, AppRoutes.home),
       (ready, AppRoutes.onboarding, AppRoutes.home),
-      (ready, AppRoutes.createFamily, AppRoutes.home),
+      (ready, AppRoutes.familySetup, AppRoutes.home),
+      // Con familia se puede crear o unirse a otra.
+      (ready, AppRoutes.createFamily, null),
+      (ready, AppRoutes.joinFamily, null),
       (ready, AppRoutes.sos, null),
       (ready, '/family/members/u2', null),
     ];

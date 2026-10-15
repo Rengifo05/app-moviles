@@ -7,6 +7,7 @@ import 'package:nexo_familia/design_system/components/nx_hold_button.dart';
 import 'package:nexo_familia/design_system/components/nx_state_views.dart';
 import 'package:nexo_familia/design_system/components/nx_status_pill.dart';
 import 'package:nexo_familia/design_system/theme/nx_theme.dart';
+import 'package:nexo_familia/design_system/tokens/nx_dimens.dart';
 
 Future<void> pump(
   WidgetTester tester,
@@ -42,6 +43,32 @@ void main() {
       expect(taps, 1);
       await expectAccessible(tester);
       handle.dispose();
+    });
+
+    testWidgets('en varias líneas el ícono queda junto al texto', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        SizedBox(
+          width: 260,
+          child: NxButton(
+            label: 'Revisar mi privacidad y ubicación',
+            icon: Icons.lock_outline,
+            onPressed: () {},
+          ),
+        ),
+        textScale: 2,
+      );
+      final icon = tester.getRect(find.byIcon(Icons.lock_outline));
+      final text = tester.getRect(
+        find.text('Revisar mi privacidad y ubicación'),
+      );
+      final button = tester.getRect(find.byType(TextButton));
+      expect(text.height, greaterThan(icon.height * 1.5)); // varias líneas
+      // El grupo ícono + texto queda centrado y el ícono no se va al borde.
+      expect(icon.left - button.left, closeTo(button.right - text.right, 1));
+      expect(icon.left - button.left, greaterThan(NxSpace.lg + 4));
     });
 
     testWidgets('en carga se desactiva pero conserva su etiqueta accesible', (

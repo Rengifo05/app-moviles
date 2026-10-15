@@ -51,7 +51,8 @@ String? redirectFor(SessionState session, String location) {
       under(AppRoutes.splash) ||
               under(AppRoutes.onboarding) ||
               under('/auth') ||
-              under(AppRoutes.familySetup)
+              // Crear o unirse a OTRA familia sigue permitido.
+              location == AppRoutes.familySetup
           ? AppRoutes.home
           : null,
   };

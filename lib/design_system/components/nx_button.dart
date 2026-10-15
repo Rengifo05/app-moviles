@@ -56,7 +56,15 @@ class NxButton extends StatelessWidget {
                 Icon(icon, size: nxScaledIcon(context, NxSize.iconSm)),
                 const SizedBox(width: NxSpace.xs),
               ],
-              Flexible(child: Text(label, textAlign: TextAlign.center)),
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  // En varias líneas, el ancho es el de la línea más larga:
+                  // el ícono queda junto al texto y no en el borde.
+                  textWidthBasis: TextWidthBasis.longestLine,
+                ),
+              ),
             ],
           );
 
