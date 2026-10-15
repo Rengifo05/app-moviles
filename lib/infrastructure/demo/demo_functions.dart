@@ -66,6 +66,7 @@ final class DemoFunctionsClient implements FunctionsClient {
         'removeMember' => _removeMember(uid, payload),
         'raiseSos' => _raiseSos(uid, payload),
         'deleteAccount' => _deleteAccount(uid),
+        'signOutEverywhere' => _signOutEverywhere(uid),
         _ => throw const _Reject(FailureKind.notFound, 'unknown-function'),
       });
     } on _Reject catch (r) {
@@ -343,6 +344,13 @@ final class DemoFunctionsClient implements FunctionsClient {
       return {'alertId': alertId, 'notifiedCount': 0, 'alreadyExisted': false};
     });
   }
+
+  /// Como en las Functions, sin sesiones remotas que revocar: borra los
+  /// dispositivos registrados para avisos.
+  Json _signOutEverywhere(String uid) => _store.serverTransaction(() {
+    _store.serverList('users/$uid/devices').forEach(_store.serverDelete);
+    return <String, Object?>{};
+  });
 
   Json _deleteAccount(String uid) => _store.serverTransaction(() {
     for (final path in _store.serverList('users/$uid/memberships')) {

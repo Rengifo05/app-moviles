@@ -8,6 +8,29 @@ export interface AuthDeleter {
   deleteUser(uid: string): Promise<void>;
 }
 
+/** Revoca las sesiones (Firebase Auth en producción). */
+export interface SessionRevoker {
+  revokeRefreshTokens(uid: string): Promise<void>;
+}
+
+/**
+ * "Cerrar sesión en todos los dispositivos" (amenaza 2: cuenta
+ * comprometida). Revoca los refresh tokens, así que ningún dispositivo puede
+ * renovar su sesión, y borra los dispositivos registrados para avisos: un
+ * teléfono perdido deja de recibir alertas SOS de la familia.
+ *
+ * Límite conocido: un ID token ya emitido sigue siendo válido para Firestore
+ * hasta que vence (≤ 1 h); las reglas no pueden consultar la revocación.
+ */
+export async function signOutEverywhere(
+  ctx: Ctx,
+  auth: SessionRevoker,
+): Promise<Record<string, never>> {
+  await auth.revokeRefreshTokens(ctx.uid);
+  await ctx.db.recursiveDelete(ctx.db.collection(paths.devices(ctx.uid)));
+  return {};
+}
+
 /** Sustituye el identificador de una cuenta eliminada en la auditoría. */
 export const DELETED_USER = 'deleted-user';
 

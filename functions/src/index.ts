@@ -74,6 +74,9 @@ export const acceptInvitation = callable('acceptInvitation', families.acceptInvi
 export const leaveFamily = callable('leaveFamily', families.leaveFamily);
 export const removeMember = callable('removeMember', families.removeMember);
 export const raiseSos = callable('raiseSos', (ctx, data) => sos.raiseSos(ctx, data, fcmNotifier));
+export const signOutEverywhere = callable('signOutEverywhere', (ctx) =>
+  account.signOutEverywhere(ctx, { revokeRefreshTokens: (uid) => getAuth().revokeRefreshTokens(uid) }),
+);
 export const deleteAccount = callable('deleteAccount', (ctx) =>
   account.deleteAccount(ctx, { deleteUser: (uid) => getAuth().deleteUser(uid) }),
 );

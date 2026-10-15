@@ -39,4 +39,5 @@ abstract final class BackendFunctions {
   static const removeMember = 'removeMember';
   static const raiseSos = 'raiseSos';
   static const deleteAccount = 'deleteAccount';
+  static const signOutEverywhere = 'signOutEverywhere';
 }

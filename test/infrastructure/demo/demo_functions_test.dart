@@ -175,6 +175,7 @@ void main() {
         ('removeMember', {'familyId': familyId, 'uid': 'ana'}),
         ('raiseSos', {'familyId': familyId, 'alertId': 'alerta-1'}),
         ('deleteAccount', {}),
+        ('signOutEverywhere', {}),
         ('noExiste', {}),
       ]) {
         expect(
@@ -1112,6 +1113,20 @@ void main() {
         );
       }
       expect(store.snapshot, before);
+    });
+  });
+
+  group('signOutEverywhere', () {
+    test('borra solo los dispositivos de avisos de quien la llama', () async {
+      store
+        ..serverWrite('users/ana', {'displayName': 'Ana'})
+        ..serverWrite('users/ana/devices/d1', {'platform': 'android'})
+        ..serverWrite('users/ana/devices/d2', {'platform': 'ios'})
+        ..serverWrite('users/bruno/devices/b1', {'platform': 'ios'});
+      expect(await callAs('ana', 'signOutEverywhere'), _isOk({}));
+      expect(store.serverList('users/ana/devices'), isEmpty);
+      expect(store.serverRead('users/ana'), isNotNull);
+      expect(store.serverRead('users/bruno/devices/b1'), isNotNull);
     });
   });
 

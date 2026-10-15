@@ -2,7 +2,7 @@
 // ejecutadas contra el emulador de Firestore.
 import { HttpsError } from 'firebase-functions/v2/https';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { deleteAccount } from '../../src/account.js';
+import { deleteAccount, signOutEverywhere } from '../../src/account.js';
 import {
   acceptInvitation,
   createFamily,
@@ -221,6 +221,21 @@ describe('deleteAccount', () => {
     const all = await dumpAll(db);
     expect(all).not.toContain('Llegué');
     expect(all).not.toContain('Colegio');
+  });
+});
+
+describe('signOutEverywhere', () => {
+  it('revoca las sesiones y borra los dispositivos de avisos', async () => {
+    await db.doc('users/luis').set({ displayName: 'Luis' });
+    await db.doc('users/luis/devices/d1').set({ token: 't1', platform: 'ios' });
+    await db.doc('users/luis/devices/d2').set({ token: 't2', platform: 'android' });
+    await db.doc('users/ana/devices/a1').set({ token: 'ta', platform: 'ios' });
+    const revoked: string[] = [];
+    await signOutEverywhere(as('luis'), { revokeRefreshTokens: async (uid) => void revoked.push(uid) });
+    expect(revoked).toEqual(['luis']);
+    expect((await db.collection('users/luis/devices').get()).size).toBe(0);
+    expect((await db.doc('users/luis').get()).exists).toBe(true);
+    expect((await db.doc('users/ana/devices/a1').get()).exists).toBe(true);
   });
 });
 
