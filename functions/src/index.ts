@@ -39,6 +39,12 @@ function callable<T>(name: string, run: (ctx: Ctx, data: unknown) => Promise<T>)
   });
 }
 
+/** Errores de FCM que indican un token que no volverá a funcionar. */
+const INVALID_TOKEN_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+]);
+
 const fcmNotifier: Notifier = {
   async notifySos(tokens, data) {
     const response = await getMessaging().sendEachForMulticast({
@@ -52,7 +58,12 @@ const fcmNotifier: Notifier = {
       android: { priority: 'high' },
       apns: { headers: { 'apns-priority': '10' } },
     });
-    return response.successCount;
+    return {
+      accepted: response.successCount,
+      invalidTokens: response.responses.flatMap((r, i) =>
+        !r.success && INVALID_TOKEN_CODES.has(r.error?.code ?? '') ? [tokens[i]!] : [],
+      ),
+    };
   },
 };
 

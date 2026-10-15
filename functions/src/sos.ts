@@ -1,4 +1,4 @@
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp, type DocumentReference } from 'firebase-admin/firestore';
 import { LIMITS } from './config.js';
 import { optionalNumber, reject, requireString } from './errors.js';
 import { expireAt, type Ctx } from './families.js';
@@ -6,9 +6,15 @@ import { paths } from './paths.js';
 import { checkRateLimit } from './rate_limit.js';
 
 /** Envío de notificaciones push (FCM en producción, simulado en pruebas). */
+export interface NotifyResult {
+  /** Mensajes que ACEPTÓ el proveedor (no cuántos se leyeron). */
+  accepted: number;
+  /** Tokens que el proveedor declaró inválidos (app desinstalada, etc.). */
+  invalidTokens: string[];
+}
+
 export interface Notifier {
-  /** Devuelve cuántos mensajes ACEPTÓ el proveedor (no cuántos se leyeron). */
-  notifySos(tokens: string[], data: { familyId: string; alertId: string }): Promise<number>;
+  notifySos(tokens: string[], data: { familyId: string; alertId: string }): Promise<NotifyResult>;
 }
 
 export interface SosResult {
@@ -86,10 +92,18 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
   if (!outcome.notify) {
     return { alertId, notifiedCount: outcome.notified, alreadyExisted: !outcome.created };
   }
-  const tokens = await recipientTokens(ctx, familyId);
+  const devices = await recipientDevices(ctx, familyId);
   let notifiedCount: number;
   try {
-    notifiedCount = tokens.length === 0 ? 0 : await notifier.notifySos(tokens, { familyId, alertId });
+    const result =
+      devices.length === 0
+        ? { accepted: 0, invalidTokens: [] }
+        : await notifier.notifySos(
+            devices.map((d) => d.token),
+            { familyId, alertId },
+          );
+    notifiedCount = result.accepted;
+    await forgetInvalidDevices(ctx, devices, result.invalidTokens);
   } catch {
     // Se libera el lease y el conteo sigue «desconocido» (null): el cliente
     // recibe un error transitorio y su bandeja de salida reintenta, y ese
@@ -101,17 +115,39 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
   return { alertId, notifiedCount, alreadyExisted: !outcome.created };
 }
 
-/** Tokens de los dispositivos de los DEMÁS integrantes. */
-async function recipientTokens(ctx: Ctx, familyId: string): Promise<string[]> {
+interface Device {
+  token: string;
+  ref: DocumentReference;
+}
+
+/** Dispositivos de los DEMÁS integrantes. */
+async function recipientDevices(ctx: Ctx, familyId: string): Promise<Device[]> {
   const members = await ctx.db.collection(paths.members(familyId)).get();
-  const tokens: string[] = [];
+  const result: Device[] = [];
   for (const member of members.docs) {
     if (member.id === ctx.uid) continue;
     const devices = await ctx.db.collection(paths.devices(member.id)).get();
     for (const device of devices.docs) {
       const token = device.get('token');
-      if (typeof token === 'string' && token.length > 0) tokens.push(token);
+      if (typeof token === 'string' && token.length > 0) result.push({ token, ref: device.ref });
     }
   }
-  return tokens;
+  return result;
+}
+
+/**
+ * Borra los dispositivos cuyo token el proveedor rechazó como inválido: no
+ * vuelven a contarse ni a intentarse. Es una limpieza: si falla, el aviso
+ * ya se envió y no debe convertirse en error.
+ */
+async function forgetInvalidDevices(ctx: Ctx, devices: Device[], invalid: string[]): Promise<void> {
+  if (invalid.length === 0) return;
+  const stale = new Set(invalid);
+  try {
+    const batch = ctx.db.batch();
+    for (const device of devices) if (stale.has(device.token)) batch.delete(device.ref);
+    await batch.commit();
+  } catch {
+    // Se reintentará con la siguiente alerta.
+  }
 }

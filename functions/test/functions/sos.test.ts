@@ -11,9 +11,10 @@ const as = (uid: string) => ctxFor(db, uid, clock);
 class FakeNotifier implements Notifier {
   calls: { tokens: string[]; data: unknown }[] = [];
   accept = (tokens: string[]) => tokens.length;
+  invalid: string[] = [];
   async notifySos(tokens: string[], data: { familyId: string; alertId: string }) {
     this.calls.push({ tokens, data });
-    return this.accept(tokens);
+    return { accepted: this.accept(tokens), invalidTokens: this.invalid };
   }
 }
 
@@ -128,6 +129,20 @@ describe('raiseSos', () => {
   it('el conteo refleja los mensajes ACEPTADOS, no los enviados', async () => {
     notifier.accept = () => 1;
     expect((await raiseSos(as('luis'), { familyId, alertId: 'sos-1' }, notifier)).notifiedCount).toBe(1);
+  });
+
+  it('olvida los dispositivos cuyo token el proveedor declara inválido', async () => {
+    notifier.invalid = ['tok-sofia'];
+    notifier.accept = (tokens) => tokens.length - 1;
+    const result = await raiseSos(as('luis'), { familyId, alertId: 'inv-1' }, notifier);
+    expect(result.notifiedCount).toBe(1);
+    expect((await db.doc('users/sofia/devices/s1').get()).exists).toBe(false);
+    expect((await db.doc('users/ana/devices/a1').get()).exists).toBe(true);
+    // La siguiente alerta ya no lo intenta.
+    notifier.invalid = [];
+    notifier.accept = (tokens) => tokens.length;
+    await raiseSos(as('luis'), { familyId, alertId: 'inv-2' }, notifier);
+    expect(notifier.calls.at(-1)!.tokens).toEqual(['tok-ana']);
   });
 
   it('rechaza a quien no es integrante y alertId de otra persona', async () => {
