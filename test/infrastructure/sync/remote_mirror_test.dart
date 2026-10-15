@@ -305,6 +305,40 @@ void main() {
     expect(await cachedIds(_members), ['a', 'b', 'c', 'd']);
   });
 
+  test('la señal de caché de Firestore pasa a offline sin cerrar la '
+      'escucha, y los datos del servidor vuelven a live', () async {
+    final scripted = _ScriptedRemote();
+    final m = RemoteMirror(
+      remote: scripted,
+      cache: cache,
+      clock: clock,
+      logger: SafeLogger(sink: sink, clock: clock),
+    );
+    addTearDown(m.dispose);
+    m.start('f1', [const MirrorSpec(_members)]);
+    final listener = scripted.listeners[_members]!.single
+      ..add([
+        const RemoteDoc('a', {'role': 'owner'}),
+      ]);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.live);
+
+    listener.addError(offlineSignal);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.offline);
+    // Sigue la misma escucha: no se abre otra ni se purga nada.
+    expect(scripted.listeners[_members], hasLength(1));
+    expect(cache.clearedScopes, isEmpty);
+
+    listener.add([
+      const RemoteDoc('a', {'role': 'owner'}),
+      const RemoteDoc('b', {'role': 'member'}),
+    ]);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.live);
+    expect(await cachedIds(_members), ['a', 'b']);
+  });
+
   for (final denied in const [
     Failure.permissionDenied(),
     Failure.unauthenticated(),

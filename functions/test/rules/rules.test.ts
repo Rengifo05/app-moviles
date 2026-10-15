@@ -195,13 +195,14 @@ describe('ubicaciones', () => {
     );
   });
 
-  it('descarta actualizaciones fuera de orden', async () => {
+  it('descarta actualizaciones fuera de orden; reenviar la misma captura es inocuo', async () => {
     const db = as('ana');
     const older = Timestamp.fromMillis(T0.toMillis() - 60_000);
     const newer = Timestamp.fromMillis(T0.toMillis() + 60_000);
     await assertFails(setDoc(doc(db, 'families/f1/locations/ana'), location(older)));
-    await assertFails(setDoc(doc(db, 'families/f1/locations/ana'), location(T0)));
+    await assertSucceeds(setDoc(doc(db, 'families/f1/locations/ana'), location(T0)));
     await assertSucceeds(setDoc(doc(db, 'families/f1/locations/ana'), location(newer)));
+    await assertFails(setDoc(doc(db, 'families/f1/locations/ana'), location(T0)));
   });
 
   it('rechaza coordenadas fuera de rango, campos extra y fechas lejanas', async () => {

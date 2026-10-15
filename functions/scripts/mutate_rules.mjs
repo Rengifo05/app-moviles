@@ -29,7 +29,7 @@ const mutations = [
   ['precisión negativa', '&& data().accuracyM >= 0 && data().accuracyM < 100000', ''],
   ['receivedAt del cliente', '&& data().receivedAt == request.time\n          && data().capturedAt is timestamp', '&& data().capturedAt is timestamp'],
   ['capturedAt en el futuro', "&& data().capturedAt < request.time + duration.value(1, 'h')", ''],
-  ['actualizaciones fuera de orden', '&& (resource == null || data().capturedAt > resource.data.capturedAt);', ';'],
+  ['actualizaciones fuera de orden', '&& (resource == null || data().capturedAt >= resource.data.capturedAt);', ';'],
   ['borrar ubicaciones ajenas', 'allow delete: if isMember(familyId) && me() == memberId;', 'allow delete: if isMember(familyId);'],
   ['zonas creadas por cualquier integrante', "allow create: if isManager(familyId) && validGeofence()\n          && data().version == 1", "allow create: if isMember(familyId) && validGeofence()\n          && data().version == 1"],
   ['radio de zona libre', '&& data().radiusM >= 100 && data().radiusM <= 2000', ''],

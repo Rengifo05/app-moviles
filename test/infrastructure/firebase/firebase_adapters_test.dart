@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart' as fs;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:nexo_familia/core/failure.dart';
 import 'package:nexo_familia/core/result.dart';
 import 'package:nexo_familia/features/authentication/data/firebase_auth_repository.dart';
@@ -18,6 +21,53 @@ final class _NoFunctions implements FunctionsClient {
   Future<Result<Json>> call(String name, Json payload) async {
     calls.add(name);
     return const Ok({});
+  }
+}
+
+/// La transacción de `fake_cloud_firestore` ignora `SetOptions(merge:)` y
+/// escribe al instante. Esta aplica las escrituras al confirmar, en orden y
+/// con su modo, como Firestore.
+final class _Firestore extends FakeFirebaseFirestore {
+  @override
+  Future<T> runTransaction<T>(
+    fs.TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) async {
+    final tx = _Transaction();
+    final result = await transactionHandler(tx);
+    for (final write in tx.writes) {
+      await write();
+    }
+    return result;
+  }
+}
+
+final class _Transaction extends Mock implements fs.Transaction {
+  final writes = <Future<void> Function()>[];
+
+  @override
+  Future<fs.DocumentSnapshot<T>> get<T extends Object?>(
+    fs.DocumentReference<T> documentReference,
+  ) {
+    if (writes.isNotEmpty) throw StateError('lecturas antes que escrituras');
+    return documentReference.get();
+  }
+
+  @override
+  fs.Transaction set<T>(
+    fs.DocumentReference<T> documentReference,
+    T data, [
+    fs.SetOptions? options,
+  ]) {
+    writes.add(() => documentReference.set(data, options));
+    return this;
+  }
+
+  @override
+  fs.Transaction delete(fs.DocumentReference<Object?> documentReference) {
+    writes.add(documentReference.delete);
+    return this;
   }
 }
 
@@ -46,7 +96,7 @@ void main() {
     late FirestoreRemoteStore store;
 
     setUp(() {
-      db = FakeFirebaseFirestore();
+      db = _Firestore();
       store = FirestoreRemoteStore(db);
     });
 
@@ -109,8 +159,48 @@ void main() {
       expect(docs.map((d) => d.id), ['e4', 'e2']);
     });
 
+    test(
+      'create no pisa un documento existente (reintento idempotente)',
+      () async {
+        await store.commit([
+          const RemoteWrite.create('families/f1/events/e1', {'kind': 'ok'}),
+        ]);
+        final again = await store.commit([
+          const RemoteWrite.create('families/f1/events/e1', {'kind': 'otro'}),
+          const RemoteWrite.put('families/f1/events/e2', {'kind': 'ok'}),
+        ]);
+        expect(again.isOk, isTrue);
+        expect((await db.doc('families/f1/events/e1').get()).data(), {
+          'kind': 'ok',
+        });
+        expect((await db.doc('families/f1/events/e2').get()).exists, isTrue);
+      },
+    );
+
     test('watchDoc emite null si no existe', () async {
       expect(await store.watchDoc('users/nadie').first, isNull);
+    });
+  });
+
+  group('serverSnapshots', () {
+    test('la caché local se avisa una vez como offlineSignal y los datos '
+        'del servidor pasan', () async {
+      final source = StreamController<(bool, int)>();
+      final events = <Object>[];
+      source.stream
+          .transform(
+            serverSnapshots<(bool, int), int>((s) => s.$1, (s) => s.$2),
+          )
+          .listen(events.add, onError: events.add);
+      source
+        ..add((true, 1)) // arranque desde la caché
+        ..add((true, 1)) // sigue sin servidor: no se repite el aviso
+        ..add((false, 2))
+        ..add((true, 2))
+        ..add((false, 3));
+      await source.close();
+      await pumpEventQueue();
+      expect(events, [offlineSignal, 2, offlineSignal, 3]);
     });
   });
 
@@ -166,7 +256,7 @@ void main() {
     test(
       'el registro crea la cuenta y el perfil con el nombre recortado',
       () async {
-        final db = FakeFirebaseFirestore();
+        final db = _Firestore();
         final repo = FirebaseAuthRepository(
           auth: MockFirebaseAuth(),
           remote: FirestoreRemoteStore(db),
@@ -183,7 +273,7 @@ void main() {
     test('valida antes de llamar a Firebase', () async {
       final repo = FirebaseAuthRepository(
         auth: MockFirebaseAuth(),
-        remote: FirestoreRemoteStore(FakeFirebaseFirestore()),
+        remote: FirestoreRemoteStore(_Firestore()),
         functions: _NoFunctions(),
       );
       final result = await repo.signUp(
@@ -202,7 +292,7 @@ void main() {
       final auth = _ThrowingAuth('user-not-found');
       final repo = FirebaseAuthRepository(
         auth: auth,
-        remote: FirestoreRemoteStore(FakeFirebaseFirestore()),
+        remote: FirestoreRemoteStore(_Firestore()),
         functions: _NoFunctions(),
       );
       final result = await repo.signIn(email: 'x@y.co', password: '12345678');
@@ -213,7 +303,7 @@ void main() {
       final auth = _ThrowingAuth('user-not-found');
       final repo = FirebaseAuthRepository(
         auth: auth,
-        remote: FirestoreRemoteStore(FakeFirebaseFirestore()),
+        remote: FirestoreRemoteStore(_Firestore()),
         functions: _NoFunctions(),
       );
       expect((await repo.sendPasswordReset('nadie@y.co')).isOk, isTrue);
@@ -227,7 +317,7 @@ void main() {
       );
       final repo = FirebaseAuthRepository(
         auth: auth,
-        remote: FirestoreRemoteStore(FakeFirebaseFirestore()),
+        remote: FirestoreRemoteStore(_Firestore()),
         functions: functions,
       );
       expect((await repo.deleteAccount()).isOk, isTrue);

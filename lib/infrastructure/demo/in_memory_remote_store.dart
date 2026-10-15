@@ -225,6 +225,8 @@ final class InMemoryRemoteStore implements RemoteStore {
           );
         case RemoteOp.remove:
           _docs.remove(w.path);
+        case RemoteOp.create:
+          _docs.putIfAbsent(w.path, () => _resolve(w.data!, now));
       }
     }
     _notify();

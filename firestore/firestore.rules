@@ -109,7 +109,9 @@ service cloud.firestore {
           // Tolera relojes de dispositivo algo adelantados, no fechas absurdas.
           && data().capturedAt < request.time + duration.value(1, 'h')
           // Las actualizaciones fuera de orden se descartan.
-          && (resource == null || data().capturedAt > resource.data.capturedAt);
+          // >= y no >: reenviar la misma captura (reintento tras una
+          // respuesta perdida) es inocuo; una captura anterior se rechaza.
+          && (resource == null || data().capturedAt >= resource.data.capturedAt);
         // Al pausar, la propia persona borra su ubicación en el mismo lote.
         allow delete: if isMember(familyId) && me() == memberId;
       }

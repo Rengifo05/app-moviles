@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/app/sync_coordinator.dart';
+import 'package:nexo_familia/app/sync_status_binding.dart';
 import 'package:nexo_familia/core/clock.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/core/logging/console_log_sink.dart';
@@ -12,6 +13,7 @@ import 'package:nexo_familia/features/authentication/data/demo_auth_repository.d
 import 'package:nexo_familia/features/authentication/data/firebase_auth_repository.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/features/authentication/presentation/auth_providers.dart';
+import 'package:nexo_familia/features/common/presentation/sync_status.dart';
 import 'package:nexo_familia/features/family/data/family_repository_impl.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
 import 'package:nexo_familia/features/settings/data/drift_preferences_repository.dart';
@@ -160,6 +162,12 @@ final class AppComposition {
             currentUid: uid,
           ),
         ),
+        syncStatusProvider.overrideWith((ref) {
+          final familyId = ref.watch(activeFamilyIdProvider);
+          return familyId == null
+              ? Stream.value(SyncStatus.unknown)
+              : watchSyncStatus(mirror, familyId);
+        }),
       ],
       disposers: [coordinator.dispose, mirror.dispose, ...extraDisposers],
     );

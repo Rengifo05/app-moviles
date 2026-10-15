@@ -75,7 +75,7 @@ Todos llevan `expireAt` para la política TTL: 30 días para los eventos y 90 pa
 | `users/{uid}` | crear/actualizar | `uid == auth.uid`; solo campos del perfil |
 | `users/{uid}/devices/{id}` | crear/actualizar/borrar | `uid == auth.uid` |
 | `families/{f}/consents/{uid}` | actualizar | `uid == auth.uid`, miembro de `f`; `state` y `precision` válidos; `updatedAt == request.time` |
-| `families/{f}/locations/{uid}` | crear/actualizar | `uid == auth.uid`, miembro; consentimiento `sharing` (después del lote); coordenadas en rango; `accuracyM` entre 0 y 100 000; `capturedAt` posterior al almacenado y anterior a `request.time + 1 h` (tolera relojes adelantados, no fechas absurdas); `receivedAt == request.time` |
+| `families/{f}/locations/{uid}` | crear/actualizar | `uid == auth.uid`, miembro; consentimiento `sharing` (después del lote); coordenadas en rango; `accuracyM` entre 0 y 100 000; `capturedAt` igual o posterior al almacenado (reenviar la misma captura es inocuo) y anterior a `request.time + 1 h` (tolera relojes adelantados, no fechas absurdas); `receivedAt == request.time` |
 | `families/{f}/locations/{uid}` | borrar | `uid == auth.uid` (al pausar, en el mismo lote que el consentimiento) |
 | `families/{f}/geofences/{id}` | crear/actualizar/borrar | `owner` o `admin`; radio entre 100 y 2000 m; nombre de 1 a 40 caracteres; `version` = anterior + 1 |
 | `families/{f}/events/{id}` | crear | Miembro; `actorUid == auth.uid`; `type` en `checkIn` o `geofence`; `createdAt == request.time`. Nunca se actualiza ni se borra desde el cliente |

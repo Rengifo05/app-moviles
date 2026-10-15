@@ -379,6 +379,18 @@ void main() {
       expect(store.serverRead('items/a'), {'n': 2});
     });
 
+    test('create solo escribe si el documento no existe', () async {
+      await store.commit([
+        const RemoteWrite.create('items/a', {'n': 1}),
+      ]);
+      await store.commit([
+        const RemoteWrite.create('items/a', {'n': 2}),
+        const RemoteWrite.create('items/b', {'n': 3}),
+      ]);
+      expect(store.serverRead('items/a'), {'n': 1});
+      expect(store.serverRead('items/b'), {'n': 3});
+    });
+
     test('merge crea el documento si no existe', () async {
       await store.commit([
         const RemoteWrite.merge('items/a', {'n': 1}),
