@@ -1,0 +1,133 @@
+{
+  "geofenceEditorNewTitle": "Nueva zona",
+  "geofenceEditorEditTitle": "Editar zona",
+  "geofenceEditorViewTitle": "Zona",
+  "geofenceNameLabel": "Nombre de la zona",
+  "geofenceNameHint": "Por ejemplo, Casa o Colegio",
+  "geofenceRadiusValue": "Radio: {meters} m",
+  "@geofenceRadiusValue": {
+    "description": "Valor actual del radio de la zona, en metros. También lo anuncia el lector de pantalla al mover el control.",
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "geofenceRadiusRange": "Puede ir de {min} m a {max} m.",
+  "@geofenceRadiusRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "geofenceCenterTitle": "Centro de la zona",
+  "geofenceCenterNone": "Aún no has elegido el centro.",
+  "geofenceCenterFromLocation": "Centro elegido · precisión ±{meters} m",
+  "@geofenceCenterFromLocation": {
+    "description": "El centro se tomó de la ubicación actual del teléfono. Nunca se muestran coordenadas.",
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "geofenceCenterFromMap": "Centro elegido en el mapa",
+  "geofenceCenterSaved": "Se mantiene el centro guardado",
+  "@geofenceCenterSaved": {
+    "description": "Al editar una zona sin cambiar su centro."
+  },
+  "geofenceCenterLowAccuracy": "La precisión es baja: el centro podría no coincidir con el lugar. Si puedes, inténtalo de nuevo al aire libre.",
+  "geofenceUseMyLocation": "Usar mi ubicación actual",
+  "geofenceMapHint": "Toca el mapa para elegir el centro.",
+  "geofenceMapUnavailable": "El mapa no está disponible en esta versión. Para fijar el centro, usa tu ubicación actual estando en el lugar.",
+  "geofenceMapUnavailableReadOnly": "El mapa no está disponible en esta versión, así que aún no puedes ver dónde queda la zona.",
+  "geofenceVisibilityNote": "Las zonas son visibles para toda la familia.",
+  "geofenceAlertsUnavailableNote": "Los avisos automáticos de entrada y salida aún no están disponibles en esta versión.",
+  "@geofenceAlertsUnavailableNote": {
+    "description": "El monitoreo en segundo plano está desactivado (ADR-003). No prometer avisos."
+  },
+  "geofenceSaveNew": "Guardar zona",
+  "geofenceSaveChanges": "Guardar cambios",
+  "geofenceDelete": "Eliminar zona",
+  "geofenceDeleteTitle": "¿Eliminar la zona «{name}»?",
+  "@geofenceDeleteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "geofenceDeleteBody": "Se eliminará para toda la familia. Esta acción no se puede deshacer.",
+  "geofenceSaved": "Zona guardada",
+  "geofenceDeleted": "Zona eliminada",
+  "geofenceOfflineBanner": "Sin conexión. Para guardar o eliminar zonas necesitas conexión.",
+  "geofenceLoadCurrent": "Ver versión actual",
+  "geofenceNotFoundTitle": "Esta zona ya no existe",
+  "geofenceNotFoundBody": "Puede que otro integrante la haya eliminado.",
+  "geofenceNoFamily": "Crea una familia o únete a una para gestionar zonas.",
+  "geofenceManageOnlyTitle": "Solo quien administra la familia puede crear zonas",
+  "geofenceManageOnlyBody": "Pídele a la persona propietaria o a alguien con rol de administrador que la cree.",
+  "geofenceReadOnlyNote": "Solo quien administra la familia (propietario o administrador) puede cambiar esta zona.",
+  "geofenceUpdatedAgo": "Modificada {time}",
+  "@geofenceUpdatedAgo": {
+    "description": "time es un tiempo relativo como 'hace 3 min'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "geofenceErrorNameRequired": "Escribe un nombre para la zona.",
+  "geofenceErrorNameTooLong": "El nombre puede tener hasta {max} caracteres.",
+  "@geofenceErrorNameTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "geofenceErrorRadius": "El radio debe estar entre {min} m y {max} m.",
+  "@geofenceErrorRadius": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "geofenceErrorCenterRequired": "Elige el centro de la zona para poder guardarla.",
+  "geofenceErrorLimit": "Esta familia ya tiene {max} zonas, el máximo por ahora. Elimina una para crear otra.",
+  "@geofenceErrorLimit": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "geofenceErrorConflict": "Otro integrante cambió esta zona. Revisa la versión actual.",
+  "geofenceErrorNotFound": "Esta zona ya no existe. Puede que otro integrante la haya eliminado.",
+  "geofenceErrorUnconfirmed": "No pudimos confirmar el cambio con el servidor. Revisa tu conexión e inténtalo de nuevo.",
+  "@geofenceErrorUnconfirmed": {
+    "description": "Sin conexión o sin respuesta a tiempo: no se sabe si el servidor aplicó el cambio. No afirmar que se guardó ni que no."
+  },
+  "geofenceErrorNotAllowed": "Solo quien administra la familia (propietario o administrador) puede gestionar zonas.",
+  "geofenceLocationRationaleTitle": "Usar tu ubicación como centro",
+  "geofenceLocationRationaleOnce": "Usaremos la ubicación de este teléfono solo para fijar el centro de la zona.",
+  "geofenceLocationRationaleVisible": "No se publica como tu ubicación, pero el centro de la zona será visible para toda la familia.",
+  "geofenceLocationRationaleSettings": "Puedes cambiar este permiso cuando quieras en los ajustes del teléfono.",
+  "geofenceLocationRationaleNext": "A continuación, el teléfono te pedirá permiso.",
+  "geofenceLocationRationaleContinue": "Continuar",
+  "geofenceLocationRationaleNotNow": "Ahora no",
+  "geofenceLocationDeclined": "No diste permiso para usar la ubicación. Puedes intentarlo de nuevo cuando quieras.",
+  "geofenceLocationDeclinedWithMap": "No diste permiso para usar la ubicación. Puedes intentarlo de nuevo o elegir el centro en el mapa.",
+  "geofenceLocationBlocked": "El permiso de ubicación está desactivado para la app. Puedes activarlo en los ajustes del teléfono.",
+  "geofenceLocationServiceOff": "La ubicación del teléfono está apagada. Actívala para usar tu ubicación actual.",
+  "geofenceLocationUnavailable": "No pudimos obtener tu ubicación. Inténtalo de nuevo en unos segundos.",
+  "geofenceSettingsNotOpened": "No pudimos abrir los ajustes. Ábrelos desde el teléfono."
+}

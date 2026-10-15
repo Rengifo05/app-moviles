@@ -7,6 +7,7 @@ import 'package:nexo_familia/app/sync_coordinator.dart';
 import 'package:nexo_familia/app/sync_status_binding.dart';
 import 'package:nexo_familia/core/clock.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
+import 'package:nexo_familia/core/id_generator.dart';
 import 'package:nexo_familia/core/logging/console_log_sink.dart';
 import 'package:nexo_familia/core/logging/safe_logger.dart';
 import 'package:nexo_familia/features/authentication/data/demo_auth_repository.dart';
@@ -16,6 +17,8 @@ import 'package:nexo_familia/features/authentication/presentation/auth_providers
 import 'package:nexo_familia/features/common/presentation/sync_status.dart';
 import 'package:nexo_familia/features/family/data/family_repository_impl.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
+import 'package:nexo_familia/features/geofences/data/geofence_repository_impl.dart';
+import 'package:nexo_familia/features/geofences/presentation/geofence_providers.dart';
 import 'package:nexo_familia/features/location_sharing/data/location_repository_impl.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
@@ -175,6 +178,15 @@ final class AppComposition {
           LocationRepositoryImpl(remote: remote, cache: cache, currentUid: uid),
         ),
         deviceLocationServiceProvider.overrideWithValue(device),
+        geofenceRepositoryProvider.overrideWithValue(
+          GeofenceRepositoryImpl(
+            remote: remote,
+            cache: cache,
+            currentUid: uid,
+            clock: clock,
+            ids: const UuidV7IdGenerator(),
+          ),
+        ),
         syncStatusProvider.overrideWith((ref) {
           final familyId = ref.watch(activeFamilyIdProvider);
           return familyId == null
