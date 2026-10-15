@@ -16,6 +16,9 @@ import 'package:nexo_familia/features/authentication/presentation/auth_providers
 import 'package:nexo_familia/features/common/presentation/sync_status.dart';
 import 'package:nexo_familia/features/family/data/family_repository_impl.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
+import 'package:nexo_familia/features/location_sharing/data/location_repository_impl.dart';
+import 'package:nexo_familia/features/location_sharing/domain/location.dart';
+import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
 import 'package:nexo_familia/features/settings/data/drift_preferences_repository.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
@@ -24,6 +27,8 @@ import 'package:nexo_familia/infrastructure/demo/demo_functions.dart';
 import 'package:nexo_familia/infrastructure/demo/in_memory_remote_store.dart';
 import 'package:nexo_familia/infrastructure/firebase/firebase_functions_client.dart';
 import 'package:nexo_familia/infrastructure/firebase/firestore_remote_store.dart';
+import 'package:nexo_familia/infrastructure/location/demo_location_service.dart';
+import 'package:nexo_familia/infrastructure/location/geolocator_location_service.dart';
 import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 import 'package:nexo_familia/infrastructure/sync/backoff.dart';
 import 'package:nexo_familia/infrastructure/sync/outbox.dart';
@@ -82,6 +87,8 @@ final class AppComposition {
       remote: store,
       functions: functions,
       auth: auth,
+      // Ubicaciones sintéticas: el modo demostración nunca usa el GPS.
+      device: DemoLocationService(clock: clock),
       extraDisposers: [auth.dispose, store.dispose],
     );
   }
@@ -106,6 +113,7 @@ final class AppComposition {
         remote: remote,
         functions: functions,
       ),
+      device: const GeolocatorLocationService(),
     );
   }
 
@@ -118,6 +126,7 @@ final class AppComposition {
     required RemoteStore remote,
     required FunctionsClient functions,
     required AuthRepository auth,
+    required DeviceLocationService device,
     List<Future<void> Function()> extraDisposers = const [],
   }) {
     final logger = SafeLogger(sink: logSink, clock: clock);
@@ -162,6 +171,10 @@ final class AppComposition {
             currentUid: uid,
           ),
         ),
+        locationRepositoryProvider.overrideWithValue(
+          LocationRepositoryImpl(remote: remote, cache: cache, currentUid: uid),
+        ),
+        deviceLocationServiceProvider.overrideWithValue(device),
         syncStatusProvider.overrideWith((ref) {
           final familyId = ref.watch(activeFamilyIdProvider);
           return familyId == null

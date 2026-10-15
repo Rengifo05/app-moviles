@@ -1,0 +1,151 @@
+{
+  "locationNoFamily": "Crea una familia o únete a una para ver el mapa.",
+  "locationListTitle": "Ubicaciones compartidas",
+  "locationListEmpty": "Aún no hay ubicaciones compartidas en esta familia.",
+  "locationNotSharedTitle": "Sin ubicación compartida",
+  "@locationNotSharedTitle": {
+    "description": "Encabezado de los integrantes de los que no hay ubicación publicada (no la comparten, la pausaron o aún no la envían)."
+  },
+  "locationSelf": "Tú",
+  "locationUnnamedMember": "Integrante",
+  "@locationUnnamedMember": {
+    "description": "Nombre de respaldo si un integrante no tiene nombre de perfil."
+  },
+  "locationMarkerLabel": "{name}. {status}",
+  "@locationMarkerLabel": {
+    "description": "Descripción completa de un marcador: nombre y estado de su ubicación.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "locationStatusRecent": "Ubicación actualizada {time}",
+  "@locationStatusRecent": {
+    "description": "time es un tiempo relativo como 'hace 3 min'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "locationStatusRecentApprox": "Ubicación aproximada (±1 km) actualizada {time}",
+  "@locationStatusRecentApprox": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "locationStatusStale": "Sin actualización reciente. Última ubicación {time}",
+  "@locationStatusStale": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "locationStatusStaleApprox": "Sin actualización reciente. Última ubicación aproximada (±1 km) {time}",
+  "@locationStatusStaleApprox": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "locationStatusStaleNoTime": "Sin actualización reciente",
+  "@locationStatusStaleNoTime": {
+    "description": "Ubicación cuya hora no es fiable (reloj del teléfono muy adelantado)."
+  },
+  "locationStatusStaleNoTimeApprox": "Sin actualización reciente. Ubicación aproximada (±1 km)",
+  "locationZoneRadius": "Radio de {meters} m",
+  "@locationZoneRadius": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "locationBannerNotConfigured": "Aún no compartes tu ubicación con esta familia.",
+  "locationBannerPaused": "Tu ubicación está en pausa para esta familia.",
+  "locationBannerConfigure": "Configurar",
+  "locationBannerPermission": "La app no tiene permiso para usar la ubicación de este teléfono.",
+  "locationBannerServiceDisabled": "La ubicación de este teléfono está apagada.",
+  "locationSettingsNotOpened": "No pudimos abrir los ajustes. Ábrelos desde tu teléfono.",
+  "locationShareNow": "Actualizar mi ubicación",
+  "locationShareSent": "Ubicación enviada",
+  "locationShareSentApprox": "Ubicación aproximada enviada",
+  "locationShareFailed": "No se envió tu ubicación. {reason}",
+  "@locationShareFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "locationErrorPermission": "La app no tiene permiso para usar tu ubicación.",
+  "locationErrorServiceDisabled": "La ubicación de este teléfono está apagada.",
+  "locationErrorUnavailable": "No pudimos obtener tu ubicación. Inténtalo de nuevo en un momento.",
+  "locationErrorNotSharing": "Activa la compartición de ubicación en Privacidad para enviarla.",
+  "locationErrorRejected": "El servidor no la aceptó. Revisa en Privacidad que sigas compartiendo tu ubicación.",
+  "locationRationaleTitle": "Así usamos tu ubicación",
+  "locationRationaleWhat": "Tu familia verá en el mapa la última ubicación que envíes, con la hora en que se tomó.",
+  "locationRationaleWho": "Solo la ven los integrantes de {family}.",
+  "@locationRationaleWho": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "locationRationaleWhoGeneric": "Solo la ven los integrantes de esta familia.",
+  "locationRationaleWhen": "Solo se usa mientras tienes la app abierta.",
+  "locationRationalePause": "Puedes pausarla cuando quieras en Ajustes, Privacidad.",
+  "locationRationaleNext": "Ahora tu teléfono te pedirá el permiso.",
+  "locationRationaleContinue": "Continuar",
+  "locationRationaleNotNow": "Ahora no",
+  "locationZonesTitle": "Zonas",
+  "locationZonesNew": "Nueva zona",
+  "locationZonesEmpty": "Aún no hay zonas en esta familia.",
+  "locationZonesError": "No pudimos cargar las zonas.",
+  "locationLegendTitle": "Cómo leer el mapa",
+  "locationLegendRecent": "Actualizada: la ubicación tiene {minutes} min o menos.",
+  "@locationLegendRecent": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "locationLegendStale": "Sin actualización reciente: la última ubicación tiene más de {minutes} min o su hora no es fiable.",
+  "@locationLegendStale": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "locationLegendApprox": "Aproximada (±1 km): la persona eligió compartirla redondeada.",
+  "locationLegendReported": "Cada teléfono reporta su propia ubicación, que puede no ser exacta.",
+  "locationCardSharingExact": "Compartes tu ubicación exacta",
+  "locationCardSharingApprox": "Compartes tu ubicación aproximada (±1 km)",
+  "locationCardPaused": "Tu ubicación está en pausa",
+  "locationCardNotConfigured": "Aún no compartes tu ubicación",
+  "locationCardAudience": "{count, plural, =0{Por ahora no hay más integrantes en esta familia.} =1{La puede ver 1 integrante de esta familia.} other{La pueden ver {count} integrantes de esta familia.}}",
+  "@locationCardAudience": {
+    "description": "Cuántas personas, aparte de quien comparte, pueden ver su ubicación.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "locationCardPausedDetail": "Tu familia no ve tu ubicación. Puedes reanudarla cuando quieras.",
+  "locationCardNotConfiguredDetail": "Tú decides si la compartes con esta familia y con qué precisión.",
+  "locationCardManage": "Pausar o cambiar",
+  "locationCardConfigure": "Configurar",
+  "locationCardError": "No pudimos leer si compartes tu ubicación."
+}

@@ -94,6 +94,418 @@
   "relativeJustNow": "hace un momento",
   "relativeMinutes": "{count, plural, =1{hace 1 min} other{hace {count} min}}",
   "splashLoading": "Preparando tu espacio familiar…",
+  "@familyErrorFamilyFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyErrorNameInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyErrorNameTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyInviteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyInviteCodeSemantics": {
+    "description": "Etiqueta para lectores de pantalla; el código va letra por letra.",
+    "placeholders": {
+      "spelled": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyInviteExpiresHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyInviteExpiresMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyInviteFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyInviteUses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyInviteValidity": {
+    "description": "Vigencia del código, p. ej. «Vence en 48 h · un solo uso».",
+    "placeholders": {
+      "expires": {
+        "type": "String"
+      },
+      "uses": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyLeaveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyLocationLastUpdate": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyLocationUpdated": {
+    "description": "{ago} es un tiempo relativo, p. ej. «hace 5 min».",
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@familyMemberSince": {
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMd"
+      }
+    }
+  },
+  "@familyRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familySetupGreeting": {
+    "description": "Saludo de la pantalla para crear o unirse a una familia.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familySetupWhatGroup": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@familySwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@familyYourRole": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "familyBackToFamily": "Volver a Familia",
+  "familyCreateAction": "Crear familia",
+  "familyCreateBody": "Ponle un nombre que todos reconozcan. Después podrás invitar a las demás personas.",
+  "familyCreateNameHint": "Por ejemplo: Familia Gómez",
+  "familyCreateNameLabel": "Nombre de la familia",
+  "familyCreateOwnerNote": "Tú administrarás el grupo: podrás invitar y quitar integrantes.",
+  "familyCreateTitle": "Crear una familia",
+  "familyEmptyBody": "Cuando el grupo se sincronice, aparecerán aquí.",
+  "familyEmptyTitle": "Aún no vemos integrantes",
+  "familyErrorAlreadyMember": "Ya perteneces a esta familia.",
+  "familyErrorFamilyFull": "Esta familia ya tiene {max} integrantes, el máximo permitido.",
+  "familyErrorInvitationFormat": "Revisa el código: son 10 letras y números, como ABCDE-FGHJK.",
+  "familyErrorInvitationInvalid": "El código no es válido o ya venció. Pide uno nuevo a quien te invitó.",
+  "familyErrorNameInvalid": "Ese nombre no es válido. Usa entre 1 y {max} caracteres, con al menos una letra o un número.",
+  "familyErrorNameRequired": "Escribe un nombre para la familia.",
+  "familyErrorNameTooLong": "Usa como máximo {max} caracteres.",
+  "familyErrorNotAllowedInvite": "Solo quienes administran el grupo pueden invitar.",
+  "familyErrorNotAllowedRemove": "No tienes permiso para quitar a esta persona del grupo.",
+  "familyErrorNotMember": "Esta persona ya no está en el grupo.",
+  "familyErrorRateLimited": "Hiciste demasiados intentos. Por seguridad, espera un rato antes de volver a intentarlo.",
+  "familyErrorTooManyFamilies": "Ya perteneces al número máximo de familias. Para crear otra, primero sal de alguna.",
+  "familyErrorTooManyInvitations": "Este grupo ya tiene demasiadas invitaciones activas. Espera a que se usen o venzan.",
+  "familyInviteAction": "Invitar a alguien",
+  "familyInviteBody": "Genera un código para que alguien se una a {name}.",
+  "familyInviteCodeLabel": "Código de invitación",
+  "familyInviteCodeSemantics": "Código de invitación: {spelled}",
+  "familyInviteCopied": "Código copiado",
+  "familyInviteCopy": "Copiar código",
+  "familyInviteExpired": "Este código ya venció. Genera uno nuevo.",
+  "familyInviteExpiresHours": "{hours, plural, =1{Vence en 1 h} other{Vence en {hours} h}}",
+  "familyInviteExpiresMinutes": "{minutes, plural, =1{Vence en 1 min} other{Vence en {minutes} min}}",
+  "familyInviteFull": "El grupo ya tiene {max} integrantes, el máximo permitido. Nadie más podrá unirse.",
+  "familyInviteGenerate": "Generar código",
+  "familyInviteGenerateAnother": "Generar otro código",
+  "familyInviteTitle": "Invitar a la familia",
+  "familyInviteUses": "{count, plural, =1{un solo uso} other{{count} usos}}",
+  "familyInviteValidity": "{expires} · {uses}",
+  "familyInviteWarningOnce": "Por seguridad, este código solo se muestra ahora. Si lo pierdes, genera otro.",
+  "familyInviteWarningShare": "Compártelo solo con la persona que quieres invitar.",
+  "familyInviteWarningVisibility": "Quien se una podrá ver la ubicación de quienes la comparten en esta familia.",
+  "familyJoinAction": "Unirme",
+  "familyJoinBody": "Escribe el código que te compartió alguien que administra la familia.",
+  "familyJoinCodeHelper": "Formato: ABCDE-FGHJK",
+  "familyJoinCodeLabel": "Código de invitación",
+  "familyJoinPrivacyNote": "Al unirte podrás ver la ubicación de quienes la comparten en esa familia. La tuya solo se comparte si tú lo activas.",
+  "familyJoinTitle": "Unirme con un código",
+  "familyLeave": "Salir del grupo",
+  "familyLeaveLast": "Eres la única persona del grupo, así que el grupo se eliminará.",
+  "familyLeaveOwner": "Como administras el grupo, pasará a administrarlo la persona con más antigüedad.",
+  "familyLeaveReturn": "Para volver necesitarás una nueva invitación.",
+  "familyLeaveSee": "Dejarás de ver la ubicación y la actividad de este grupo.",
+  "familyLeaveShare": "Dejarás de compartir tu ubicación con el grupo y se borrará la última que publicaste aquí.",
+  "familyLeaveTitle": "¿Salir de {name}?",
+  "familyLeft": "Saliste de {name}.",
+  "familyLocationApproximate": "Ubicación aproximada (cerca de 1 km)",
+  "familyLocationDeviceNote": "La ubicación la reporta el dispositivo y puede no ser exacta.",
+  "familyLocationLastUpdate": "Última actualización {ago}",
+  "familyLocationNotSharing": "No comparte su ubicación",
+  "familyLocationSelfNotSharing": "No estás compartiendo tu ubicación",
+  "familyLocationStale": "Sin actualización reciente",
+  "familyLocationTitle": "Ubicación",
+  "familyLocationUnavailable": "No pudimos consultar el estado de la ubicación.",
+  "familyLocationUpdated": "Ubicación actualizada {ago}",
+  "familyMemberCount": "{count, plural, =1{1 integrante} other{{count} integrantes}}",
+  "familyMemberSince": "En el grupo desde el {date}",
+  "familyMembersTitle": "Integrantes",
+  "familyNoActiveTitle": "No tienes una familia activa",
+  "familyPrivacyLink": "Revisar mi privacidad",
+  "familyPrivacyNote": "Cada persona decide si comparte su ubicación. Nadie puede activarla por otra.",
+  "familyRemove": "Quitar del grupo",
+  "familyRemoveBody": "{name} dejará de ver la ubicación y la actividad del grupo, y se borrará la ubicación que compartía aquí. Para volver necesitará una nueva invitación.",
+  "familyRemoveTitle": "¿Quitar a {name} del grupo?",
+  "familyRemoved": "{name} ya no está en el grupo.",
+  "familyRoleAdmin": "Ayuda a administrar",
+  "familyRoleMember": "Integrante",
+  "familyRoleOwner": "Administra el grupo",
+  "familySetupBody": "Para empezar, crea un grupo para tu familia o únete a uno con el código que te compartieron.",
+  "familySetupCreate": "Crear una familia",
+  "familySetupGreeting": "Hola, {name}",
+  "familySetupGreetingNoName": "Te damos la bienvenida",
+  "familySetupJoin": "Unirme con un código",
+  "familySetupSignOut": "Cerrar sesión",
+  "familySetupWhatConsent": "Cada persona decide si comparte su ubicación con el grupo y puede pausarla cuando quiera.",
+  "familySetupWhatGroup": "Un grupo privado de hasta {max} personas adultas que se acompañan entre sí.",
+  "familySetupWhatInvite": "Solo entra quien recibe un código de invitación de alguien que administra el grupo.",
+  "familySetupWhatTitle": "¿Qué es una familia en Nexo?",
+  "familySwitch": "Cambiar de familia",
+  "familySwitchActive": "Familia activa",
+  "familySwitchCreate": "Crear otra familia",
+  "familySwitchJoin": "Unirme a otra con un código",
+  "familySwitchTitle": "Tus familias",
+  "familySwitched": "Ahora ves {name}.",
+  "familyYou": "Tú",
+  "familyYourRole": "Tu rol: {role}",
+  "@locationCardAudience": {
+    "description": "Cuántas personas, aparte de quien comparte, pueden ver su ubicación.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@locationLegendRecent": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@locationLegendStale": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@locationMarkerLabel": {
+    "description": "Descripción completa de un marcador: nombre y estado de su ubicación.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationNotSharedTitle": {
+    "description": "Encabezado de los integrantes de los que no hay ubicación publicada (no la comparten, la pausaron o aún no la envían)."
+  },
+  "@locationRationaleWho": {
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationShareFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationStatusRecent": {
+    "description": "time es un tiempo relativo como 'hace 3 min'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationStatusRecentApprox": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationStatusStale": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationStatusStaleApprox": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@locationStatusStaleNoTime": {
+    "description": "Ubicación cuya hora no es fiable (reloj del teléfono muy adelantado)."
+  },
+  "@locationUnnamedMember": {
+    "description": "Nombre de respaldo si un integrante no tiene nombre de perfil."
+  },
+  "@locationZoneRadius": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "locationBannerConfigure": "Configurar",
+  "locationBannerNotConfigured": "Aún no compartes tu ubicación con esta familia.",
+  "locationBannerPaused": "Tu ubicación está en pausa para esta familia.",
+  "locationBannerPermission": "La app no tiene permiso para usar la ubicación de este teléfono.",
+  "locationBannerServiceDisabled": "La ubicación de este teléfono está apagada.",
+  "locationCardAudience": "{count, plural, =0{Por ahora no hay más integrantes en esta familia.} =1{La puede ver 1 integrante de esta familia.} other{La pueden ver {count} integrantes de esta familia.}}",
+  "locationCardConfigure": "Configurar",
+  "locationCardError": "No pudimos leer si compartes tu ubicación.",
+  "locationCardManage": "Pausar o cambiar",
+  "locationCardNotConfigured": "Aún no compartes tu ubicación",
+  "locationCardNotConfiguredDetail": "Tú decides si la compartes con esta familia y con qué precisión.",
+  "locationCardPaused": "Tu ubicación está en pausa",
+  "locationCardPausedDetail": "Tu familia no ve tu ubicación. Puedes reanudarla cuando quieras.",
+  "locationCardSharingApprox": "Compartes tu ubicación aproximada (±1 km)",
+  "locationCardSharingExact": "Compartes tu ubicación exacta",
+  "locationErrorNotSharing": "Activa la compartición de ubicación en Privacidad para enviarla.",
+  "locationErrorPermission": "La app no tiene permiso para usar tu ubicación.",
+  "locationErrorRejected": "El servidor no la aceptó. Revisa en Privacidad que sigas compartiendo tu ubicación.",
+  "locationErrorServiceDisabled": "La ubicación de este teléfono está apagada.",
+  "locationErrorUnavailable": "No pudimos obtener tu ubicación. Inténtalo de nuevo en un momento.",
+  "locationLegendApprox": "Aproximada (±1 km): la persona eligió compartirla redondeada.",
+  "locationLegendRecent": "Actualizada: la ubicación tiene {minutes} min o menos.",
+  "locationLegendReported": "Cada teléfono reporta su propia ubicación, que puede no ser exacta.",
+  "locationLegendStale": "Sin actualización reciente: la última ubicación tiene más de {minutes} min o su hora no es fiable.",
+  "locationLegendTitle": "Cómo leer el mapa",
+  "locationListEmpty": "Aún no hay ubicaciones compartidas en esta familia.",
+  "locationListTitle": "Ubicaciones compartidas",
+  "locationMarkerLabel": "{name}. {status}",
+  "locationNoFamily": "Crea una familia o únete a una para ver el mapa.",
+  "locationNotSharedTitle": "Sin ubicación compartida",
+  "locationRationaleContinue": "Continuar",
+  "locationRationaleNext": "Ahora tu teléfono te pedirá el permiso.",
+  "locationRationaleNotNow": "Ahora no",
+  "locationRationalePause": "Puedes pausarla cuando quieras en Ajustes, Privacidad.",
+  "locationRationaleTitle": "Así usamos tu ubicación",
+  "locationRationaleWhat": "Tu familia verá en el mapa la última ubicación que envíes, con la hora en que se tomó.",
+  "locationRationaleWhen": "Solo se usa mientras tienes la app abierta.",
+  "locationRationaleWho": "Solo la ven los integrantes de {family}.",
+  "locationRationaleWhoGeneric": "Solo la ven los integrantes de esta familia.",
+  "locationSelf": "Tú",
+  "locationSettingsNotOpened": "No pudimos abrir los ajustes. Ábrelos desde tu teléfono.",
+  "locationShareFailed": "No se envió tu ubicación. {reason}",
+  "locationShareNow": "Actualizar mi ubicación",
+  "locationShareSent": "Ubicación enviada",
+  "locationShareSentApprox": "Ubicación aproximada enviada",
+  "locationStatusRecent": "Ubicación actualizada {time}",
+  "locationStatusRecentApprox": "Ubicación aproximada (±1 km) actualizada {time}",
+  "locationStatusStale": "Sin actualización reciente. Última ubicación {time}",
+  "locationStatusStaleApprox": "Sin actualización reciente. Última ubicación aproximada (±1 km) {time}",
+  "locationStatusStaleNoTime": "Sin actualización reciente",
+  "locationStatusStaleNoTimeApprox": "Sin actualización reciente. Ubicación aproximada (±1 km)",
+  "locationUnnamedMember": "Integrante",
+  "locationZoneRadius": "Radio de {meters} m",
+  "locationZonesEmpty": "Aún no hay zonas en esta familia.",
+  "locationZonesError": "No pudimos cargar las zonas.",
+  "locationZonesNew": "Nueva zona",
+  "locationZonesTitle": "Zonas",
   "@onboarding4Body": {
     "placeholders": {
       "number": {

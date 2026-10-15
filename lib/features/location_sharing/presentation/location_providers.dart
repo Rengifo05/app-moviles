@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/design_system/components/map/nx_map.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
+import 'package:nexo_familia/features/location_sharing/domain/location_use_cases.dart';
 import 'package:riverpod/misc.dart';
 
 final locationRepositoryProvider = Provider<LocationRepository>(
@@ -26,4 +27,27 @@ final StreamProviderFamily<SharingConsent, String> myConsentProvider =
     StreamProvider.family<SharingConsent, String>(
       (ref, familyId) =>
           ref.watch(locationRepositoryProvider).watchMyConsent(familyId),
+    );
+
+/// Publica ahora la ubicación propia en una familia (mapa; también lo
+/// pueden usar check-in y SOS si necesitan publicarla).
+final shareMyLocationNowProvider = Provider<ShareMyLocationNow>(
+  (ref) => ShareMyLocationNow(
+    ref.watch(locationRepositoryProvider),
+    ref.watch(deviceLocationServiceProvider),
+  ),
+);
+
+/// Ubicación que se puede adjuntar a un check-in o a un SOS respetando el
+/// consentimiento (nunca pide permisos).
+final resolveShareableLocationProvider = Provider<ResolveShareableLocation>(
+  (ref) => ResolveShareableLocation(ref.watch(deviceLocationServiceProvider)),
+);
+
+/// Estado actual del permiso de ubicación del sistema. Quien lo cambia (una
+/// solicitud o la vuelta desde los ajustes) lo invalida para releerlo.
+final FutureProvider<DeviceLocationPermission>
+deviceLocationPermissionProvider =
+    FutureProvider.autoDispose<DeviceLocationPermission>(
+      (ref) => ref.watch(deviceLocationServiceProvider).permission(),
     );

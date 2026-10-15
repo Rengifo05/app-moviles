@@ -1,0 +1,265 @@
+{
+  "familySetupGreeting": "Hola, {name}",
+  "@familySetupGreeting": {
+    "description": "Saludo de la pantalla para crear o unirse a una familia.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familySetupGreetingNoName": "Te damos la bienvenida",
+  "familySetupBody": "Para empezar, crea un grupo para tu familia o únete a uno con el código que te compartieron.",
+  "familySetupCreate": "Crear una familia",
+  "familySetupJoin": "Unirme con un código",
+  "familySetupWhatTitle": "¿Qué es una familia en Nexo?",
+  "familySetupWhatGroup": "Un grupo privado de hasta {max} personas adultas que se acompañan entre sí.",
+  "@familySetupWhatGroup": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "familySetupWhatConsent": "Cada persona decide si comparte su ubicación con el grupo y puede pausarla cuando quiera.",
+  "familySetupWhatInvite": "Solo entra quien recibe un código de invitación de alguien que administra el grupo.",
+  "familySetupSignOut": "Cerrar sesión",
+  "familyCreateTitle": "Crear una familia",
+  "familyCreateBody": "Ponle un nombre que todos reconozcan. Después podrás invitar a las demás personas.",
+  "familyCreateNameLabel": "Nombre de la familia",
+  "familyCreateNameHint": "Por ejemplo: Familia Gómez",
+  "familyCreateOwnerNote": "Tú administrarás el grupo: podrás invitar y quitar integrantes.",
+  "familyCreateAction": "Crear familia",
+  "familyJoinTitle": "Unirme con un código",
+  "familyJoinBody": "Escribe el código que te compartió alguien que administra la familia.",
+  "familyJoinCodeLabel": "Código de invitación",
+  "familyJoinCodeHelper": "Formato: ABCDE-FGHJK",
+  "familyJoinAction": "Unirme",
+  "familyJoinPrivacyNote": "Al unirte podrás ver la ubicación de quienes la comparten en esa familia. La tuya solo se comparte si tú lo activas.",
+  "familyErrorNameRequired": "Escribe un nombre para la familia.",
+  "familyErrorNameTooLong": "Usa como máximo {max} caracteres.",
+  "@familyErrorNameTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "familyErrorNameInvalid": "Ese nombre no es válido. Usa entre 1 y {max} caracteres, con al menos una letra o un número.",
+  "@familyErrorNameInvalid": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "familyErrorTooManyFamilies": "Ya perteneces al número máximo de familias. Para crear otra, primero sal de alguna.",
+  "familyErrorInvitationFormat": "Revisa el código: son 10 letras y números, como ABCDE-FGHJK.",
+  "familyErrorInvitationInvalid": "El código no es válido o ya venció. Pide uno nuevo a quien te invitó.",
+  "familyErrorAlreadyMember": "Ya perteneces a esta familia.",
+  "familyErrorFamilyFull": "Esta familia ya tiene {max} integrantes, el máximo permitido.",
+  "@familyErrorFamilyFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "familyErrorRateLimited": "Hiciste demasiados intentos. Por seguridad, espera un rato antes de volver a intentarlo.",
+  "familyErrorNotAllowedInvite": "Solo quienes administran el grupo pueden invitar.",
+  "familyErrorTooManyInvitations": "Este grupo ya tiene demasiadas invitaciones activas. Espera a que se usen o venzan.",
+  "familyErrorNotAllowedRemove": "No tienes permiso para quitar a esta persona del grupo.",
+  "familyErrorNotMember": "Esta persona ya no está en el grupo.",
+  "familyRoleOwner": "Administra el grupo",
+  "familyRoleAdmin": "Ayuda a administrar",
+  "familyRoleMember": "Integrante",
+  "familyYou": "Tú",
+  "familyMemberCount": "{count, plural, =1{1 integrante} other{{count} integrantes}}",
+  "@familyMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "familyYourRole": "Tu rol: {role}",
+  "@familyYourRole": {
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "familyMembersTitle": "Integrantes",
+  "familyInviteAction": "Invitar a alguien",
+  "familySwitch": "Cambiar de familia",
+  "familySwitchTitle": "Tus familias",
+  "familySwitchActive": "Familia activa",
+  "familySwitchCreate": "Crear otra familia",
+  "familySwitchJoin": "Unirme a otra con un código",
+  "familySwitched": "Ahora ves {name}.",
+  "@familySwitched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyPrivacyNote": "Cada persona decide si comparte su ubicación. Nadie puede activarla por otra.",
+  "familyLeave": "Salir del grupo",
+  "familyLeaveTitle": "¿Salir de {name}?",
+  "@familyLeaveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyLeaveSee": "Dejarás de ver la ubicación y la actividad de este grupo.",
+  "familyLeaveShare": "Dejarás de compartir tu ubicación con el grupo y se borrará la última que publicaste aquí.",
+  "familyLeaveOwner": "Como administras el grupo, pasará a administrarlo la persona con más antigüedad.",
+  "familyLeaveLast": "Eres la única persona del grupo, así que el grupo se eliminará.",
+  "familyLeaveReturn": "Para volver necesitarás una nueva invitación.",
+  "familyLeft": "Saliste de {name}.",
+  "@familyLeft": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyEmptyTitle": "Aún no vemos integrantes",
+  "familyEmptyBody": "Cuando el grupo se sincronice, aparecerán aquí.",
+  "familyNoActiveTitle": "No tienes una familia activa",
+  "familyInviteTitle": "Invitar a la familia",
+  "familyInviteBody": "Genera un código para que alguien se una a {name}.",
+  "@familyInviteBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyInviteGenerate": "Generar código",
+  "familyInviteGenerateAnother": "Generar otro código",
+  "familyInviteCodeLabel": "Código de invitación",
+  "familyInviteCodeSemantics": "Código de invitación: {spelled}",
+  "@familyInviteCodeSemantics": {
+    "description": "Etiqueta para lectores de pantalla; el código va letra por letra.",
+    "placeholders": {
+      "spelled": {
+        "type": "String"
+      }
+    }
+  },
+  "familyInviteExpiresHours": "{hours, plural, =1{Vence en 1 h} other{Vence en {hours} h}}",
+  "@familyInviteExpiresHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "familyInviteExpiresMinutes": "{minutes, plural, =1{Vence en 1 min} other{Vence en {minutes} min}}",
+  "@familyInviteExpiresMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "familyInviteUses": "{count, plural, =1{un solo uso} other{{count} usos}}",
+  "@familyInviteUses": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "familyInviteValidity": "{expires} · {uses}",
+  "@familyInviteValidity": {
+    "description": "Vigencia del código, p. ej. «Vence en 48 h · un solo uso».",
+    "placeholders": {
+      "expires": {
+        "type": "String"
+      },
+      "uses": {
+        "type": "String"
+      }
+    }
+  },
+  "familyInviteExpired": "Este código ya venció. Genera uno nuevo.",
+  "familyInviteCopy": "Copiar código",
+  "familyInviteCopied": "Código copiado",
+  "familyInviteWarningShare": "Compártelo solo con la persona que quieres invitar.",
+  "familyInviteWarningVisibility": "Quien se una podrá ver la ubicación de quienes la comparten en esta familia.",
+  "familyInviteWarningOnce": "Por seguridad, este código solo se muestra ahora. Si lo pierdes, genera otro.",
+  "familyInviteFull": "El grupo ya tiene {max} integrantes, el máximo permitido. Nadie más podrá unirse.",
+  "@familyInviteFull": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "familyMemberSince": "En el grupo desde el {date}",
+  "@familyMemberSince": {
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMMd"
+      }
+    }
+  },
+  "familyLocationTitle": "Ubicación",
+  "familyLocationUpdated": "Ubicación actualizada {ago}",
+  "@familyLocationUpdated": {
+    "description": "{ago} es un tiempo relativo, p. ej. «hace 5 min».",
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "familyLocationStale": "Sin actualización reciente",
+  "familyLocationLastUpdate": "Última actualización {ago}",
+  "@familyLocationLastUpdate": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "familyLocationNotSharing": "No comparte su ubicación",
+  "familyLocationSelfNotSharing": "No estás compartiendo tu ubicación",
+  "familyLocationApproximate": "Ubicación aproximada (cerca de 1 km)",
+  "familyLocationDeviceNote": "La ubicación la reporta el dispositivo y puede no ser exacta.",
+  "familyLocationUnavailable": "No pudimos consultar el estado de la ubicación.",
+  "familyPrivacyLink": "Revisar mi privacidad",
+  "familyRemove": "Quitar del grupo",
+  "familyRemoveTitle": "¿Quitar a {name} del grupo?",
+  "@familyRemoveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyRemoveBody": "{name} dejará de ver la ubicación y la actividad del grupo, y se borrará la ubicación que compartía aquí. Para volver necesitará una nueva invitación.",
+  "@familyRemoveBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyRemoved": "{name} ya no está en el grupo.",
+  "@familyRemoved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "familyBackToFamily": "Volver a Familia"
+}

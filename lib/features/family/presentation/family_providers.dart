@@ -26,3 +26,25 @@ final StreamProviderFamily<List<FamilyMember>, String> familyMembersProvider =
 final activeFamilyIdProvider = Provider<String?>(
   (ref) => throw UnimplementedError('activeFamilyIdProvider: ver app/'),
 );
+
+/// Familia activa con el rol del usuario actual en ella.
+///
+/// Carga mientras llegan las familias; `null` si no hay familia activa o si
+/// la familia activa ya no figura entre las del usuario (p. ej. justo
+/// después de salir de ella).
+final activeFamilyProvider = Provider<AsyncValue<FamilyGroup?>>((ref) {
+  final familyId = ref.watch(activeFamilyIdProvider);
+  if (familyId == null) return const AsyncData(null);
+  return ref
+      .watch(myFamiliesProvider)
+      .whenData(
+        (families) => families.where((f) => f.id == familyId).firstOrNull,
+      );
+});
+
+/// Si la persona ya pertenece a alguna familia: crear o unirse a otra la
+/// devuelve a la pestaña Familia en lugar de esperar al cambio de sesión.
+/// Las pantallas lo observan en `build` para tenerlo cargado al enviar.
+final hasAnyFamilyProvider = Provider<bool>(
+  (ref) => ref.watch(myFamiliesProvider).value?.isNotEmpty ?? false,
+);
