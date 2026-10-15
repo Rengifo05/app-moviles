@@ -26,7 +26,14 @@ cp config/env.example.json config/env.dev.json   # no se versiona
 flutter run --dart-define-from-file=config/env.dev.json
 ```
 
-Con `NX_BACKEND=demo` la app funciona sin red ni credenciales, con datos en memoria. El backend de Firebase se documenta en el incremento 4.
+Con `NX_BACKEND=demo` la app funciona sin red ni credenciales, con datos en memoria y ubicaciones sintéticas (nunca usa el GPS). Con `NX_BACKEND=firebase` y `NX_USE_EMULATORS=true` usa los emuladores locales de Firebase (proyecto `demo-nexo`, sin credenciales): ver [el runbook](docs/runbooks/entorno-de-desarrollo.md#app-contra-los-emuladores-de-firebase). Un proyecto real de Firebase está pendiente de la decisión D7.
+
+Backend (reglas y Cloud Functions), con Node 22 y Java 21:
+
+```bash
+tool/check_backend.sh              # tipos, índices, compilación y pruebas en el emulador
+(cd functions && npm run test:mutations)   # pruebas de mutación de las reglas
+```
 
 ## Documentación
 

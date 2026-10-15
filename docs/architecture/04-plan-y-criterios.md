@@ -4,6 +4,20 @@ Leyenda: 🔒 = requiere aprobación (alcance, costo o credenciales). 📱 = sol
 
 Cada tarea sigue la rutina: leer → enfoque → criterios → cambio mínimo → `dart format` + `flutter analyze` → pruebas → revisión de UI (si aplica) → documentación → informe.
 
+## Estado (actualizado el 2026-10-15)
+
+Se marca ✅ solo lo verificado con pruebas ejecutadas en esta sesión y en la CI. ⏳ = en curso. 🔒/📱 = bloqueado por una decisión o por un dispositivo.
+
+| Incremento | Estado | Evidencia |
+|---|---|---|
+| 1 · Base | ✅ | Análisis estricto, prueba de arquitectura en mundo cerrado, CI en GitHub Actions, *hook* de sesión |
+| 2 · Diseño y navegación | ✅ (T2.4 se completa con cada funcionalidad) | Contraste WCAG de 61 pares, guías de accesibilidad, galería *golden* al 100 % y 200 % |
+| 3 · Dominio y persistencia | ✅ | Drift (caché, bandeja, preferencias), bandeja con prioridad SOS, espejo con reconexión; revisión adversarial con 39 defectos corregidos |
+| 4 · Identidad, grupos y reglas | ✅ en emulador · 🔒 despliegue (D7) | Reglas con 38/38 mutaciones detectadas; Functions con 86 pruebas en el emulador; adaptador Firebase de la app con pruebas sobre dobles; retención con TTL e índices validados |
+| 5 · Ubicación, mapa, geocercas y check-ins | ⏳ Familia y ubicación ✅; geocercas y check-ins en curso | 834 pruebas en verde al integrar familia y ubicación; E2E de crear familia, invitar y unirse |
+| 6 · SOS y resiliencia | ⏳ Backend ✅ (`raiseSos` idempotente, limpieza de tokens, «cerrar sesión en todos los dispositivos»); app en curso · 🔒📱 push real (D7) | Pruebas en el emulador |
+| 7 · Endurecimiento | ⏳ Runbook de incidentes y operación escrito; revisiones adversariales por incremento (`revisiones.md`) | — |
+
 ## Incremento 1 · Base del proyecto (tras aprobar la arquitectura)
 
 | ID | Tarea | Criterios de aceptación |
