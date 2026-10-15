@@ -71,6 +71,72 @@ final class _Transaction extends Mock implements fs.Transaction {
   }
 }
 
+/// Registra las llamadas que importan del usuario recién creado.
+// MockUser se declara @immutable pero tiene campos mutables propios.
+// ignore: must_be_immutable
+final class _RecordingUser extends MockUser {
+  new() : super(uid: 'u-nuevo', email: 'ana@example.com');
+
+  final calls = <String>[];
+
+  @override
+  Future<void> delete() async => calls.add('delete');
+
+  @override
+  Future<void> sendEmailVerification([
+    fb.ActionCodeSettings? actionCodeSettings,
+  ]) async => calls.add('sendEmailVerification');
+
+  @override
+  Future<void> updateDisplayName(String? displayName) async {}
+}
+
+final class _Credential extends Mock implements fb.UserCredential {
+  new(this._user);
+  final fb.User _user;
+
+  @override
+  fb.User get user => _user;
+}
+
+/// Crea siempre [user] y recuerda si se cerró la sesión.
+final class _CreatingAuth extends MockFirebaseAuth {
+  new(this.user) : super(signedIn: true, mockUser: user);
+
+  final _RecordingUser user;
+  bool signedOut = false;
+
+  @override
+  Future<fb.UserCredential> createUserWithEmailAndPassword({
+    required String email,
+    required String password,
+  }) async => _Credential(user);
+
+  @override
+  Future<void> signOut() async {
+    signedOut = true;
+    await super.signOut();
+  }
+}
+
+/// Almacén cuyas escrituras fallan como sin conexión.
+final class _OfflineStore implements RemoteStore {
+  @override
+  Future<VoidResult> commit(List<RemoteWrite> writes) async =>
+      const Err(Failure.network());
+
+  @override
+  Future<Result<RemoteDoc?>> getDoc(String path) async =>
+      const Err(Failure.network());
+
+  @override
+  Stream<List<RemoteDoc>> watchCollection(String path, {RemoteQuery? query}) =>
+      const Stream.empty();
+
+  @override
+  Stream<RemoteDoc?> watchDoc(String path) => const Stream.empty();
+}
+
 /// Simula los errores de Firebase Auth para correo inexistente.
 final class _ThrowingAuth extends MockFirebaseAuth {
   new(this.code);
@@ -269,6 +335,32 @@ void main() {
         expect(profile.containsKey('password'), isFalse);
       },
     );
+
+    test('envía la verificación de correo tras un registro correcto', () async {
+      final user = _RecordingUser();
+      final repo = FirebaseAuthRepository(
+        auth: _CreatingAuth(user),
+        remote: FirestoreRemoteStore(_Firestore()),
+        functions: _NoFunctions(),
+      );
+      expect((await repo.signUp(request)).isOk, isTrue);
+      expect(user.calls, ['sendEmailVerification']);
+    });
+
+    test('si no se guarda el perfil, deshace la cuenta y cierra la sesión '
+        '(reintentar no da "correo en uso")', () async {
+      final user = _RecordingUser();
+      final auth = _CreatingAuth(user);
+      final repo = FirebaseAuthRepository(
+        auth: auth,
+        remote: _OfflineStore(),
+        functions: _NoFunctions(),
+      );
+      final result = await repo.signUp(request);
+      expect(result.failureOrNull?.kind, FailureKind.network);
+      expect(user.calls, ['delete']);
+      expect(auth.signedOut, isTrue);
+    });
 
     test('valida antes de llamar a Firebase', () async {
       final repo = FirebaseAuthRepository(

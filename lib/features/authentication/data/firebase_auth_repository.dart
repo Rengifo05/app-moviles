@@ -64,7 +64,25 @@ final class FirebaseAuthRepository implements AuthRepository {
           'privacyPolicyVersion': '2026-10',
         }),
       ]);
-      if (profile case Err(:final failure)) return Err(failure);
+      if (profile case Err(:final failure)) {
+        // Sin perfil, la cuenta quedaría a medias y reintentar el registro
+        // daría "correo en uso": se deshace (y, si tampoco se puede borrar,
+        // al menos se cierra la sesión).
+        try {
+          await user.delete();
+        } on Object {
+          // Se cierra la sesión abajo.
+        }
+        await _auth.signOut();
+        return Err(failure);
+      }
+      // Verificación de correo (amenaza 2). No bloquea el registro: si el
+      // envío falla, la cuenta funciona igual.
+      try {
+        await user.sendEmailVerification();
+      } on Object {
+        // Sin verificación enviada; la persona puede pedirla más adelante.
+      }
       return Ok(
         AuthUser(uid: user.uid, email: user.email ?? '', displayName: name),
       );
