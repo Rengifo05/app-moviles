@@ -41,6 +41,7 @@ Con `NX_BACKEND=demo` la app funciona sin red ni credenciales, con datos en memo
 | [docs/privacy/](docs/privacy/) | Modelo de amenazas; datos, permisos y marco legal |
 | [docs/decisions/README.md](docs/decisions/README.md) | Índice de ADR y **decisiones pendientes de aprobación** |
 | [docs/runbooks/entorno-de-desarrollo.md](docs/runbooks/entorno-de-desarrollo.md) | Cómo preparar el entorno |
+| [docs/runbooks/incidentes-y-operacion.md](docs/runbooks/incidentes-y-operacion.md) | Incidentes, interruptores, reversión de versiones y solicitudes de datos |
 
 ## Stack propuesto (versiones verificadas el 2026-10-15)
 

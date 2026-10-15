@@ -15,7 +15,10 @@ import type { Notifier } from './sos.js';
 initializeApp();
 const db = getFirestore();
 
-const options = { region: REGION, cors: false, enforceAppCheck: false } as const;
+// maxInstances acota el costo ante un pico o un abuso (03-costos.md); con
+// concurrencia de 2.ª generación, 10 instancias atienden de sobra el MVP.
+// App Check se activará con el proyecto real (decisión D7).
+const options = { region: REGION, cors: false, enforceAppCheck: false, maxInstances: 10 } as const;
 
 function ctxOf(request: CallableRequest): Ctx {
   const uid = request.auth?.uid;
