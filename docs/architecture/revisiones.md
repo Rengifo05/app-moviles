@@ -75,4 +75,4 @@ Dos revisores (sincronización y adaptador de Firebase; seguridad y privacidad d
 | La caché en disco de Firestore conservaba datos de la familia tras cerrar sesión, salir o borrar la cuenta | Caché solo en memoria (ADR-004 §7) |
 | El tiempo límite de las transacciones no acotaba la confirmación nativa | Se acota también en Dart |
 | Refutado como defecto de este cambio: `signOutEverywhere` no corta lo que dura más que el ID token (≤ 1 h) | Mejora de todos modos: revoca las invitaciones activas que creó la cuenta |
-
+| Encontrado al integrar (la suite completa lo reproducía): el ámbito del espejo pasaba a «en vivo» en cuanto **una** de sus colecciones reconectaba, aunque las demás siguieran mostrando datos guardados | Un ámbito solo está `live` cuando todas sus colecciones recibieron datos del servidor tras arrancar o tras su último error; prueba determinista que falla sin la corrección |

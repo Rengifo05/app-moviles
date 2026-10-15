@@ -80,7 +80,9 @@ final class RemoteMirror {
   /// nada (llamarlo de nuevo es seguro).
   void start(String scope, List<MirrorSpec> specs) {
     if (_listening.containsKey(scope)) return;
-    final listening = _listening[scope] = _Listening();
+    final listening = _listening[scope] = _Listening([
+      for (final spec in specs) spec.path,
+    ]);
     for (final spec in specs) {
       _listen(scope, listening, spec);
     }
@@ -100,7 +102,9 @@ final class RemoteMirror {
     // camino: no deben cambiar el estado de una escucha que ya terminó.
     bool active() => identical(_listening[scope], listening);
     void onError(Object error) {
-      if (active()) unawaited(_onError(scope, error));
+      if (!active()) return;
+      listening.waiting.add(spec.path);
+      unawaited(_onError(scope, error));
     }
 
     var received = false;
@@ -111,7 +115,16 @@ final class RemoteMirror {
       );
       received = true;
       if (!active()) return;
-      _setStatus(scope, MirrorStatus(MirrorConnection.live, lastSyncedAt: now));
+      // El ámbito solo está en vivo cuando TODAS sus colecciones lo están:
+      // una que reconecta antes que las demás no debe ocultar que el resto
+      // sigue mostrando datos guardados.
+      listening.waiting.remove(spec.path);
+      if (listening.waiting.isEmpty) {
+        _setStatus(
+          scope,
+          MirrorStatus(MirrorConnection.live, lastSyncedAt: now),
+        );
+      }
     }
 
     late final StreamSubscription<List<RemoteDoc>> subscription;
@@ -130,6 +143,7 @@ final class RemoteMirror {
           onDone: () {
             listening.subscriptions.remove(subscription);
             if (!active()) return;
+            listening.waiting.add(spec.path);
             _setOffline(scope);
             final attempt = received ? 1 : failures + 1;
             listening.retry(
@@ -240,6 +254,12 @@ final class RemoteMirror {
 /// Escuchas de un ámbito, sus reconexiones pendientes y sus escrituras en
 /// la caché aún en curso.
 final class _Listening {
+  new(Iterable<String> paths) : waiting = {...paths};
+
+  /// Colecciones sin datos del servidor desde que empezó la escucha o desde
+  /// su último error. Mientras haya alguna, el ámbito no está `live`.
+  final Set<String> waiting;
+
   final List<StreamSubscription<void>> subscriptions = [];
   final Set<Timer> _retries = {};
   final Set<Future<void>> _writes = {};

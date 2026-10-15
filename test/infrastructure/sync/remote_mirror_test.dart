@@ -339,6 +339,43 @@ void main() {
     expect(await cachedIds(_members), ['a', 'b']);
   });
 
+  test('el ámbito solo vuelve a live cuando TODAS sus colecciones '
+      'reciben datos del servidor', () async {
+    final scripted = _ScriptedRemote();
+    final m = RemoteMirror(
+      remote: scripted,
+      cache: cache,
+      clock: clock,
+      logger: SafeLogger(sink: sink, clock: clock),
+    );
+    addTearDown(m.dispose);
+    m.start('f1', familySpecs);
+    final members = scripted.listeners[_members]!.single;
+    final zones = scripted.listeners[_geofences]!.single;
+
+    // Al arrancar, una sola colección no basta.
+    members.add(const []);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.idle);
+    zones.add(const []);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.live);
+
+    // Se pierde la conexión en ambas; vuelve primero solo una.
+    members.addError(offlineSignal);
+    zones.addError(offlineSignal);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.offline);
+    members.add(const [
+      RemoteDoc('a', {'role': 'owner'}),
+    ]);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.offline);
+    zones.add(const []);
+    await pumpEventQueue();
+    expect(m.statusOf('f1').connection, MirrorConnection.live);
+  });
+
   for (final denied in const [
     Failure.permissionDenied(),
     Failure.unauthenticated(),
