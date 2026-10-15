@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
@@ -503,11 +502,7 @@ class _FamilyMap extends ConsumerWidget {
 /// Lista accesible ([NxListMap]) que ocupa exactamente el alto de su
 /// contenido: así la página se desplaza como una sola pieza, sin una lista
 /// con desplazamiento propio dentro de otra (incómodo con texto grande).
-///
-/// `NxListMap` es un `ListView` sin `shrinkWrap`, así que su alto se mide
-/// tras cada fotograma sumando la extensión de las láminas de su vista y se
-/// ajusta si cambió. Mientras no se conoce, se usa un alto estimado.
-class _ListMap extends StatefulWidget {
+class _ListMap extends StatelessWidget {
   const new({required this.markers, required this.framed});
 
   final List<NxMapMarker> markers;
@@ -516,94 +511,20 @@ class _ListMap extends StatefulWidget {
   final bool framed;
 
   @override
-  State<_ListMap> createState() => _ListMapState();
-}
-
-class _ListMapState extends State<_ListMap> {
-  double? _height;
-  bool _measureScheduled = false;
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // Dependencias que cambian el alto del contenido: se vuelve a medir.
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-    MediaQuery.sizeOf(context);
-    _scheduleMeasure();
     final list = NxListMap(
       // Las zonas van en su propia sección, donde se pueden abrir.
-      data: NxMapData(markers: widget.markers, zones: const []),
+      data: NxMapData(markers: markers, zones: const []),
       strings: NxListMapStrings(
         title: l10n.locationListTitle,
         emptyMarkers: l10n.locationListEmpty,
         zonesTitle: l10n.locationZonesTitle,
         radiusLabel: (meters) => l10n.locationZoneRadius(meters.round()),
       ),
+      scrollable: false,
     );
-    return SizedBox(
-      height: _height ?? _estimate(widget.markers.length, textScale),
-      // Un `ListView` vertical sin controlador siempre reclama el arrastre,
-      // aunque no tenga nada que desplazar: ya medida (todo su contenido
-      // cabe), la lista no recibe toques y el arrastre desplaza la página.
-      // Sus filas no tienen acciones y el lector de pantalla las sigue
-      // leyendo.
-      child: IgnorePointer(
-        ignoring: _height != null,
-        child: widget.framed
-            ? NxSurface(padding: EdgeInsets.zero, child: list)
-            : list,
-      ),
-    );
-  }
-
-  /// Alto aproximado antes de la primera medición.
-  static double _estimate(int markers, double textScale) =>
-      (56 + 88 * (markers == 0 ? 1 : markers)) * textScale.clamp(1, 2);
-
-  void _scheduleMeasure() {
-    if (_measureScheduled) return;
-    _measureScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _measureScheduled = false;
-      if (!mounted) return;
-      final measured = _contentExtent();
-      if (measured == null || measured <= 0) return;
-      // El borde de la superficie (1 px arriba y abajo) también ocupa alto.
-      // Se redondea hacia arriba: si faltara una fracción de píxel, la lista
-      // podría desplazarse por dentro y robarle el arrastre a la página.
-      final next = (measured + (widget.framed ? 2 : 0)).ceilToDouble();
-      if (next != _height) setState(() => _height = next);
-    });
-  }
-
-  /// Extensión total de las láminas de la vista de la lista, o `null` si
-  /// aún no se ha dispuesto. Si la vista no mostraba todo el contenido, el
-  /// valor puede ser una estimación: al aplicar el nuevo alto se vuelve a
-  /// medir hasta que coincide.
-  double? _contentExtent() {
-    RenderViewportBase? viewport;
-    void visit(Element element) {
-      if (viewport != null) return;
-      final render = element.renderObject;
-      if (render is RenderViewportBase && render.hasSize) {
-        viewport = render;
-        return;
-      }
-      element.visitChildren(visit);
-    }
-
-    context.visitChildElements(visit);
-    final found = viewport;
-    if (found == null) return null;
-    var extent = 0.0;
-    var sliver = found.firstChild;
-    while (sliver != null) {
-      final geometry = sliver.geometry;
-      if (geometry == null) return null;
-      extent += geometry.scrollExtent;
-      sliver = found.childAfter(sliver);
-    }
-    return extent;
+    return framed ? NxSurface(padding: EdgeInsets.zero, child: list) : list;
   }
 }
 
