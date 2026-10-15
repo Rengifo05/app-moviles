@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/app/sync_coordinator.dart';
 import 'package:nexo_familia/core/clock.dart';
@@ -8,6 +9,8 @@ import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/core/logging/console_log_sink.dart';
 import 'package:nexo_familia/core/logging/safe_logger.dart';
 import 'package:nexo_familia/features/authentication/data/demo_auth_repository.dart';
+import 'package:nexo_familia/features/authentication/data/firebase_auth_repository.dart';
+import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/features/authentication/presentation/auth_providers.dart';
 import 'package:nexo_familia/features/family/data/family_repository_impl.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
@@ -17,6 +20,9 @@ import 'package:nexo_familia/infrastructure/database/app_database.dart';
 import 'package:nexo_familia/infrastructure/database/drift_stores.dart';
 import 'package:nexo_familia/infrastructure/demo/demo_functions.dart';
 import 'package:nexo_familia/infrastructure/demo/in_memory_remote_store.dart';
+import 'package:nexo_familia/infrastructure/firebase/firebase_functions_client.dart';
+import 'package:nexo_familia/infrastructure/firebase/firestore_remote_store.dart';
+import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 import 'package:nexo_familia/infrastructure/sync/backoff.dart';
 import 'package:nexo_familia/infrastructure/sync/outbox.dart';
 import 'package:nexo_familia/infrastructure/sync/remote_mirror.dart';
@@ -54,7 +60,6 @@ final class AppComposition {
     LogSink logSink = const ConsoleLogSink(),
     math.Random? random,
   }) {
-    final logger = SafeLogger(sink: logSink, clock: clock);
     final store = InMemoryRemoteStore(clock: clock);
     late final DemoAuthRepository auth;
     final functions = DemoFunctionsClient(
@@ -68,9 +73,55 @@ final class AppComposition {
       callFunction: functions.call,
       random: random,
     );
+    return AppComposition._assemble(
+      db: db,
+      clock: clock,
+      logSink: logSink,
+      remote: store,
+      functions: functions,
+      auth: auth,
+      extraDisposers: [auth.dispose, store.dispose],
+    );
+  }
+
+  /// Backend Firebase (proyecto real o emuladores).
+  factory firebase({
+    required AppDatabase db,
+    required FirebaseHandles firebase,
+    Clock clock = const SystemClock(),
+    LogSink logSink = const ConsoleLogSink(),
+  }) {
+    final remote = FirestoreRemoteStore(firebase.firestore);
+    final functions = FirebaseFunctionsClient(firebase.functions);
+    return AppComposition._assemble(
+      db: db,
+      clock: clock,
+      logSink: logSink,
+      remote: remote,
+      functions: functions,
+      auth: FirebaseAuthRepository(
+        auth: firebase.auth,
+        remote: remote,
+        functions: functions,
+      ),
+    );
+  }
+
+  /// Ensamblaje común a todos los backends: solo cambian el almacén remoto,
+  /// las funciones y la autenticación.
+  factory _assemble({
+    required AppDatabase db,
+    required Clock clock,
+    required LogSink logSink,
+    required RemoteStore remote,
+    required FunctionsClient functions,
+    required AuthRepository auth,
+    List<Future<void> Function()> extraDisposers = const [],
+  }) {
+    final logger = SafeLogger(sink: logSink, clock: clock);
     final cache = DriftDocumentCache(db);
     final mirror = RemoteMirror(
-      remote: store,
+      remote: remote,
       cache: cache,
       clock: clock,
       logger: logger,
@@ -110,12 +161,7 @@ final class AppComposition {
           ),
         ),
       ],
-      disposers: [
-        coordinator.dispose,
-        mirror.dispose,
-        auth.dispose,
-        store.dispose,
-      ],
+      disposers: [coordinator.dispose, mirror.dispose, ...extraDisposers],
     );
   }
 

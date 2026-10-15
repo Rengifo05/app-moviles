@@ -27,3 +27,23 @@ Enfoques: privacidad y seguridad, solidez de la prueba de arquitectura, correcci
 | `.gitignore` no cubría cuentas de servicio ni configuraciones por flavor | Descartado (sin backend todavía), pero corregido igualmente | Patrones sin anclar y credenciales del backend |
 | Una compilación release sin `--dart-define` arrancaba con datos de demostración | Descartado (bajo), pero corregido igualmente | `AppConfig.validate` lo rechaza salvo con `NX_ALLOW_DEMO_RELEASE=true` |
 | Comentarios entre `import` y la URI, comillas triples, `.g.dart` escritos a mano, URIs con `%xx` | Descartados: requieren ofuscación deliberada, o ya los detecta `flutter analyze` | El AST también cubre los dos primeros |
+
+## Columna vertebral: dominio, infraestructura y backend (2026-10-15)
+
+Seis agentes trabajaron sobre archivos disjuntos: uno escribía las pruebas de cada área (dominio, backend de demostración, sincronización y Drift) y otro la revisaba de forma adversarial. Cada defecto se demostró primero con una prueba que fallaba.
+
+| Área | Defectos corregidos (resumen) |
+|---|---|
+| Dominio | Frescura con reloj adelantado (usa `min(capturedAt, receivedAt)`); el SOS ya no cuenta como «confirmado» el *ack* de la propia autora; `copyWith` arrastraba el código de error; normalización Unicode del código de invitación; **fuga de privacidad** en `approximate()` (signo de `-0.0`, antimeridiano y polos); expresión regular de correo cuadrática que congelaba la interfaz |
+| Backend de demostración | Copias superficiales; `merge` superficial; rutas inválidas e inyección de rutas; orden de consultas; estados intermedios visibles (ahora transaccional); códigos de error en kebab-case; heredero no determinista; `deleteAccount` incompleto; colisión de códigos; escuchas que seguían vivas tras un error (Firestore las termina) |
+| Sincronización y Drift | Prioridad del SOS durante un envío en curso; recuperación tras fallos del almacén; entradas atascadas en `sending`; **purga que no esperaba escrituras en curso** (fuga de datos de una familia tras salir); reconexión del espejo; `secure_delete` en SQLite; fechas en segundos y hora local; desbordes del *backoff* |
+| Coordinador (corregido por el integrador) | Un paso fallido detenía la cadena (incluida la purga al cerrar sesión); purga de la bandeja de salida al cerrar sesión; purga de la familia anterior tras detener su espejo |
+
+### Pruebas de mutación de las reglas de Firestore
+
+`npm run test:mutations` (en `functions/`) debilita una a una 37 condiciones de seguridad. La primera ejecución detectó 35 de 37. Las 2 supervivientes revelaron **pruebas que pasaban por el motivo equivocado**; las reglas estaban bien:
+
+- La escritura de la ubicación de otra persona fallaba por el consentimiento de quien escribía, no por la comprobación de propiedad.
+- Faltaba el caso de un *ack* propio combinado con el de otra persona en la misma escritura.
+
+Tras añadir esos casos se detectan **37 de 37**. Este paso forma parte de la CI.

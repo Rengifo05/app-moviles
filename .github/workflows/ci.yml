@@ -73,3 +73,7 @@ jobs:
       - run: npm run build
       - name: Reglas y funciones contra el emulador (proyecto demo-, sin credenciales)
         run: npm test
+      # Debilita cada condición de las reglas y exige que alguna prueba lo
+      # detecte: garantiza que las pruebas fallan por el motivo correcto.
+      - name: Pruebas de mutación de las reglas
+        run: npm run test:mutations

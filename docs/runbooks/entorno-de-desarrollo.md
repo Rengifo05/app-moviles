@@ -27,6 +27,18 @@ tool/check.sh   # pub get → dart format (verificación) → flutter analyze --
 
 `config/env.example.json` lista las claves (`NX_APP_NAME`, `NX_ENV`, `NX_BACKEND`, `NX_USE_EMULATORS` y `NX_EMERGENCY_NUMBER`). Copia el archivo a `config/env.<entorno>.json`, que git ignora, y ejecuta con `--dart-define-from-file`. La app valida la configuración al arrancar y se niega a iniciar si, por ejemplo, producción usa el backend de demostración o los emuladores.
 
+### App contra los emuladores de Firebase
+
+Con `NX_BACKEND=firebase` y `NX_USE_EMULATORS=true`, la app usa Auth, Firestore y Functions locales. `NX_FIREBASE_PROJECT_ID` debe empezar por `demo-` (la app lo exige). Las claves `NX_FIREBASE_API_KEY`, `NX_FIREBASE_APP_ID` y `NX_FIREBASE_SENDER_ID` pueden quedar vacías. `NX_EMULATOR_HOST` es `127.0.0.1` en iOS y escritorio, y `10.0.2.2` desde el emulador de Android.
+
+```bash
+cd functions && npx firebase emulators:start --project demo-nexo --config ../firebase.json
+# en otra terminal:
+flutter run --dart-define-from-file=config/env.emulators.json
+```
+
+Con un proyecto real (pendiente de D7), esas tres claves son identificadores **públicos** del cliente, no secretos: la protección viene de las reglas, App Check y las restricciones de la API key. Aun así no se versionan, porque dependen del proyecto.
+
 En macOS o Windows, usar el instalador oficial de la misma versión. Para compilar en Android hace falta Android Studio o el SDK; para iOS, Xcode en macOS.
 
 ## Backend: reglas y Cloud Functions (sin credenciales)

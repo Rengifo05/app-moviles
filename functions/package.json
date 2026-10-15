@@ -11,7 +11,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "firebase emulators:exec --only firestore,auth --project demo-nexo --config ../firebase.json \"vitest run\"",
-    "test:unit": "vitest run test/unit"
+    "test:unit": "vitest run test/unit",
+    "test:mutations": "firebase emulators:exec --only firestore --project demo-nexo --config ../firebase.json \"node scripts/mutate_rules.mjs\""
   },
   "dependencies": {
     "firebase-admin": "14.5.0",

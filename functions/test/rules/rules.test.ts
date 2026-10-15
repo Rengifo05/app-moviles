@@ -23,7 +23,9 @@ import {
 } from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-const RULES = fileURLToPath(new URL('../../../firestore/firestore.rules', import.meta.url));
+// RULES_PATH permite probar reglas mutadas (scripts/mutate_rules.mjs).
+const RULES =
+  process.env.RULES_PATH ?? fileURLToPath(new URL('../../../firestore/firestore.rules', import.meta.url));
 let env: RulesTestEnvironment;
 
 // Datos sintéticos: dos familias aisladas y un usuario sin familia.
@@ -186,6 +188,11 @@ describe('ubicaciones', () => {
 
   it('nadie publica la ubicación de otra persona', async () => {
     await assertFails(setDoc(doc(as('luis'), 'families/f1/locations/ana'), location(T0)));
+    // Aunque quien escribe SÍ comparte su ubicación (detectado por pruebas
+    // de mutación: el caso anterior fallaba por el consentimiento de Luis).
+    await assertFails(
+      setDoc(doc(as('ana'), 'families/f1/locations/luis'), location(Timestamp.fromMillis(Date.now()))),
+    );
   });
 
   it('descarta actualizaciones fuera de orden', async () => {
@@ -319,6 +326,13 @@ describe('alertas SOS', () => {
     await assertFails(updateDoc(doc(db, 'families/f1/emergencies/sos1'), { 'acks.luis': serverTimestamp() }));
     await assertFails(updateDoc(doc(db, 'families/f1/emergencies/sos1'), { 'acks.ana': T0 }));
     await assertFails(updateDoc(doc(db, 'families/f1/emergencies/sos1'), { 'acks.ana': serverTimestamp(), notifiedCount: 9 }));
+    // Su propio ack junto con el de otra persona en la misma escritura.
+    await assertFails(
+      updateDoc(doc(db, 'families/f1/emergencies/sos1'), {
+        'acks.ana': serverTimestamp(),
+        'acks.sofia': serverTimestamp(),
+      }),
+    );
     await assertSucceeds(updateDoc(doc(db, 'families/f1/emergencies/sos1'), { 'acks.ana': serverTimestamp() }));
   });
 

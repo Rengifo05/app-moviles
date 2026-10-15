@@ -52,8 +52,11 @@ enum FailureKind {
 /// registrarse y usado por la UI para elegir el mensaje localizado.
 /// [cause] conserva el error original para depuración local; **nunca** se
 /// envía a los registros porque puede contener datos personales.
+///
+/// Implementa [Exception] porque los `Stream` del proyecto emiten fallos como
+/// errores (contrato de `RemoteStore`).
 @immutable
-class Failure {
+class Failure implements Exception {
   const new(this.kind, this.code, {this.cause});
 
   const new network([String code = 'network', Object? cause])

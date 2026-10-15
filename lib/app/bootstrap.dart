@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/app/app.dart';
 import 'package:nexo_familia/app/composition.dart';
+import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/core/config/app_config.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
@@ -34,8 +35,12 @@ Future<void> bootstrap(AppConfig config) async {
 
   final composition = switch (config.backend) {
     BackendMode.demo => AppComposition.demo(db: db),
-    BackendMode.firebase => throw UnsupportedError(
-      'El backend Firebase se conecta en el incremento 4.',
+    BackendMode.firebase => AppComposition.firebase(
+      db: db,
+      firebase: await initializeFirebase(
+        FirebaseConfig.fromEnvironment(),
+        useEmulators: config.useFirebaseEmulators,
+      ),
     ),
   };
   WidgetsBinding.instance.addObserver(composition.coordinator);
