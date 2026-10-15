@@ -10,6 +10,7 @@ Los ADR viven en `docs/architecture/adr-*.md`. Este archivo es el índice y la l
 | [ADR-002](../architecture/adr-002-mapas.md) | Mapas: abstracción y Google Maps en ambas plataformas para el MVP | Aceptado (2026-10-15; se aparta del prompt) |
 | [ADR-003](../architecture/adr-003-ubicacion-y-geocercas.md) | Ubicación por fases y geocercas del sistema operativo | Aceptado (2026-10-15) |
 | [ADR-004](../architecture/adr-004-persistencia-y-sincronizacion.md) | Drift como fuente local, bandeja de salida e idempotencia | Aceptado (2026-10-15) |
+| [ADR-005](../architecture/adr-005-notificaciones.md) | Notificaciones push del SOS: contenido genérico, permiso en contexto y registro del dispositivo | Aceptado (2026-10-15); verificación real pendiente de D7 |
 
 ## Decisiones del propietario
 
