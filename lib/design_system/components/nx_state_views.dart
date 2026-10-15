@@ -9,8 +9,8 @@ class NxMessageView extends StatelessWidget {
   const new({
     required this.icon,
     required this.title,
-    required this.body,
     super.key,
+    this.body,
     this.actionLabel,
     this.onAction,
     this.secondaryActionLabel,
@@ -19,7 +19,7 @@ class NxMessageView extends StatelessWidget {
 
   final IconData icon;
   final String title;
-  final String body;
+  final String? body;
   final String? actionLabel;
   final VoidCallback? onAction;
   final String? secondaryActionLabel;
@@ -46,12 +46,14 @@ class NxMessageView extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: NxSpace.xs),
-              Text(
-                body,
-                style: context.text.bodyMedium?.copyWith(color: c.inkMuted),
-                textAlign: TextAlign.center,
-              ),
+              if (body case final body? when body.isNotEmpty) ...[
+                const SizedBox(height: NxSpace.xs),
+                Text(
+                  body,
+                  style: context.text.bodyMedium?.copyWith(color: c.inkMuted),
+                  textAlign: TextAlign.center,
+                ),
+              ],
               if (actionLabel != null) ...[
                 const SizedBox(height: NxSpace.lg),
                 NxButton(label: actionLabel!, onPressed: onAction),

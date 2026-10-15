@@ -1,0 +1,28 @@
+{
+  "name": "nexo-familia-functions",
+  "private": true,
+  "description": "Cloud Functions de Nexo Familia (contrato: docs/architecture/05-api-backend.md)",
+  "type": "module",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "test": "firebase emulators:exec --only firestore,auth --project demo-nexo --config ../firebase.json \"vitest run\"",
+    "test:unit": "vitest run test/unit"
+  },
+  "dependencies": {
+    "firebase-admin": "14.5.0",
+    "firebase-functions": "7.4.0"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "@types/node": "22.20.5",
+    "firebase": "13.0.0",
+    "firebase-tools": "15.34.0",
+    "typescript": "5.9.3",
+    "vitest": "5.0.4"
+  }
+}

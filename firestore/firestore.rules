@@ -1,0 +1,205 @@
+rules_version = '2';
+
+// Reglas de acceso de Nexo Familia.
+// Contrato: docs/architecture/05-api-backend.md · Pruebas: functions/test/rules.
+// Principio: todo está DENEGADO salvo lo que se permite explícitamente aquí.
+// Las operaciones privilegiadas (familias, membresías, invitaciones, SOS) las
+// hacen las Cloud Functions con el SDK de administración.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return request.auth.uid;
+    }
+
+    function memberPath(familyId) {
+      return /databases/$(database)/documents/families/$(familyId)/members/$(me());
+    }
+
+    function isMember(familyId) {
+      return signedIn() && exists(memberPath(familyId));
+    }
+
+    function isManager(familyId) {
+      return isMember(familyId)
+        && get(memberPath(familyId)).data.role in ['owner', 'admin'];
+    }
+
+    function data() {
+      return request.resource.data;
+    }
+
+    function onlyKeys(keys) {
+      return data().keys().hasOnly(keys);
+    }
+
+    function validLatLng(lat, lng) {
+      return lat is number && lng is number
+        && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+    }
+
+    // Entre 1 y 40 caracteres y al menos una letra o un dígito (rechaza
+    // nombres hechos solo de espacios o caracteres invisibles).
+    function validName(name) {
+      return name is string && name.size() >= 1 && name.size() <= 40
+        && name.matches('.*[\\p{L}\\p{N}].*');
+    }
+
+    // Consentimiento del usuario actual DESPUÉS de la escritura (permite
+    // activar la compartición y publicar la ubicación en el mismo lote).
+    function sharingAfter(familyId) {
+      return getAfter(
+        /databases/$(database)/documents/families/$(familyId)/consents/$(me())
+      ).data.state == 'sharing';
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && me() == userId;
+      allow create, update: if signedIn() && me() == userId
+        && onlyKeys(['displayName', 'createdAt', 'adultConfirmedAt',
+                     'privacyAcceptedAt', 'privacyPolicyVersion'])
+        && validName(data().displayName);
+
+      match /memberships/{familyId} {
+        allow read: if signedIn() && me() == userId;
+      }
+
+      match /devices/{deviceId} {
+        allow read, delete: if signedIn() && me() == userId;
+        allow create, update: if signedIn() && me() == userId
+          && onlyKeys(['token', 'platform', 'updatedAt'])
+          && data().token is string && data().token.size() < 4096
+          && data().platform in ['android', 'ios']
+          && data().updatedAt == request.time;
+      }
+    }
+
+    match /families/{familyId} {
+      allow read: if isMember(familyId);
+
+      match /members/{memberId} {
+        allow read: if isMember(familyId);
+      }
+
+      match /consents/{memberId} {
+        allow read: if isMember(familyId);
+        allow create, update: if isMember(familyId) && me() == memberId
+          && onlyKeys(['state', 'precision', 'updatedAt'])
+          && data().state in ['notConfigured', 'sharing', 'paused']
+          && data().precision in ['exact', 'approximate']
+          && data().updatedAt == request.time;
+      }
+
+      match /locations/{memberId} {
+        allow read: if isMember(familyId);
+        allow create, update: if isMember(familyId) && me() == memberId
+          && sharingAfter(familyId)
+          && onlyKeys(['lat', 'lng', 'accuracyM', 'capturedAt', 'receivedAt',
+                       'approximate'])
+          && validLatLng(data().lat, data().lng)
+          && data().accuracyM is number
+          && data().accuracyM >= 0 && data().accuracyM < 100000
+          && data().approximate is bool
+          && data().receivedAt == request.time
+          && data().capturedAt is timestamp
+          // Tolera relojes de dispositivo algo adelantados, no fechas absurdas.
+          && data().capturedAt < request.time + duration.value(1, 'h')
+          // Las actualizaciones fuera de orden se descartan.
+          && (resource == null || data().capturedAt > resource.data.capturedAt);
+        // Al pausar, la propia persona borra su ubicación en el mismo lote.
+        allow delete: if isMember(familyId) && me() == memberId;
+      }
+
+      match /geofences/{geofenceId} {
+        function validGeofence() {
+          return onlyKeys(['name', 'lat', 'lng', 'radiusM', 'createdBy',
+                           'version', 'updatedAt'])
+            && validName(data().name)
+            && validLatLng(data().lat, data().lng)
+            && data().radiusM is number
+            && data().radiusM >= 100 && data().radiusM <= 2000
+            && data().version is int
+            && data().updatedAt == request.time;
+        }
+
+        allow read: if isMember(familyId);
+        allow create: if isManager(familyId) && validGeofence()
+          && data().version == 1 && data().createdBy == me();
+        allow update: if isManager(familyId) && validGeofence()
+          && data().version == resource.data.version + 1
+          && data().createdBy == resource.data.createdBy;
+        allow delete: if isManager(familyId);
+      }
+
+      match /events/{eventId} {
+        function validCheckIn() {
+          return onlyKeys(['type', 'actorUid', 'kind', 'message', 'lat', 'lng',
+                           'createdAt', 'clientCreatedAt', 'expireAt'])
+            && data().kind in ['ok', 'needHelp']
+            && (!('message' in data())
+                || (data().message is string && data().message.size() <= 140))
+            // Solo se adjunta ubicación si la persona la comparte.
+            && (!('lat' in data())
+                || (validLatLng(data().lat, data().lng)
+                    && sharingAfter(familyId)));
+        }
+
+        function validGeofenceEvent() {
+          return onlyKeys(['type', 'actorUid', 'geofenceId', 'geofenceName',
+                           'transition', 'createdAt', 'clientCreatedAt',
+                           'expireAt'])
+            && data().transition in ['enter', 'exit']
+            && validName(data().geofenceName)
+            && exists(/databases/$(database)/documents/families/$(familyId)/geofences/$(data().geofenceId));
+        }
+
+        allow read: if isMember(familyId);
+        allow create: if isMember(familyId)
+          && data().actorUid == me()
+          && data().createdAt == request.time
+          && data().clientCreatedAt is timestamp
+          && data().expireAt is timestamp
+          && ((data().type == 'checkIn' && validCheckIn())
+              || (data().type == 'geofence' && validGeofenceEvent()));
+        // Nunca se modifican ni se borran desde el cliente.
+      }
+
+      match /emergencies/{alertId} {
+        // Otro integrante confirma que vio la alerta ("Lo vi").
+        function isAck() {
+          return resource.data.uid != me()
+            && !(me() in resource.data.acks)
+            && data().diff(resource.data).affectedKeys().hasOnly(['acks'])
+            && data().acks.diff(resource.data.acks).affectedKeys()
+                 .hasOnly([me()])
+            && data().acks[me()] == request.time;
+        }
+
+        // Quien la envió la da por terminada.
+        function isResolve() {
+          return resource.data.uid == me()
+            && resource.data.resolvedAt == null
+            && data().diff(resource.data).affectedKeys().hasOnly(['resolvedAt'])
+            && data().resolvedAt == request.time;
+        }
+
+        allow read: if isMember(familyId);
+        allow update: if isMember(familyId) && (isAck() || isResolve());
+      }
+
+      match /audit/{auditId} {
+        allow read: if isManager(familyId);
+      }
+    }
+
+    // invitations/, rateLimits/, idempotency/ y cualquier otra ruta: sin
+    // acceso desde el cliente.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

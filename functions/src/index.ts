@@ -1,0 +1,65 @@
+import { initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getMessaging } from 'firebase-admin/messaging';
+import { logger } from 'firebase-functions';
+import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
+import * as account from './account.js';
+import { REGION } from './config.js';
+import { reject } from './errors.js';
+import * as families from './families.js';
+import type { Ctx } from './families.js';
+import * as sos from './sos.js';
+import type { Notifier } from './sos.js';
+
+initializeApp();
+const db = getFirestore();
+
+const options = { region: REGION, cors: false, enforceAppCheck: false } as const;
+
+function ctxOf(request: CallableRequest): Ctx {
+  const uid = request.auth?.uid;
+  if (!uid) reject('unauthenticated', 'unauthenticated');
+  return { db, uid, now: new Date() };
+}
+
+/** Envuelve una función: registra solo el nombre y el código de error. */
+function callable<T>(name: string, run: (ctx: Ctx, data: unknown) => Promise<T>) {
+  return onCall(options, async (request) => {
+    try {
+      return await run(ctxOf(request), request.data);
+    } catch (error) {
+      const code = (error as { code?: string }).code ?? 'internal';
+      logger.warn('callable.failed', { operation: name, code });
+      throw error;
+    }
+  });
+}
+
+const fcmNotifier: Notifier = {
+  async notifySos(tokens, data) {
+    const response = await getMessaging().sendEachForMulticast({
+      tokens,
+      // Texto genérico: sin nombres ni ubicación en la pantalla de bloqueo.
+      notification: {
+        title: 'Alerta SOS',
+        body: 'Un integrante de tu familia pidió ayuda. Abre Nexo Familia.',
+      },
+      data: { type: 'sos', familyId: data.familyId, alertId: data.alertId },
+      android: { priority: 'high' },
+      apns: { headers: { 'apns-priority': '10' } },
+    });
+    return response.successCount;
+  },
+};
+
+// Los nombres exportados son los del contrato: la app los invoca así.
+export const createFamily = callable('createFamily', families.createFamily);
+export const createInvitation = callable('createInvitation', families.createInvitation);
+export const acceptInvitation = callable('acceptInvitation', families.acceptInvitation);
+export const leaveFamily = callable('leaveFamily', families.leaveFamily);
+export const removeMember = callable('removeMember', families.removeMember);
+export const raiseSos = callable('raiseSos', (ctx, data) => sos.raiseSos(ctx, data, fcmNotifier));
+export const deleteAccount = callable('deleteAccount', (ctx) =>
+  account.deleteAccount(ctx, { deleteUser: (uid) => getAuth().deleteUser(uid) }),
+);

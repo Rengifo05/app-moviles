@@ -47,10 +47,20 @@ final class GeoPoint {
 
   /// Versión aproximada (≈ 1 km) para la compartición con precisión
   /// reducida: redondea a 2 decimales (0,01° ≈ 1,1 km de latitud).
-  GeoPoint approximate() => GeoPoint(
-    (latitude * 100).roundToDouble() / 100,
-    (longitude * 100).roundToDouble() / 100,
-  );
+  ///
+  /// El resultado es canónico: dos puntos que caen en la misma posición
+  /// aproximada dan exactamente los mismos valores. Si no, lo que se
+  /// serializa revelaría más que la celda: el signo de -0,0 (de qué lado del
+  /// ecuador o de Greenwich), -180 frente a 180 (de qué lado del
+  /// antimeridiano) o la longitud en un polo (el rumbo exacto desde él).
+  GeoPoint approximate() {
+    // Sumar 0,0 convierte -0,0 en 0,0 (IEEE 754).
+    double snap(double degrees) => (degrees * 100).roundToDouble() / 100 + 0.0;
+    final lat = snap(latitude);
+    if (lat.abs() == 90) return GeoPoint(lat, 0);
+    final lng = snap(longitude);
+    return GeoPoint(lat, lng == -180 ? 180 : lng);
+  }
 
   @override
   bool operator ==(Object other) =>

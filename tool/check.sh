@@ -10,6 +10,9 @@ flutter pub get >/dev/null
 echo "› dart format (verificación)"
 dart format --output=none --set-exit-if-changed lib test
 
+echo "› textos (fragmentos → .arb)"
+dart tool/merge_arb.dart --check
+
 echo "› flutter analyze"
 flutter analyze --fatal-infos
 

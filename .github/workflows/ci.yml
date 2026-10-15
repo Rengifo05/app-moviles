@@ -39,3 +39,37 @@ jobs:
 
       - name: Puertas de calidad
         run: tool/check.sh
+
+  backend:
+    name: Backend (tipos, reglas y funciones en el emulador)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: functions
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      # El emulador de Firestore necesita Java.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Caché de los emuladores
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ hashFiles('functions/package-lock.json') }}
+
+      - run: npm ci --no-fund --no-audit
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Reglas y funciones contra el emulador (proyecto demo-, sin credenciales)
+        run: npm test

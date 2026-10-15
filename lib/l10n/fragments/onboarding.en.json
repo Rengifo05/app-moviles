@@ -1,0 +1,13 @@
+{
+  "onboardingStep": "Step {current} of {total}",
+  "onboarding1Title": "Your family, close and at ease",
+  "onboarding1Body": "Share your location when you want, let others know you're OK and ask your family for help if you need it.",
+  "onboarding2Title": "You decide what you share",
+  "onboarding2Body": "Nobody can turn on your location for you. You can pause or stop sharing at any time and you'll always see who you share it with.",
+  "onboarding3Title": "Permissions only when needed",
+  "onboarding3Body": "We'll ask for location and notification access when you turn on each feature, and explain why before we do.",
+  "onboarding4Title": "A support, not an emergency service",
+  "onboarding4Body": "Nexo Familia doesn't guarantee anyone's safety and doesn't replace official services. In an emergency, call {number}.",
+  "onboardingNext": "Next",
+  "onboardingStart": "Got it, let's start"
+}

@@ -1,0 +1,30 @@
+{
+  "onboardingStep": "Paso {current} de {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboarding1Title": "Tu familia, cerca y tranquila",
+  "onboarding1Body": "Comparte tu ubicación cuando quieras, avisa que estás bien y pide ayuda a tu familia si lo necesitas.",
+  "onboarding2Title": "Tú decides qué compartes",
+  "onboarding2Body": "Nadie puede activar tu ubicación por ti. Puedes pausarla o dejar de compartirla en cualquier momento y siempre verás con quién la compartes.",
+  "onboarding3Title": "Permisos solo cuando hagan falta",
+  "onboarding3Body": "Te pediremos acceso a la ubicación y a las notificaciones cuando actives cada función, y te explicaremos para qué sirve antes de hacerlo.",
+  "onboarding4Title": "Un apoyo, no un servicio de emergencias",
+  "onboarding4Body": "Nexo Familia no garantiza la seguridad de nadie ni sustituye a los servicios oficiales. En una emergencia, llama al {number}.",
+  "@onboarding4Body": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingNext": "Siguiente",
+  "onboardingStart": "Entendido, empezar"
+}
