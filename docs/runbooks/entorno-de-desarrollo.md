@@ -66,7 +66,9 @@ npx firebase use --add <id-del-proyecto>      # crea el alias; no se versiona ni
 npx firebase deploy --only firestore:rules,firestore:indexes,functions
 ```
 
-Después: configurar la política TTL de Firestore sobre `expireAt` en `events` (30 días) y en las alertas, y las alertas de presupuesto (ver `docs/architecture/03-costos.md`).
+`firestore:indexes` despliega también las políticas TTL sobre `expireAt` (eventos, alertas, auditoría e invitaciones) y el índice compuesto de invitaciones. El emulador no exige índices, así que una consulta nueva con varios filtros debe añadir su índice a `firestore/firestore.indexes.json`. Para validar el archivo sin proyecto: `npm run check:indexes` (también en la CI).
+
+Después: las alertas de presupuesto (ver `docs/architecture/03-costos.md`).
 
 ## Pasos manuales en macOS (iOS) — no verificables en la sesión en la nube
 

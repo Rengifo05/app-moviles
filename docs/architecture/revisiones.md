@@ -47,3 +47,14 @@ Seis agentes trabajaron sobre archivos disjuntos: uno escribía las pruebas de c
 - Faltaba el caso de un *ack* propio combinado con el de otra persona en la misma escritura.
 
 Tras añadir esos casos se detectan **37 de 37**. Este paso forma parte de la CI.
+
+## Incremento 4 · Adaptador de Firebase y retención (2026-10-15)
+
+Revisión del integrador al conectar Firebase. Defectos encontrados y corregidos:
+
+| Hallazgo | Resolución |
+|---|---|
+| La consulta de invitaciones activas (`familyId` + `status` + rango en `expiresAt`) necesita un índice compuesto. El emulador no lo exige, así que las pruebas pasaban y producción habría fallado con `FAILED_PRECONDITION` | Índice en `firestore.indexes.json`, validado con el validador de `firebase-tools` |
+| Las alertas SOS, la auditoría y las invitaciones no tenían `expireAt`: la retención de 90/180/7 días (D9) no se podía aplicar | Las Functions fijan `expireAt`; políticas TTL declaradas en `firestore.indexes.json`; pruebas en el emulador |
+| Un cliente podía fijar un `expireAt` lejano y conservar sus eventos indefinidamente | Regla: `expireAt <= request.time + 31 días`, con prueba y una mutación nueva (**38 de 38** detectadas) |
+| `deleteAccount` dejaba en las familias los mensajes y lugares de los check-ins, las coordenadas de las alertas y el `uid` en la auditoría (contra lo prometido en la tabla de retención) | Limpieza por familia tras salir; prueba que recorre toda la base buscando restos |

@@ -83,14 +83,16 @@ acknowledged ("Ana confirmó que lo vio a las 14:32")
 - Idempotencia: el `sosId` se genera en el cliente. Si se pulsa dos veces o se reintenta, la Function devuelve el mismo evento sin notificar de nuevo.
 - Antiabuso: como máximo un SOS activo por usuario; un límite de frecuencia en la Function (p. ej. 5 por hora) y registro en `audit`.
 
-## Retención propuesta (por aprobar)
+## Retención (decisión D9, aplicada)
 
 | Dato | Retención | Mecanismo |
 |---|---|---|
 | Última ubicación | Hasta que el usuario pause, salga del grupo o borre su cuenta | Se borra en la misma operación |
 | Historial de ubicación | **No se guarda** en el MVP | Si se activa en el futuro: consentimiento explícito y política TTL de Firestore |
-| Eventos (check-in, geocercas) | 30 días | Política TTL de Firestore sobre `expireAt` |
-| SOS | 90 días | TTL |
-| Auditoría | 180 días | TTL |
-| Invitaciones | 7 días tras expirar o agotarse | TTL |
-| Cuenta eliminada | Se borra todo lo personal en ≤ 30 días; la auditoría se anonimiza | Function `deleteAccount` |
+| Eventos (check-in, geocercas, membresía) | 30 días | Política TTL de Firestore sobre `expireAt`. Las reglas rechazan un `expireAt` del cliente posterior a `request.time` + 31 días |
+| SOS (alerta y su evento) | 90 días | TTL sobre `expireAt` (lo fija `raiseSos`) |
+| Auditoría | 180 días | TTL sobre `expireAt` (lo fijan las Functions) |
+| Invitaciones | 7 días tras vencer (vencen a las 48 h) | TTL sobre `expireAt` |
+| Cuenta eliminada | Inmediato para lo identificable; el resto, según su TTL | `deleteAccount`: sale de todas las familias (borra membresía, ubicación y consentimiento), **borra ya** sus check-ins y eventos de zona, quita las coordenadas de sus alertas SOS (la alerta sin ubicación queda para la familia hasta su TTL), anonimiza la auditoría (`deleted-user`) y borra perfil, dispositivos y usuario de Auth |
+
+Las políticas TTL y el índice compuesto de invitaciones están en `firestore/firestore.indexes.json` y se despliegan con `firebase deploy --only firestore:indexes`. Firestore borra los documentos vencidos normalmente dentro de las 24 h siguientes, no en el instante exacto.

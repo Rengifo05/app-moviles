@@ -54,7 +54,7 @@ Valores enumerados:
 | `sos` | `actorUid`, `alertId`, `createdAt` | `raiseSos` |
 | `membership` | `actorUid`, `change` (`joined` / `left` / `removed`), `targetUid?`, `createdAt` | Functions |
 
-Todos llevan `expireAt` para la política TTL: 30 días para los eventos y 90 para el SOS.
+Todos llevan `expireAt` para la política TTL: 30 días para los eventos y 90 para el SOS. Cuando lo escribe el cliente, las reglas exigen `expireAt <= request.time + 31 días` (1 día de tolerancia para relojes adelantados). Las alertas (`emergencies`), la auditoría (180 días) y las invitaciones (7 días tras vencer) también llevan `expireAt`, que fijan las Functions.
 
 ## Funciones *callable*
 
@@ -66,7 +66,7 @@ Todos llevan `expireAt` para la política TTL: 30 días para los eventos y 90 pa
 | `leaveFamily` | `{ familyId }` | `{}` | Borra la membresía, la ubicación y el consentimiento en una transacción. Si sale el `owner`, el integrante más antiguo pasa a `owner`. Si sale el último, se borra la familia |
 | `removeMember` | `{ familyId, uid }` | `{}` | El `owner` puede expulsar a cualquiera menos a sí mismo; un `admin` solo a `member` (`not-allowed`). Mismo borrado que `leaveFamily` |
 | `raiseSos` | `{ familyId, alertId, lat?, lng?, accuracyM? }` | `{ alertId, notifiedCount, alreadyExisted }` | Exige ser miembro. Idempotente: si `alertId` ya existe y es del mismo usuario, devuelve el resultado guardado sin volver a notificar. Máximo 5 por hora (`rate-limited`). Notifica por FCM a los dispositivos de los demás integrantes con un texto **genérico y sin ubicación**; `notifiedCount` cuenta los mensajes **aceptados** por FCM |
-| `deleteAccount` | `{}` | `{}` | Ejecuta `leaveFamily` en todas sus familias, borra `users/{uid}` con sus subcolecciones y elimina el usuario de Auth |
+| `deleteAccount` | `{}` | `{}` | Ejecuta `leaveFamily` en todas sus familias; en cada una borra sus check-ins y eventos de zona, quita `lat`/`lng`/`accuracyM` de sus alertas y cambia su `uid` en la auditoría por `deleted-user`. Después borra `users/{uid}` con sus subcolecciones y elimina el usuario de Auth |
 
 ## Escrituras directas del cliente (validadas por reglas)
 

@@ -1,4 +1,19 @@
 {
-  "indexes": [],
-  "fieldOverrides": []
+  "indexes": [
+    {
+      "collectionGroup": "invitations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "familyId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "expiresAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "events", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "emergencies", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "audit", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "invitations", "fieldPath": "expireAt", "ttl": true, "indexes": [] }
+  ]
 }

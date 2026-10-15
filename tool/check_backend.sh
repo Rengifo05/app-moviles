@@ -6,5 +6,6 @@ set -euo pipefail
 cd "$(dirname "$0")/../functions"
 npm install --no-fund --no-audit >/dev/null
 npm run typecheck
+npm run check:indexes
 npm run build
 npm test

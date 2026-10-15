@@ -70,6 +70,7 @@ jobs:
 
       - run: npm ci --no-fund --no-audit
       - run: npm run typecheck
+      - run: npm run check:indexes
       - run: npm run build
       - name: Reglas y funciones contra el emulador (proyecto demo-, sin credenciales)
         run: npm test

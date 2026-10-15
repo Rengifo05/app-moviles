@@ -1,7 +1,7 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { LIMITS } from './config.js';
 import { optionalNumber, reject, requireString } from './errors.js';
-import type { Ctx } from './families.js';
+import { expireAt, type Ctx } from './families.js';
 import { paths } from './paths.js';
 import { checkRateLimit } from './rate_limit.js';
 
@@ -65,18 +65,20 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
       notifyStartedAt: Timestamp.fromDate(ctx.now),
       acks: {},
       resolvedAt: null,
+      expireAt: expireAt(ctx.now, LIMITS.sosTtlDays),
     });
     tx.set(ctx.db.collection(paths.events(familyId)).doc(), {
       type: 'sos',
       actorUid: ctx.uid,
       alertId,
       createdAt: FieldValue.serverTimestamp(),
-      expireAt: Timestamp.fromMillis(ctx.now.getTime() + LIMITS.sosTtlDays * 864e5),
+      expireAt: expireAt(ctx.now, LIMITS.sosTtlDays),
     });
     tx.set(ctx.db.collection(paths.audit(familyId)).doc(), {
       action: 'raiseSos',
       actorUid: ctx.uid,
       createdAt: FieldValue.serverTimestamp(),
+      expireAt: expireAt(ctx.now, LIMITS.auditTtlDays),
     });
     return { created: true, notify: true, notified: null };
   });

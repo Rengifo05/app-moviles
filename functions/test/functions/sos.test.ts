@@ -63,6 +63,16 @@ describe('raiseSos', () => {
     expect(events.size).toBe(1);
   });
 
+  it('la alerta, su evento y su auditoría vencen a los 90/90/180 días', async () => {
+    await raiseSos(as('luis'), { familyId, alertId: 'a-ttl' }, notifier);
+    const days = (ts: { toMillis(): number }) => Math.round((ts.toMillis() - clock.now.getTime()) / 864e5);
+    expect(days((await db.doc(`families/${familyId}/emergencies/a-ttl`).get()).get('expireAt'))).toBe(90);
+    const event = await db.collection(`families/${familyId}/events`).where('alertId', '==', 'a-ttl').get();
+    expect(days(event.docs[0]!.get('expireAt'))).toBe(90);
+    const audit = await db.collection(`families/${familyId}/audit`).where('action', '==', 'raiseSos').get();
+    expect(days(audit.docs[0]!.get('expireAt'))).toBe(180);
+  });
+
   it('es idempotente: un reintento no duplica la alerta ni la notificación', async () => {
     await raiseSos(as('luis'), { familyId, alertId: 'sos-1' }, notifier);
     const again = await raiseSos(as('luis'), { familyId, alertId: 'sos-1' }, notifier);

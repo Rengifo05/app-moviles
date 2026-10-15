@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "firebase emulators:exec --only firestore,auth --project demo-nexo --config ../firebase.json \"vitest run\"",
     "test:unit": "vitest run test/unit",
+    "check:indexes": "node scripts/check_indexes.mjs",
     "test:mutations": "firebase emulators:exec --only firestore --project demo-nexo --config ../firebase.json \"node scripts/mutate_rules.mjs\""
   },
   "dependencies": {

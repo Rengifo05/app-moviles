@@ -12,6 +12,9 @@ export const LIMITS = {
   sosNotifyLeaseMs: 60 * 1000,
   eventTtlDays: 30,
   sosTtlDays: 90,
+  auditTtlDays: 180,
+  /** Días que se conserva una invitación después de vencer. */
+  invitationRetentionDays: 7,
 } as const;
 
 /** Alfabeto de códigos de invitación, sin caracteres ambiguos. */

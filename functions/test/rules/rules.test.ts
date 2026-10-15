@@ -295,6 +295,16 @@ describe('eventos (check-ins y zonas)', () => {
     );
   });
 
+  it('la retención no se alarga más allá de 30 días (+1 de tolerancia)', async () => {
+    const inDays = (days: number) => Timestamp.fromMillis(Date.now() + days * 864e5);
+    await assertSucceeds(
+      setDoc(doc(as('luis'), 'families/f1/events/r1'), checkIn('luis', { expireAt: inDays(30) })),
+    );
+    await assertFails(
+      setDoc(doc(as('luis'), 'families/f1/events/r2'), checkIn('luis', { expireAt: inDays(365) })),
+    );
+  });
+
   it('los eventos no se modifican ni se borran', async () => {
     await setDoc(doc(as('luis'), 'families/f1/events/e8'), checkIn('luis'));
     await assertFails(updateDoc(doc(as('luis'), 'families/f1/events/e8'), { kind: 'needHelp' }));

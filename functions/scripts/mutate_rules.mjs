@@ -37,6 +37,7 @@ const mutations = [
   ['zonas borradas por cualquiera', 'allow delete: if isManager(familyId);\n      }\n\n      match /events', 'allow delete: if isMember(familyId);\n      }\n\n      match /events'],
   ['nombres invisibles', "&& name.matches('.*[\\\\p{L}\\\\p{N}].*');", ';'],
   ['suplantar al autor de un evento', '&& data().actorUid == me()\n          && data().createdAt == request.time', '&& data().createdAt == request.time'],
+  ['retención de eventos ilimitada', "&& data().expireAt <= request.time + duration.value(31, 'd')", ''],
   ['tipo de evento libre', "&& ((data().type == 'checkIn' && validCheckIn())\n              || (data().type == 'geofence' && validGeofenceEvent()));", ';'],
   ['ubicación en check-in sin compartir', '&& sharingAfter(familyId)));', '));'],
   ['evento de zona inexistente', "&& validName(data().geofenceName)\n            && exists(", "&& validName(data().geofenceName)\n            || exists("],

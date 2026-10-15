@@ -194,4 +194,49 @@ describe('deleteAccount', () => {
     expect((await db.doc(`families/${familyId}/members/luis`).get()).exists).toBe(false);
     expect((await db.doc(`families/${familyId}`).get()).exists).toBe(true);
   });
+
+  it('borra sus check-ins, quita coordenadas de sus alertas y anonimiza la auditoría', async () => {
+    const familyId = await setupFamily();
+    await join(familyId, 'luis');
+    const events = db.collection(`families/${familyId}/events`);
+    await events.doc('c1').set({ type: 'checkIn', actorUid: 'luis', kind: 'ok', message: 'Llegué', lat: 1, lng: 2 });
+    await events.doc('g1').set({ type: 'geofence', actorUid: 'luis', geofenceName: 'Colegio' });
+    await events.doc('c2').set({ type: 'checkIn', actorUid: 'ana', kind: 'ok' });
+    await db.doc(`families/${familyId}/emergencies/a1`).set({ uid: 'luis', lat: 1, lng: 2, accuracyM: 5, acks: {} });
+    await db.doc(`families/${familyId}/emergencies/a2`).set({ uid: 'ana', lat: 3, lng: 4, acks: {} });
+
+    await deleteAccount(as('luis'), { deleteUser: async () => {} });
+
+    expect((await events.doc('c1').get()).exists).toBe(false);
+    expect((await events.doc('g1').get()).exists).toBe(false);
+    expect((await events.doc('c2').get()).exists).toBe(true);
+    const alert = (await db.doc(`families/${familyId}/emergencies/a1`).get()).data();
+    expect(alert).toEqual({ uid: 'luis', acks: {} });
+    expect((await db.doc(`families/${familyId}/emergencies/a2`).get()).get('lat')).toBe(3);
+    const audit = await db.collection(`families/${familyId}/audit`).get();
+    const ids = audit.docs.flatMap((d) => [d.get('actorUid'), d.get('targetUid')]);
+    expect(ids).not.toContain('luis');
+    expect(ids).toContain('deleted-user');
+    // Ningún mensaje ni lugar de la cuenta borrada queda en la base.
+    const all = await dumpAll(db);
+    expect(all).not.toContain('Llegué');
+    expect(all).not.toContain('Colegio');
+  });
+});
+
+describe('retención (TTL sobre expireAt)', () => {
+  const days = (ts: { toMillis(): number }) => Math.round((ts.toMillis() - clock.now.getTime()) / 864e5);
+
+  it('auditoría a 180 días, eventos a 30 e invitaciones a 7 días tras vencer', async () => {
+    const familyId = await setupFamily();
+    const { code } = await createInvitation(as('ana'), { familyId });
+    await acceptInvitation(as('luis'), { code });
+    const audit = await db.collection(`families/${familyId}/audit`).get();
+    expect(audit.size).toBeGreaterThan(0);
+    for (const doc of audit.docs) expect(days(doc.get('expireAt'))).toBe(180);
+    const events = await db.collection(`families/${familyId}/events`).get();
+    for (const doc of events.docs) expect(days(doc.get('expireAt'))).toBe(30);
+    const invitation = await db.doc(`invitations/${hashCode(code)}`).get();
+    expect(days(invitation.get('expireAt'))).toBe(2 + 7);
+  });
 });

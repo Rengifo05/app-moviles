@@ -10,6 +10,7 @@ export const paths = {
   consent: (familyId: string, uid: string) => `families/${familyId}/consents/${uid}`,
   location: (familyId: string, uid: string) => `families/${familyId}/locations/${uid}`,
   events: (familyId: string) => `families/${familyId}/events`,
+  emergencies: (familyId: string) => `families/${familyId}/emergencies`,
   emergency: (familyId: string, alertId: string) => `families/${familyId}/emergencies/${alertId}`,
   audit: (familyId: string) => `families/${familyId}/audit`,
   invitation: (tokenHash: string) => `invitations/${tokenHash}`,

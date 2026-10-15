@@ -163,6 +163,8 @@ service cloud.firestore {
           && data().createdAt == request.time
           && data().clientCreatedAt is timestamp
           && data().expireAt is timestamp
+          // Retención de 30 días (TTL); se tolera 1 día de reloj adelantado.
+          && data().expireAt <= request.time + duration.value(31, 'd')
           && ((data().type == 'checkIn' && validCheckIn())
               || (data().type == 'geofence' && validGeofenceEvent()));
         // Nunca se modifican ni se borran desde el cliente.

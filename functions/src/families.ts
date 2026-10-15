@@ -34,8 +34,10 @@ function generateCode(): string {
   return code;
 }
 
-function expireAt(now: Date, days: number): Timestamp {
-  return Timestamp.fromMillis(now.getTime() + days * 24 * 60 * 60 * 1000);
+/** Fecha de borrado para la política TTL de Firestore (campo `expireAt`). */
+export function expireAt(now: Date | number, days: number): Timestamp {
+  const from = typeof now === 'number' ? now : now.getTime();
+  return Timestamp.fromMillis(from + days * 24 * 60 * 60 * 1000);
 }
 
 function audit(ctx: Ctx, tx: Transaction, familyId: string, action: string, target?: string) {
@@ -44,6 +46,7 @@ function audit(ctx: Ctx, tx: Transaction, familyId: string, action: string, targ
     actorUid: ctx.uid,
     ...(target ? { targetUid: target } : {}),
     createdAt: FieldValue.serverTimestamp(),
+    expireAt: expireAt(ctx.now, LIMITS.auditTtlDays),
   });
 }
 
@@ -144,6 +147,7 @@ export async function createInvitation(
       createdBy: ctx.uid,
       createdAt: FieldValue.serverTimestamp(),
       expiresAt: Timestamp.fromMillis(expiresAt),
+      expireAt: expireAt(expiresAt, LIMITS.invitationRetentionDays),
       maxUses: LIMITS.invitationMaxUses,
       uses: 0,
       status: 'active',
