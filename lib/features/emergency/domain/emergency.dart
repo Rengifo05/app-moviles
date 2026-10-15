@@ -54,6 +54,7 @@ final class EmergencyAlert {
     required this.createdAt,
     required this.delivery,
     this.location,
+    this.locationAccuracyMeters,
     this.notifiedCount,
     this.acks = const [],
     this.resolvedAt,
@@ -70,6 +71,10 @@ final class EmergencyAlert {
   final DateTime createdAt;
   final SosDelivery delivery;
   final GeoPoint? location;
+
+  /// Radio de incertidumbre de [location] en metros, si se conoce. Con la
+  /// precisión aproximada nunca es menor que el redondeo (≈ 1 km).
+  final double? locationAccuracyMeters;
 
   /// Mensajes aceptados por el proveedor de push; `null` mientras se
   /// desconoce.
@@ -129,6 +134,7 @@ final class EmergencyAlert {
       uid: uid,
       createdAt: createdAt,
       location: location,
+      locationAccuracyMeters: locationAccuracyMeters,
       delivery: nextDelivery,
       notifiedCount: notifiedCount ?? this.notifiedCount,
       acks: acks ?? this.acks,

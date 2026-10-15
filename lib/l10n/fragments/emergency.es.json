@@ -1,0 +1,179 @@
+{
+  "emergencyScreenTitle": "SOS",
+  "@emergencyScreenTitle": {
+    "description": "Título de la barra de la pantalla SOS (modal a pantalla completa)."
+  },
+  "emergencyReadyTitle": "¿Necesitas ayuda urgente?",
+  "emergencyReadyBody": "Avisaremos a los integrantes de tu familia con tu ubicación si la compartes. Nexo Familia no contacta a los servicios de emergencia.",
+  "@emergencyReadyBody": {
+    "description": "Explica qué pasará al enviar el SOS. No prometer que alguien vendrá ni que el aviso llegará."
+  },
+  "emergencyHoldLabel": "SOS",
+  "emergencyHoldHint": "{seconds, plural, =1{Mantén presionado 1 segundo} other{Mantén presionado {seconds} segundos}}",
+  "@emergencyHoldHint": {
+    "description": "Instrucción del botón SOS: hay que mantenerlo presionado para evitar toques accidentales.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "emergencyLocationIncluded": "Se incluirá tu ubicación si el teléfono la obtiene a tiempo.",
+  "emergencyLocationApproxIncluded": "Se incluirá tu ubicación aproximada (±1 km) si el teléfono la obtiene a tiempo.",
+  "emergencyLocationNotShared": "No compartes tu ubicación con esta familia: la alerta irá sin ella.",
+  "emergencyCall": "Llamar al {number}",
+  "@emergencyCall": {
+    "description": "Abre el marcador con el número oficial de emergencias (123 en Colombia). La app no llama por sí sola.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "emergencyCallFailed": "No pudimos abrir el marcador. Marca este número desde tu teléfono:",
+  "emergencyCallNumberSemantics": "Número de emergencias: {number}",
+  "@emergencyCallNumberSemantics": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "emergencyOfflineBanner": "Sin conexión. Si envías una alerta, se guardará en tu teléfono y se enviará en cuanto haya conexión.",
+  "emergencyNoFamily": "Para enviar alertas a tu familia primero debes crear una familia o unirte a una.",
+  "emergencyCancelledNotice": "Cancelaste la alerta. No se envió nada.",
+  "emergencyDiscardedNotice": "Cancelaste el envío. Dejamos de intentarlo.",
+  "emergencyCountdownTitle": "La alerta se enviará en",
+  "emergencyCountdownAnnouncement": "{seconds, plural, =1{La alerta se enviará en 1 segundo} other{La alerta se enviará en {seconds} segundos}}",
+  "@emergencyCountdownAnnouncement": {
+    "description": "Anuncio accesible del tiempo restante de la cuenta atrás.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "emergencyCountdownHint": "¿Fue un error? Cancela antes de que termine la cuenta atrás.",
+  "emergencyCountdownCancel": "Cancelar",
+  "@emergencyCountdownCancel": {
+    "description": "Botón muy visible para cancelar la alerta durante la cuenta atrás."
+  },
+  "emergencyPreparing": "Preparando la alerta…",
+  "emergencyNotSavedTitle": "No pudimos guardar la alerta",
+  "emergencyNotSavedBody": "Inténtalo de nuevo. Si es urgente, llama a emergencias.",
+  "emergencyTitleQueued": "Alerta pendiente de envío",
+  "emergencyTitleSending": "Enviando tu alerta",
+  "emergencyTitleActive": "Alerta activa",
+  "emergencyTitleFailed": "No se pudo enviar la alerta",
+  "emergencyTitleResolved": "Alerta terminada",
+  "emergencyCreatedAt": "Creada a las {time}",
+  "@emergencyCreatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "DateTime",
+        "format": "jm"
+      }
+    }
+  },
+  "emergencyWithLocation": "Incluye tu ubicación",
+  "emergencyWithApproxLocation": "Incluye tu ubicación aproximada",
+  "emergencyWithoutLocation": "Sin ubicación",
+  "emergencyStepSaved": "Guardada en tu teléfono",
+  "emergencyStepQueued": "Guardada en tu teléfono. Se enviará en cuanto haya conexión.",
+  "@emergencyStepQueued": {
+    "description": "Estado queued: aún no se envió. No decir que se envió."
+  },
+  "emergencyStepSending": "Enviando…",
+  "emergencyStepSent": "Alerta registrada",
+  "@emergencyStepSent": {
+    "description": "El servidor confirmó que guardó la alerta. No significa que alguien la haya recibido."
+  },
+  "emergencyStepNotifyUnknown": "Aviso a los teléfonos de tu familia: aún sin confirmar.",
+  "emergencyStepNotified": "{count, plural, =1{Aviso enviado a 1 dispositivo} other{Aviso enviado a {count} dispositivos}}",
+  "@emergencyStepNotified": {
+    "description": "El proveedor de notificaciones aceptó N mensajes. Aceptado no significa entregado ni leído.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "emergencyStepNotifiedNote": "Enviado no significa que lo hayan visto.",
+  "emergencyStepNobodyNotified": "Nadie pudo ser notificado. Llama al {number} si lo necesitas.",
+  "@emergencyStepNobodyNotified": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "emergencyStepWaitingAck": "Nadie ha confirmado todavía que la vio.",
+  "emergencyStepAck": "{name} confirmó que la vio a las {time}",
+  "@emergencyStepAck": {
+    "description": "Confirmación explícita («Lo vi») de otro integrante. Es lo único que indica que alguien vio la alerta.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "DateTime",
+        "format": "jm"
+      }
+    }
+  },
+  "emergencyStepResolved": "Terminaste la alerta a las {time}.",
+  "@emergencyStepResolved": {
+    "placeholders": {
+      "time": {
+        "type": "DateTime",
+        "format": "jm"
+      }
+    }
+  },
+  "emergencyResolve": "Terminar alerta",
+  "emergencyResolveTitle": "¿Terminar la alerta?",
+  "emergencyResolveBody": "Tu familia verá que la terminaste. Hazlo solo si ya no necesitas ayuda.",
+  "emergencyKeepActive": "Mantenerla activa",
+  "emergencyDiscard": "Cancelar envío",
+  "emergencyDiscardTitle": "¿Cancelar el envío?",
+  "emergencyDiscardBody": "Aún no tenemos confirmación de que la alerta se haya enviado. Si cancelas, dejaremos de intentarlo.",
+  "emergencyKeepTrying": "Seguir intentando",
+  "emergencyErrorNotMember": "Ya no perteneces a esta familia.",
+  "emergencyErrorNotSaved": "No pudimos guardar la alerta en tu teléfono.",
+  "emergencyErrorSending": "La alerta se está enviando en este momento. Espera un poco e inténtalo de nuevo.",
+  "emergencyErrorCannotAckOwn": "No puedes confirmar tu propia alerta.",
+  "emergencyErrorNotAuthor": "Solo quien envió la alerta puede terminarla.",
+  "emergencyErrorNotFound": "Esta alerta ya no está disponible.",
+  "emergencyBannerTitle": "{name} pidió ayuda",
+  "@emergencyBannerTitle": {
+    "description": "Alerta SOS activa de otro integrante, vista en Inicio.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "emergencyBannerTime": "Alerta enviada {time}",
+  "@emergencyBannerTime": {
+    "description": "time es un tiempo relativo como «hace 3 min».",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "emergencyBannerLocationIncluded": "Ubicación incluida",
+  "@emergencyBannerLocationIncluded": {
+    "description": "La alerta trae la ubicación de quien la envió. Nunca se muestran coordenadas."
+  },
+  "emergencyBannerNoLocation": "Sin ubicación",
+  "emergencyBannerAck": "Lo vi",
+  "@emergencyBannerAck": {
+    "description": "Confirma de forma explícita que viste la alerta; quien la envió podrá verlo."
+  },
+  "emergencyBannerAcked": "Confirmaste que la viste",
+  "emergencyUnnamedMember": "Un integrante",
+  "@emergencyUnnamedMember": {
+    "description": "Nombre de respaldo si no se conoce el nombre de quien envió o confirmó la alerta."
+  }
+}

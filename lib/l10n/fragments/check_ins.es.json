@@ -1,0 +1,92 @@
+{
+  "checkInTitle": "Check-in",
+  "@checkInTitle": {
+    "description": "Título de la pantalla modal para contarle a la familia cómo está la persona."
+  },
+  "checkInHeading": "¿Cómo estás?",
+  "checkInIntro": "Cuéntale a tu familia cómo estás. Lo verán en la actividad familiar.",
+  "checkInOptionOk": "Estoy bien",
+  "checkInOptionOkHint": "Para avisar que llegaste o que todo va bien.",
+  "checkInOptionHelp": "Necesito ayuda",
+  "checkInOptionHelpHint": "Para pedir apoyo cuando no es una emergencia.",
+  "checkInSosExplainer": "¿Es una emergencia? Usa el SOS: envía una alerta a los teléfonos de tu familia.",
+  "@checkInSosExplainer": {
+    "description": "Diferencia entre «Necesito ayuda» (check-in, sin urgencia) y el SOS."
+  },
+  "checkInGoToSos": "Ir al SOS",
+  "checkInMessageLabel": "Mensaje (opcional)",
+  "checkInMessageHint": "Ej.: Ya llegué a la casa",
+  "checkInMessageCounter": "{count}/{max}",
+  "@checkInMessageCounter": {
+    "description": "Contador visible de caracteres del mensaje.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "checkInMessageRemaining": "{count, plural, =0{No quedan caracteres} =1{Queda 1 carácter} other{Quedan {count} caracteres}}",
+  "@checkInMessageRemaining": {
+    "description": "Lo que anuncia el lector de pantalla sobre el contador del mensaje.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "checkInMessageTooLong": "El mensaje puede tener hasta {max} caracteres.",
+  "@checkInMessageTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "checkInIncludeLocation": "Incluir mi ubicación",
+  "checkInIncludeLocationExact": "Se incluirá tu ubicación actual.",
+  "checkInIncludeLocationApprox": "Se incluirá tu ubicación aproximada.",
+  "checkInIncludeLocationOffExact": "Si lo activas, se incluirá tu ubicación actual.",
+  "checkInIncludeLocationOffApprox": "Si lo activas, se incluirá tu ubicación aproximada.",
+  "checkInLocationNotShared": "Tu ubicación no se incluirá: no la compartes con esta familia.",
+  "checkInSend": "Enviar",
+  "checkInChooseFirst": "Elige una opción para enviar.",
+  "checkInLocating": "Obteniendo tu ubicación…",
+  "checkInSaving": "Guardando…",
+  "checkInSendingTitle": "Enviando…",
+  "checkInSendingBody": "Quedó guardado en este teléfono. Esperando la confirmación del servidor.",
+  "checkInQueuedTitle": "Guardado. Se enviará al recuperar la conexión.",
+  "checkInQueuedBody": "Está guardado en este teléfono. No necesitas enviarlo de nuevo.",
+  "checkInDeliveredTitle": "Enviado a tu familia",
+  "checkInDeliveredBody": "Quedó en la actividad familiar. Esto no confirma que alguien ya lo haya visto.",
+  "@checkInDeliveredBody": {
+    "description": "El servidor confirmó el check-in; no hay confirmación de lectura."
+  },
+  "checkInFailedTitle": "No se pudo enviar",
+  "checkInFailedBody": "El servidor no lo aceptó. Puedes reintentar o descartarlo.",
+  "checkInWithLocation": "Incluye tu ubicación.",
+  "checkInWithApproxLocation": "Incluye tu ubicación aproximada.",
+  "checkInLocationOmitted": "No pudimos obtener tu ubicación, así que va sin ella.",
+  "checkInDone": "Listo",
+  "checkInDiscard": "Descartar",
+  "checkInPendingTitle": "Pendientes de enviar",
+  "checkInStatusPending": "Pendiente",
+  "checkInStatusFailed": "No se pudo enviar",
+  "checkInSavedAt": "Guardado {time}",
+  "@checkInSavedAt": {
+    "description": "time es un tiempo relativo como 'hace 3 min'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInOfflineBanner": "Sin conexión. Se guardará y se enviará al recuperar la conexión.",
+  "checkInNoFamily": "Crea una familia o únete a una para enviar un check-in.",
+  "checkInSetUpFamily": "Crear o unirme a una familia",
+  "checkInErrorNotSaved": "No pudimos guardarlo en este teléfono. Inténtalo de nuevo.",
+  "checkInErrorNotFound": "Ese check-in ya no está pendiente.",
+  "checkInErrorSending": "Se está enviando en este momento; no se puede descartar."
+}

@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meta/meta.dart';
 import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/app/sync_coordinator.dart';
@@ -14,7 +16,14 @@ import 'package:nexo_familia/features/authentication/data/demo_auth_repository.d
 import 'package:nexo_familia/features/authentication/data/firebase_auth_repository.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/features/authentication/presentation/auth_providers.dart';
+import 'package:nexo_familia/features/check_ins/data/check_in_outbox_handler.dart';
+import 'package:nexo_familia/features/check_ins/data/check_in_repository_impl.dart';
+import 'package:nexo_familia/features/check_ins/presentation/check_in_providers.dart';
 import 'package:nexo_familia/features/common/presentation/sync_status.dart';
+import 'package:nexo_familia/features/emergency/data/emergency_repository_impl.dart';
+import 'package:nexo_familia/features/emergency/data/sos_outbox_handler.dart';
+import 'package:nexo_familia/features/emergency/data/url_launcher_emergency_dialer.dart';
+import 'package:nexo_familia/features/emergency/presentation/emergency_providers.dart';
 import 'package:nexo_familia/features/family/data/family_repository_impl.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
 import 'package:nexo_familia/features/geofences/data/geofence_repository_impl.dart';
@@ -60,6 +69,7 @@ final class AppComposition {
     required this.overrides,
     required this.coordinator,
     required this._disposers,
+    this.demoStore,
   });
 
   /// Backend de demostración: todo en memoria salvo la base de datos local.
@@ -92,6 +102,7 @@ final class AppComposition {
       auth: auth,
       // Ubicaciones sintéticas: el modo demostración nunca usa el GPS.
       device: DemoLocationService(clock: clock),
+      demoStore: store,
       extraDisposers: [auth.dispose, store.dispose],
     );
   }
@@ -130,6 +141,7 @@ final class AppComposition {
     required FunctionsClient functions,
     required AuthRepository auth,
     required DeviceLocationService device,
+    InMemoryRemoteStore? demoStore,
     List<Future<void> Function()> extraDisposers = const [],
   }) {
     final logger = SafeLogger(sink: logSink, clock: clock);
@@ -143,10 +155,21 @@ final class AppComposition {
     final outboxStore = DriftOutboxStore(db);
     final outbox = OutboxProcessor(
       store: outboxStore,
-      handlers: const {},
+      handlers: {
+        CheckInOutbox.kind: CheckInOutboxHandler(remote: remote, clock: clock),
+        SosOutbox.kind: SosOutboxHandler(functions),
+      },
       clock: clock,
       logger: logger,
-      policies: const {'sos': BackoffPolicy.sos},
+      policies: const {SosOutbox.kind: BackoffPolicy.sos},
+    );
+    // Pide a la bandeja que envíe ya lo que acaba de encolarse. Nunca lanza:
+    // si el almacén falla, el procesador programa su propia recuperación.
+    void nudge() => unawaited(outbox.drain().onError((_, _) {}));
+    final checkIns = CheckInRepositoryImpl(
+      outbox: outboxStore,
+      clock: clock,
+      nudge: nudge,
     );
     final coordinator = SyncCoordinator(
       mirror: mirror,
@@ -159,6 +182,7 @@ final class AppComposition {
 
     return AppComposition._(
       coordinator: coordinator,
+      demoStore: demoStore,
       overrides: [
         clockProvider.overrideWithValue(clock),
         loggerProvider.overrideWithValue(logger),
@@ -178,6 +202,22 @@ final class AppComposition {
           LocationRepositoryImpl(remote: remote, cache: cache, currentUid: uid),
         ),
         deviceLocationServiceProvider.overrideWithValue(device),
+        checkInRepositoryProvider.overrideWithValue(checkIns),
+        retryCheckInProvider.overrideWithValue(checkIns.retry),
+        discardCheckInProvider.overrideWithValue(checkIns.discard),
+        emergencyRepositoryProvider.overrideWithValue(
+          EmergencyRepositoryImpl(
+            outbox: outboxStore,
+            cache: cache,
+            remote: remote,
+            currentUid: uid,
+            clock: clock,
+            nudge: nudge,
+          ),
+        ),
+        emergencyDialerProvider.overrideWithValue(
+          const UrlLauncherEmergencyDialer(),
+        ),
         geofenceRepositoryProvider.overrideWithValue(
           GeofenceRepositoryImpl(
             remote: remote,
@@ -200,6 +240,11 @@ final class AppComposition {
 
   final List<Override> overrides;
   final SyncCoordinator coordinator;
+
+  /// Almacén del backend de demostración (solo en modo demo): las pruebas de
+  /// extremo a extremo lo usan para simular la red o leer lo que llegó.
+  @visibleForTesting
+  final InMemoryRemoteStore? demoStore;
   final List<Future<void> Function()> _disposers;
 
   Future<void> dispose() async {
