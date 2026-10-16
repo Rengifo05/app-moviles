@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:meta/meta.dart';
 
 /// Configuración del proyecto de Firebase. Son identificadores públicos del
@@ -52,11 +53,15 @@ final class FirebaseConfig {
 
 /// Instancias de Firebase listas para la composición.
 final class FirebaseHandles {
-  const new(this.firestore, this.auth, this.functions);
+  const new(this.firestore, this.auth, this.functions, {this.messaging});
 
   final FirebaseFirestore firestore;
   final FirebaseAuth auth;
   final FirebaseFunctions functions;
+
+  /// `null` con emuladores: FCM no tiene emulador y un proyecto `demo-*` no
+  /// puede entregar avisos (ADR-005).
+  final FirebaseMessaging? messaging;
 }
 
 /// Inicializa Firebase y, si se piden, conecta los emuladores locales.
@@ -93,5 +98,10 @@ Future<FirebaseHandles> initializeFirebase(
   // se purga al cerrar sesión o salir de una familia. Una caché en disco
   // conservaría datos de la familia que Firestore nunca borra por sí solo.
   firestore.settings = const Settings(persistenceEnabled: false);
-  return FirebaseHandles(firestore, auth, functions);
+  return FirebaseHandles(
+    firestore,
+    auth,
+    functions,
+    messaging: useEmulators ? null : FirebaseMessaging.instance,
+  );
 }

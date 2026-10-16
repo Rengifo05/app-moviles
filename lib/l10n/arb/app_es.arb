@@ -1122,6 +1122,9 @@
   "locationZonesError": "No pudimos cargar las zonas.",
   "locationZonesNew": "Nueva zona",
   "locationZonesTitle": "Zonas",
+  "pushDeniedMessage": "Los avisos están desactivados: las alertas SOS no te llegarán con la app cerrada. Puedes activarlos en los ajustes del teléfono.",
+  "pushPromptAction": "Activar avisos",
+  "pushPromptMessage": "Activa los avisos para enterarte si alguien de tu familia pide ayuda, aunque no tengas la app abierta. El aviso no muestra nombres ni ubicación.",
   "@onboarding4Body": {
     "placeholders": {
       "number": {

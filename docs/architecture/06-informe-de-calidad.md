@@ -8,7 +8,7 @@
 |---|---|---|
 | Formato y análisis estático | `dart format` y `flutter analyze --fatal-infos` con very_good_analysis 11 en modo estricto | 0 avisos |
 | Límites entre capas | Prueba de arquitectura de mundo cerrado sobre el AST | En verde |
-| App Flutter (unitarias, integración y widgets) | `flutter test`: 82 archivos de prueba | **1196** en verde |
+| App Flutter (unitarias, integración y widgets) | `flutter test`: 88 archivos de prueba | **1226** en verde |
 | Capturas *golden* | 97 imágenes, claro al 100 % y oscuro al 200 %, revisadas una por una | En verde |
 | De extremo a extremo en el host | App completa con el backend de demostración y Drift en memoria: 6 escenarios | En verde |
 | Reglas de Firestore | Emulador con `@firebase/rules-unit-testing` | En verde |
@@ -55,7 +55,7 @@ Las revisiones adversariales y los defectos que encontraron están en [revisione
 | Permiso de ubicación del sistema (geolocator) | Necesita el sistema operativo real | Conceder, denegar y denegar dos veces; comprobar la explicación previa |
 | Lector de pantalla (TalkBack y VoiceOver) | Las guías de Flutter no sustituyen una prueba real | Recorrer Inicio, SOS y Privacidad con el lector |
 | Llamar al 123 | Abre el marcador del sistema | Pulsar «Llamar al 123» en un teléfono |
-| Notificaciones push del SOS | Requieren un proyecto real y la clave APNs (D7) | ADR-005, cuando exista el proyecto |
+| Notificaciones push del SOS | Requieren un proyecto real, la clave APNs (D7) y un teléfono. El cliente está probado en el host con dobles | Runbook de entorno, pasos 4 y 5 de iOS y Android |
 | Firebase real (Auth, Firestore, Functions) | Requiere el proyecto real, pendiente de D7 | Desplegar en *staging* según el runbook |
 
 ## 3. Pendientes conocidos
@@ -64,7 +64,7 @@ Las revisiones adversariales y los defectos que encontraron están en [revisione
   - proyecto Firebase de *staging* con Blaze, presupuesto y *spend cap*;
   - API key de Google Maps (hoy el mapa es la lista accesible);
   - clave APNs y App Check.
-- **Parte cliente de las notificaciones push** (ADR-005): está diseñada, pero no implementada.
+- **Notificaciones push:** el cliente está implementado (permiso en contexto, registro del dispositivo, renovación del token, baja al cerrar sesión y apertura de la alerta), pero nunca se ha recibido un aviso real (D7). Faltan el botón «Abrir ajustes» con el permiso denegado y un canal de Android propio para el SOS.
 - **Geocercas nativas:** desactivadas por diseño (ADR-003). El editor de zonas funciona, pero no hay monitoreo de entradas y salidas.
 - **Exportación de datos desde la app** (derecho de acceso): hoy se atiende a mano (runbook de incidentes, §5).
 - **Banderas remotas para apagar funciones sin publicar** una versión.
@@ -76,6 +76,6 @@ Las revisiones adversariales y los defectos que encontraron están en [revisione
 ## 4. Por qué no está listo para producción
 
 1. Nunca se ha ejecutado contra un proyecto Firebase real ni en un teléfono.
-2. No hay notificaciones push reales, así que un SOS solo llega a quien tiene la app abierta. La interfaz lo dice («Nadie pudo ser notificado»), pero es la limitación principal de un producto de seguridad.
+2. Las notificaciones push nunca se han probado de verdad: sin proyecto real ni clave APNs, un SOS solo llega a quien tiene la app abierta. La interfaz lo dice («Nadie pudo ser notificado»), pero es la limitación principal de un producto de seguridad.
 3. Falta una revisión legal: privacidad, tratamiento de datos de ubicación según la Ley 1581 de 2012 y términos de uso.
 4. No hay pruebas con usuarios reales de la experiencia del SOS ni de los textos.

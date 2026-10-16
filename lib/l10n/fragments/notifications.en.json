@@ -1,0 +1,5 @@
+{
+  "pushPromptMessage": "Turn on notifications so you know if someone in your family asks for help, even when the app is closed. Notifications don't show names or location.",
+  "pushPromptAction": "Turn on notifications",
+  "pushDeniedMessage": "Notifications are off: SOS alerts won't reach you while the app is closed. You can turn them on in your phone settings."
+}

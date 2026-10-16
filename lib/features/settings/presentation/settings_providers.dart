@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
 import 'package:nexo_familia/features/settings/domain/preferences.dart';
 
 final preferencesRepositoryProvider = Provider<PreferencesRepository>(
@@ -14,11 +15,12 @@ final preferencesProvider = StreamProvider<AppPreferences>(
 /// compilación (`package_info_plus`).
 const String appVersionLabel = '0.1.0';
 
-/// Si las notificaciones push están configuradas en esta compilación
-/// (ADR-005). Por defecto `false`: mientras no exista el servicio de avisos,
-/// Ajustes lo dice en lugar de fingir que hay avisos activos. La raíz de
-/// composición lo sobrescribe cuando haya un `PushService` real.
-final pushNotificationsAvailableProvider = Provider<bool>((ref) => false);
+/// Si este teléfono puede recibir avisos SOS con la app cerrada (ADR-005).
+/// Sin servicio de avisos (modo demostración, emuladores) Ajustes lo dice en
+/// lugar de fingir que hay avisos activos.
+final pushNotificationsAvailableProvider = Provider<bool>(
+  (ref) => ref.watch(pushServiceProvider).isAvailable,
+);
 
 /// Operaciones de la bandeja de salida aún sin enviar (check-ins, eventos de
 /// zona…). Al cerrar sesión se descartan (ADR-004, punto 8), así que la

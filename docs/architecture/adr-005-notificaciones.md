@@ -1,6 +1,6 @@
 # ADR-005 · Notificaciones push (SOS)
 
-- **Estado:** Aceptado (2026-10-15). La verificación real depende de D7 (proyecto Firebase real y clave APNs) y de un dispositivo 📱.
+- **Estado:** Aceptado (2026-10-15). Cliente implementado y probado en el host (2026-10-16). La verificación real depende de D7 (proyecto Firebase real y clave APNs) y de un dispositivo 📱.
 - **Fecha:** 2026-10-15
 
 ## Contexto
@@ -24,3 +24,19 @@ El SOS debe avisar a los demás integrantes aunque no tengan la app abierta. El 
 - Sin D7 no hay avisos reales. El modo demo y los emuladores muestran el estado «avisos no configurados» y no fingen entregas.
 - En iOS hace falta la *capability* Push Notifications, un `GoogleService-Info.plist` o las opciones por `--dart-define`, y la clave APNs en Firebase. Son pasos 📱 que irán al runbook.
 - Un aviso aceptado por FCM no garantiza que alguien lo vea. Por eso la app muestra «Aviso enviado a N dispositivos» y solo cuenta como confirmación el *ack* explícito («Lo vi»).
+
+## Implementación (2026-10-16)
+
+Qué hay en el código y en qué se aparta de la decisión:
+
+- **Piezas:**
+  - dominio: `PushService`, `DeviceRegistry` y `PushRegistration` (`lib/features/notifications/domain/`);
+  - datos: `DeviceRegistryImpl` sobre el almacén remoto;
+  - infraestructura: `FirebasePushService` (FCM) y `sosOpenOf`, que valida los datos del aviso;
+  - presentación: `PushPromptCard` en Inicio y `pushBindingProvider`, que une los avisos con la sesión.
+- **Cuándo hay servicio:** solo con Firebase real en Android o iOS. En el modo demostración y con los emuladores (FCM no tiene emulador) la app no pide permiso ni registra nada, y Ajustes dice que los avisos no están configurados.
+- **Id del registro (cambio respecto al punto 4):** en lugar de un `installId` guardado en el teléfono, el id es un hash SHA-256 truncado del token. Registrar dos veces es inocuo, el documento no revela el token en su ruta y el teléfono puede borrar exactamente su registro sin guardar nada más. Cuando FCM renueva el token, se registra el nuevo y se borra el anterior; si eso falla, el anterior lo limpia el servidor cuando FCM lo declare inválido.
+- **Cierre de sesión:** el registro se borra antes de cerrar la sesión, con un límite de 5 s. Sin red, la sesión se cierra igual; el servidor olvida el token cuando FCM lo rechace, o con «Cerrar sesión en todos los dispositivos». Si la sesión termina desde otro teléfono, la siguiente vuelve a registrar.
+- **Al tocar el aviso (cambio respecto al punto 5):** se activa esa familia y se abre Inicio, donde la alerta activa ya se ve con «Lo vi». Si la familia no es de la cuenta, la sesión la ignora y sigue con la activa: no se muestra ningún dato.
+- **Permiso denegado:** Inicio lo dice y remite a los ajustes del teléfono. Todavía no hay botón «Abrir ajustes».
+- **Canal de Android:** el aviso usa el canal por defecto de FCM. Un canal propio de alta importancia para el SOS necesita notificaciones locales o código nativo; queda pendiente.

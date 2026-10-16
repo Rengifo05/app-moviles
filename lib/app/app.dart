@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/app/composition.dart';
+import 'package:nexo_familia/app/push_binding.dart';
 import 'package:nexo_familia/app/router.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/design_system/theme/nx_theme.dart';
@@ -17,7 +18,9 @@ class NexoApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watch(appConfigProvider);
     // La sincronización sigue a la sesión (usuario y familia activa).
-    ref.watch(syncBindingProvider);
+    ref
+      ..watch(syncBindingProvider)
+      ..watch(pushBindingProvider);
     return MaterialApp.router(
       title: config.appName,
       debugShowCheckedModeBanner: false,

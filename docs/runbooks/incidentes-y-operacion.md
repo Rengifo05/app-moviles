@@ -22,7 +22,8 @@ Reglas que no cambian durante un incidente:
 - **Qué revisar:**
   1. Registros de Functions: `callable.failed` con `operation: raiseSos` y su `code`.
   2. Estado de FCM y de la clave APNs (en iOS, una clave vencida o revocada corta todos los avisos).
-  3. En Firestore, la alerta con `notifiedCount: null` y `notifyStartedAt` reciente indica un envío en curso o fallido. El reintento del cliente la completa cuando pasa el *lease* de 60 s.
+  3. Que los demás integrantes tengan documentos en `users/{uid}/devices`. Sin documentos, la persona no activó los avisos (Inicio se lo pide) o los denegó en el teléfono.
+  4. En Firestore, la alerta con `notifiedCount: null` y `notifyStartedAt` reciente indica un envío en curso o fallido. El reintento del cliente la completa cuando pasa el *lease* de 60 s.
 - **Qué no hacer:** marcar alertas como notificadas a mano. `notifiedCount` cuenta los mensajes **aceptados** por FCM.
 
 ### Los check-ins o eventos de zona no se envían

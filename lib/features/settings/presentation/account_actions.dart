@@ -4,6 +4,7 @@ import 'package:nexo_familia/core/logging/safe_logger.dart';
 import 'package:nexo_familia/core/result.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/features/authentication/presentation/auth_providers.dart';
+import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
 import 'package:nexo_familia/features/settings/domain/preferences.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 
@@ -15,13 +16,33 @@ import 'package:nexo_familia/features/settings/presentation/settings_providers.d
 /// las familias la purga el coordinador de sincronización al cerrarse la
 /// sesión (ADR-004).
 final class AccountActions {
-  new({required this._auth, required this._preferences, required this._logger});
+  new({
+    required this._auth,
+    required this._preferences,
+    required this._logger,
+    this._beforeSignOut,
+  });
 
   final AuthRepository _auth;
   final PreferencesRepository _preferences;
   final SafeLogger _logger;
 
-  Future<VoidResult> signOut() => _afterOk('signOut', _auth.signOut());
+  /// Antes de cerrar sesión: borra el registro de avisos de este teléfono
+  /// (un teléfono que ya no es de la persona no recibe alertas).
+  final Future<void> Function()? _beforeSignOut;
+
+  /// Cerrar sesión nunca espera indefinidamente a la red.
+  static const _beforeSignOutLimit = Duration(seconds: 5);
+
+  Future<VoidResult> signOut() async {
+    try {
+      await _beforeSignOut?.call().timeout(_beforeSignOutLimit);
+    } on Object {
+      // Sin red no se puede borrar: el servidor olvida el token cuando FCM
+      // lo rechace, o con "Cerrar sesión en todos los dispositivos".
+    }
+    return await _afterOk('signOut', _auth.signOut());
+  }
 
   /// Cierra la sesión en todos los dispositivos (también en este).
   Future<VoidResult> signOutEverywhere() =>
@@ -64,5 +85,6 @@ final accountActionsProvider = Provider<AccountActions>(
     auth: ref.watch(authRepositoryProvider),
     preferences: ref.watch(preferencesRepositoryProvider),
     logger: ref.watch(loggerProvider),
+    beforeSignOut: ref.watch(pushRegistrationProvider).unregister,
   ),
 );

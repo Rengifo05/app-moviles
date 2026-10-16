@@ -75,6 +75,13 @@ Después: las alertas de presupuesto (ver `docs/architecture/03-costos.md`).
 1. `flutter build ios --debug --no-codesign` genera el `Podfile`. En su `post_install`, habilita el permiso de ubicación de `permission_handler`: `'PERMISSION_LOCATION=1'` en `GCC_PREPROCESSOR_DEFINITIONS`.
 2. Comprueba que `AppDelegate.swift` excluye `Application Support` de las copias (`isExcludedFromBackup`).
 3. Revisa en el dispositivo el texto de `NSLocationWhenInUseUsageDescription`.
+4. Avisos push (ADR-005, requiere D7):
+   - en Xcode, añade la *capability* **Push Notifications** al target `Runner` (crea el *entitlement* `aps-environment`);
+   - sube la clave APNs (`.p8`) en la consola de Firebase, en Configuración del proyecto → Cloud Messaging;
+   - en un iPhone real (el simulador no recibe avisos de APNs de forma fiable): inicia sesión con una familia, pulsa «Activar avisos», acepta el diálogo y comprueba que aparece `users/{uid}/devices/{id}` en Firestore;
+   - con la app cerrada, lanza un SOS desde otra cuenta: debe llegar «Alerta SOS» sin nombres ni ubicación, y al tocarlo se abre Inicio con la alerta;
+   - cierra sesión y comprueba que el documento del dispositivo desaparece.
+5. Android 13 o superior: repite la prueba anterior; el diálogo de `POST_NOTIFICATIONS` debe aparecer solo al pulsar «Activar avisos».
 
 ## Limitaciones conocidas de la sesión en la nube
 

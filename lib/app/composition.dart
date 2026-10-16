@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:meta/meta.dart';
 import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/app/sync_coordinator.dart';
@@ -33,6 +33,9 @@ import 'package:nexo_familia/features/geofences/presentation/geofence_providers.
 import 'package:nexo_familia/features/location_sharing/data/location_repository_impl.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
+import 'package:nexo_familia/features/notifications/data/device_registry_impl.dart';
+import 'package:nexo_familia/features/notifications/domain/push.dart';
+import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
 import 'package:nexo_familia/features/settings/data/drift_preferences_repository.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
@@ -43,6 +46,7 @@ import 'package:nexo_familia/infrastructure/firebase/firebase_functions_client.d
 import 'package:nexo_familia/infrastructure/firebase/firestore_remote_store.dart';
 import 'package:nexo_familia/infrastructure/location/demo_location_service.dart';
 import 'package:nexo_familia/infrastructure/location/geolocator_location_service.dart';
+import 'package:nexo_familia/infrastructure/push/firebase_push_service.dart';
 import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 import 'package:nexo_familia/infrastructure/sync/backoff.dart';
 import 'package:nexo_familia/infrastructure/sync/outbox.dart';
@@ -130,6 +134,10 @@ final class AppComposition {
         functions: functions,
       ),
       device: const GeolocatorLocationService(),
+      push: switch ((firebase.messaging, pushPlatform())) {
+        (final messaging?, _?) => FirebasePushService(messaging),
+        _ => null,
+      },
     );
   }
 
@@ -144,6 +152,7 @@ final class AppComposition {
     required AuthRepository auth,
     required DeviceLocationService device,
     InMemoryRemoteStore? demoStore,
+    PushService? push,
     List<Future<void> Function()> extraDisposers = const [],
   }) {
     final logger = SafeLogger(sink: logSink, clock: clock);
@@ -244,6 +253,18 @@ final class AppComposition {
             ids: const UuidV7IdGenerator(),
           ),
         ),
+        // Sin servicio (demostración, emuladores) quedan los valores por
+        // defecto: la app no pide permiso ni registra nada.
+        if (push != null) ...[
+          pushServiceProvider.overrideWithValue(push),
+          deviceRegistryProvider.overrideWithValue(
+            DeviceRegistryImpl(
+              remote: remote,
+              currentUid: uid,
+              platform: pushPlatform()!,
+            ),
+          ),
+        ],
         syncStatusProvider.overrideWith((ref) {
           final familyId = ref.watch(activeFamilyIdProvider);
           return familyId == null
@@ -270,3 +291,11 @@ final class AppComposition {
     }
   }
 }
+
+/// Plataforma para el registro de avisos (`android` o `ios`, lo único que
+/// aceptan las reglas), o `null` donde no hay avisos.
+String? pushPlatform() => switch (defaultTargetPlatform) {
+  TargetPlatform.android => 'android',
+  TargetPlatform.iOS => 'ios',
+  _ => null,
+};
