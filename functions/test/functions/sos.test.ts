@@ -170,7 +170,32 @@ describe('raiseSos', () => {
     await raiseSos(as('luis'), { familyId, alertId: 'sos-7' }, notifier);
   });
 
+  it('la ubicación sigue el consentimiento VIGENTE: exacta, aproximada o ninguna', async () => {
+    const consent = (state: string, precision: string) =>
+      db.doc(`families/${familyId}/consents/luis`).set({ state, precision });
+    const point = { lat: 4.61734, lng: -74.07291, accuracyM: 12 };
+
+    await consent('sharing', 'exact');
+    await raiseSos(as('luis'), { familyId, alertId: 'c-exacta', ...point }, notifier);
+    expect((await db.doc(`families/${familyId}/emergencies/c-exacta`).get()).data()).toMatchObject(point);
+
+    await consent('sharing', 'approximate');
+    await raiseSos(as('luis'), { familyId, alertId: 'c-aprox', ...point }, notifier);
+    expect((await db.doc(`families/${familyId}/emergencies/c-aprox`).get()).data()).toMatchObject({
+      lat: 4.62, lng: -74.07, accuracyM: 1000,
+    });
+
+    // Pausó después de preparar la alerta: el reintento no publica nada.
+    await consent('paused', 'exact');
+    await raiseSos(as('luis'), { familyId, alertId: 'c-pausa', ...point }, notifier);
+    const paused = (await db.doc(`families/${familyId}/emergencies/c-pausa`).get()).data()!;
+    expect(paused.lat).toBeUndefined();
+    expect(paused.accuracyM).toBeUndefined();
+  });
+
   it('ignora coordenadas fuera de rango y valida tipos', async () => {
+    // Comparte en exacta: lo único que descarta la ubicación es el rango.
+    await db.doc(`families/${familyId}/consents/luis`).set({ state: 'sharing', precision: 'exact' });
     await raiseSos(as('luis'), { familyId, alertId: 'sos-1', lat: 200, lng: 10 }, notifier);
     const alert = await db.doc(`families/${familyId}/emergencies/sos-1`).get();
     expect(alert.get('lat')).toBeUndefined();

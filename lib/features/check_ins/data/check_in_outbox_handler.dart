@@ -2,8 +2,10 @@ import 'package:nexo_familia/core/clock.dart';
 import 'package:nexo_familia/core/failure.dart';
 import 'package:nexo_familia/core/result.dart';
 import 'package:nexo_familia/features/check_ins/data/check_in_repository_impl.dart';
+import 'package:nexo_familia/features/location_sharing/data/location_repository_impl.dart';
 import 'package:nexo_familia/infrastructure/backend_paths.dart';
 import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
+import 'package:nexo_familia/infrastructure/sync/document_cache.dart';
 import 'package:nexo_familia/infrastructure/sync/outbox.dart';
 
 /// Envía un check-in de la bandeja como evento de la familia
@@ -15,10 +17,11 @@ import 'package:nexo_familia/infrastructure/sync/outbox.dart';
 /// aceptó no duplica el evento ni choca con las reglas (los eventos nunca se
 /// modifican desde el cliente).
 final class CheckInOutboxHandler implements OutboxHandler {
-  new({required this._remote, required this._clock});
+  new({required this._remote, required this._clock, required this._cache});
 
   final RemoteStore _remote;
   final Clock _clock;
+  final DocumentCache _cache;
 
   /// Retención de los eventos (TTL de Firestore sobre `expireAt`). Las
   /// reglas aceptan hasta 31 días.
@@ -28,18 +31,28 @@ final class CheckInOutboxHandler implements OutboxHandler {
   static const invalidPayload = 'check-in-payload-invalid';
 
   @override
-  Future<VoidResult> send(OutboxEntry entry) {
+  Future<VoidResult> send(OutboxEntry entry) async {
     final checkIn = CheckInPayload.decode(entry);
     if (checkIn == null) {
-      return Future.value(const Err(Failure.validation(invalidPayload)));
+      return const Err(Failure.validation(invalidPayload));
     }
-    return _remote.commit([
+    // La ubicación sigue la decisión VIGENTE: si la persona pausó o pasó a
+    // "aproximada" mientras el check-in esperaba en la bandeja, sale sin
+    // ubicación o redondeada.
+    final location = switch (checkIn.location) {
+      final point? => shareablePoint(
+        point,
+        await cachedConsent(_cache, entry.familyId, checkIn.uid),
+      ),
+      null => null,
+    };
+    return await _remote.commit([
       RemoteWrite.create(BackendPaths.event(entry.familyId, entry.id), {
         'type': 'checkIn',
         'actorUid': checkIn.uid,
         'kind': checkIn.kind.name,
         'message': ?checkIn.message,
-        if (checkIn.location case final point?) ...{
+        if (location case final point?) ...{
           'lat': point.latitude,
           'lng': point.longitude,
         },

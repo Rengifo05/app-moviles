@@ -43,6 +43,16 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
   const outcome = await ctx.db.runTransaction(async (tx) => {
     const member = await tx.get(ctx.db.doc(paths.member(familyId, ctx.uid)));
     if (!member.exists) reject('permission-denied', 'not-member');
+    // La ubicación se ajusta al consentimiento VIGENTE, no al del momento en
+    // que el teléfono preparó la alerta: un reintento de un SOS en cola
+    // después de pausar no publica coordenadas, y con "aproximada" se
+    // redondean como en la app (rejilla de 0,01°).
+    const consent = await tx.get(ctx.db.doc(paths.consent(familyId, ctx.uid)));
+    const location = shareableLocation(
+      hasLocation ? { lat: lat!, lng: lng!, accuracyM } : null,
+      consent.get('state'),
+      consent.get('precision'),
+    );
     const existing = await tx.get(ref);
     if (existing.exists) {
       if (existing.get('uid') !== ctx.uid) reject('permission-denied', 'not-allowed');
@@ -66,7 +76,7 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
     tx.set(ref, {
       uid: ctx.uid,
       createdAt: FieldValue.serverTimestamp(),
-      ...(hasLocation ? { lat, lng, accuracyM: accuracyM ?? null } : {}),
+      ...(location ?? {}),
       notifiedCount: null,
       notifyStartedAt: Timestamp.fromDate(ctx.now),
       acks: {},
@@ -155,4 +165,23 @@ async function forgetInvalidDevices(devices: Device[], invalid: string[]): Promi
       .filter((d) => stale.has(d.token))
       .map((d) => d.ref.delete({ lastUpdateTime: d.updateTime })),
   );
+}
+
+/** Ubicación que se puede guardar según el consentimiento vigente. */
+export function shareableLocation(
+  point: { lat: number; lng: number; accuracyM: number | undefined } | null,
+  state: unknown,
+  precision: unknown,
+): { lat: number; lng: number; accuracyM: number | null } | null {
+  if (point === null || state !== 'sharing') return null;
+  if (precision === 'exact') {
+    return { lat: point.lat, lng: point.lng, accuracyM: point.accuracyM ?? null };
+  }
+  // Cualquier otra precisión se trata como la que menos revela.
+  const snap = (degrees: number) => Math.round(degrees * 100) / 100 + 0;
+  return {
+    lat: snap(point.lat),
+    lng: snap(point.lng),
+    accuracyM: Math.max(point.accuracyM ?? 0, 1000),
+  };
 }

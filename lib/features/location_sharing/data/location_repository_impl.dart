@@ -61,11 +61,11 @@ final class LocationRepositoryImpl implements LocationRepository {
     }
     final familyId = consent.familyId;
     // Pasar a "aproximada" no debe dejar visible la última ubicación EXACTA
-    // ya enviada: si la hay, se borra en la misma operación.
+    // ya enviada: se borra siempre en la misma operación (la copia local
+    // puede no tenerla todavía o estar desactualizada). Como mucho se pierde
+    // una aproximada, que vuelve con el siguiente envío.
     final dropExact =
-        consent.isSharing &&
-        consent.precision == LocationPrecision.approximate &&
-        await _publishedIsExact(familyId, uid);
+        consent.isSharing && consent.precision == LocationPrecision.approximate;
     return await _remote.commit([
       RemoteWrite.merge(BackendPaths.consent(familyId, uid), {
         'state': _stateValue(consent.state),
@@ -79,13 +79,6 @@ final class LocationRepositoryImpl implements LocationRepository {
     ]);
   }
 
-  Future<bool> _publishedIsExact(String familyId, String uid) async {
-    final cached = await _cache
-        .watchDoc(BackendPaths.locations(familyId), uid)
-        .first;
-    return cached != null && cached.data['approximate'] != true;
-  }
-
   @override
   Future<VoidResult> publishMyLocation(
     String familyId,
@@ -96,32 +89,41 @@ final class LocationRepositoryImpl implements LocationRepository {
     if (location.uid != uid) {
       return const Err(Failure.permissionDenied('not-own-location'));
     }
-    // Defensa en profundidad: aunque el caso de uso ya redondeó, una
-    // ubicación aproximada nunca sale del dispositivo con más detalle.
-    // `approximate()` es canónico, así que repetirlo no cambia nada.
-    final point = location.isApproximate
-        ? location.point.approximate()
-        : location.point;
+    // El consentimiento VIGENTE manda, no el que había al empezar el envío
+    // (la persona pudo pausar o pasar a "aproximada" mientras se obtenía la
+    // posición). Las reglas también lo exigen; esto evita el rechazo.
+    final current = await cachedConsent(_cache, familyId, uid);
+    if (current != null && !current.isSharing) {
+      return const Err(Failure.permissionDenied('not-sharing'));
+    }
+    final approximate =
+        location.isApproximate ||
+        current?.precision == LocationPrecision.approximate;
+    // `approximate()` es canónico: repetirlo no cambia nada.
+    final point = approximate ? location.point.approximate() : location.point;
     return await _remote.commit([
       RemoteWrite.put(BackendPaths.location(familyId, uid), {
         'lat': point.latitude,
         'lng': point.longitude,
-        'accuracyM': _accuracyFor(location),
+        'accuracyM': _accuracyFor(location, approximate: approximate),
         'capturedAt': location.capturedAt.toUtc(),
         'receivedAt': serverTimestamp,
-        'approximate': location.isApproximate,
+        'approximate': approximate,
       }),
     ]);
   }
 
   /// Precisión dentro del rango que aceptan las reglas (de 0 a menos de
   /// 100 000 m).
-  static double _accuracyFor(MemberLocation location) {
+  static double _accuracyFor(
+    MemberLocation location, {
+    required bool approximate,
+  }) {
     final raw = location.accuracyMeters;
     final accuracy = raw.isFinite && raw >= 0
         ? (raw > _maxAccuracyMeters ? _maxAccuracyMeters : raw)
         : _maxAccuracyMeters;
-    return location.isApproximate && accuracy < _approximateAccuracyMeters
+    return approximate && accuracy < _approximateAccuracyMeters
         ? _approximateAccuracyMeters
         : accuracy;
   }
@@ -181,3 +183,29 @@ final class LocationRepositoryImpl implements LocationRepository {
         LocationPrecision.approximate => 'approximate',
       };
 }
+
+/// Consentimiento propio en la copia local, o `null` si aún no se conoce.
+/// Lo usan quienes envían ubicaciones (también la bandeja de salida) para
+/// aplicar la decisión VIGENTE y no la del momento en que se preparó el envío.
+Future<SharingConsent?> cachedConsent(
+  DocumentCache cache,
+  String familyId,
+  String uid,
+) async {
+  final doc = await cache.watchDoc(BackendPaths.consents(familyId), uid).first;
+  return doc == null
+      ? null
+      : LocationRepositoryImpl._consent(familyId, uid, doc.data);
+}
+
+/// El punto que puede salir del teléfono según [consent]: ninguno si ya no
+/// comparte, redondeado si eligió "aproximada". Con el consentimiento
+/// desconocido se deja como está (las reglas del servidor lo validan).
+GeoPoint? shareablePoint(GeoPoint point, SharingConsent? consent) =>
+    switch (consent) {
+      null => point,
+      SharingConsent(isSharing: false) => null,
+      SharingConsent(precision: LocationPrecision.approximate) =>
+        point.approximate(),
+      _ => point,
+    };

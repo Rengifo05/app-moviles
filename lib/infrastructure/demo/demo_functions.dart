@@ -326,7 +326,13 @@ final class DemoFunctionsClient implements FunctionsClient {
       };
     }
     _rateLimit(uid, 'raiseSos', _maxSosPerHour);
-    final location = _sosLocation(p);
+    // Como en las Functions: la ubicación sigue el consentimiento VIGENTE.
+    final consent = _store.serverRead('families/$familyId/consents/$uid');
+    final location = _shareable(
+      _sosLocation(p),
+      consent?['state'],
+      consent?['precision'],
+    );
     return _store.serverTransaction(() {
       _store.serverWrite(path, {
         'uid': uid,
@@ -472,6 +478,21 @@ final class DemoFunctionsClient implements FunctionsClient {
       'lng': lng.toDouble(),
       if (accuracy is num && accuracy.isFinite && accuracy >= 0)
         'accuracyM': accuracy.toDouble(),
+    };
+  }
+
+  /// Sin compartir no se guarda nada; con una precisión distinta de
+  /// "exacta", rejilla de 0,01° y precisión declarada de al menos 1 km.
+  static Json? _shareable(Json? location, Object? state, Object? precision) {
+    if (location == null || state != 'sharing') return null;
+    if (precision == 'exact') return location;
+    double snap(Object? degrees) =>
+        ((degrees! as double) * 100).roundToDouble() / 100 + 0.0;
+    final accuracy = (location['accuracyM'] as double?) ?? 0;
+    return {
+      'lat': snap(location['lat']),
+      'lng': snap(location['lng']),
+      'accuracyM': accuracy < 1000 ? 1000.0 : accuracy,
     };
   }
 

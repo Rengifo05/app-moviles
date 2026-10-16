@@ -158,8 +158,16 @@ final class AppComposition {
     final outbox = OutboxProcessor(
       store: outboxStore,
       handlers: {
-        CheckInOutbox.kind: CheckInOutboxHandler(remote: remote, clock: clock),
-        SosOutbox.kind: SosOutboxHandler(functions),
+        CheckInOutbox.kind: CheckInOutboxHandler(
+          remote: remote,
+          clock: clock,
+          cache: cache,
+        ),
+        SosOutbox.kind: SosOutboxHandler(
+          functions,
+          cache: cache,
+          currentUid: () => auth.currentUser?.uid,
+        ),
       },
       clock: clock,
       logger: logger,

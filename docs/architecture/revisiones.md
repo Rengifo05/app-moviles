@@ -76,3 +76,14 @@ Dos revisores (sincronización y adaptador de Firebase; seguridad y privacidad d
 | El tiempo límite de las transacciones no acotaba la confirmación nativa | Se acota también en Dart |
 | Refutado como defecto de este cambio: `signOutEverywhere` no corta lo que dura más que el ID token (≤ 1 h) | Mejora de todos modos: revoca las invitaciones activas que creó la cuenta |
 | Encontrado al integrar (la suite completa lo reproducía): el ámbito del espejo pasaba a «en vivo» en cuanto **una** de sus colecciones reconectaba, aunque las demás siguieran mostrando datos guardados | Un ámbito solo está `live` cuando todas sus colecciones recibieron datos del servidor tras arrancar o tras su último error; prueba determinista que falla sin la corrección |
+
+## Revisión adversarial de las funcionalidades (2026-10-16)
+
+Cuatro enfoques: honestidad, privacidad, datos e integración. El límite de uso cortó la verificación escéptica y dos de los revisores, así que el integrador verificó cada hallazgo contra el código y escribió primero una prueba que lo reproduce.
+
+| Hallazgo | Resolución |
+|---|---|
+| Un SOS o check-in en la bandeja salía con las coordenadas capturadas antes de pausar o de pasar a «aproximada» | Los *handlers* aplican el consentimiento vigente de la copia local al enviar. `raiseSos` lo vuelve a leer en el servidor. Las reglas exigen la rejilla de 0,01° para check-ins y ubicaciones cuando la precisión es aproximada (3 mutaciones nuevas: **41/41**) |
+| Un envío de ubicación exacta en curso se publicaba después de pasar a «aproximada» | `publishMyLocation` aplica el consentimiento vigente (aproximada → redondea; en pausa → no publica) y las reglas lo garantizan |
+| Pasar a «aproximada» solo borraba la ubicación exacta si la copia local la tenía | Se borra siempre en el mismo lote |
+

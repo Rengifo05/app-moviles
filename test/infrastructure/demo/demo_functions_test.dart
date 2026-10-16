@@ -939,6 +939,12 @@ void main() {
 
     setUp(() async {
       familyId = await familyOf('ana', ['bruno']);
+      // Las pruebas de ubicación parten de "comparte, exacta"; la de
+      // consentimiento lo cambia.
+      store.serverWrite('families/$familyId/consents/ana', {
+        'state': 'sharing',
+        'precision': 'exact',
+      });
       clock.advance(const Duration(hours: 1));
     });
 
@@ -950,6 +956,32 @@ void main() {
       'familyId': familyId,
       'alertId': alertId,
       ...extra,
+    });
+
+    test('la ubicación sigue el consentimiento vigente', () async {
+      final point = {'lat': 4.61734, 'lng': -74.07291, 'accuracyM': 12};
+      store.serverWrite('families/$familyId/consents/ana', {
+        'state': 'sharing',
+        'precision': 'approximate',
+      });
+      await ok(sos('ana', 'aprox', point));
+      expect(
+        store.serverRead('families/$familyId/emergencies/aprox'),
+        containsPair('lat', 4.62),
+      );
+      expect(
+        store.serverRead('families/$familyId/emergencies/aprox'),
+        containsPair('accuracyM', 1000.0),
+      );
+      store.serverWrite('families/$familyId/consents/ana', {
+        'state': 'paused',
+        'precision': 'exact',
+      });
+      await ok(sos('ana', 'pausa', point));
+      expect(
+        store.serverRead('families/$familyId/emergencies/pausa')!.keys,
+        isNot(contains('lat')),
+      );
     });
 
     test('crea la alerta del contrato con notifiedCount 0 y un evento sos sin '

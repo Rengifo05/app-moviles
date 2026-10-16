@@ -105,7 +105,11 @@ void main() {
     processor = OutboxProcessor(
       store: outbox,
       handlers: {
-        CheckInOutbox.kind: CheckInOutboxHandler(remote: remote, clock: clock),
+        CheckInOutbox.kind: CheckInOutboxHandler(
+          remote: remote,
+          clock: clock,
+          cache: DriftDocumentCache(db),
+        ),
       },
       clock: clock,
       logger: SafeLogger(sink: logs, clock: clock),
@@ -441,7 +445,11 @@ void main() {
     test(
       'una carga inválida falla como validación (no se reintenta)',
       () async {
-        final handler = CheckInOutboxHandler(remote: remote, clock: clock);
+        final handler = CheckInOutboxHandler(
+          remote: remote,
+          clock: clock,
+          cache: DriftDocumentCache(db),
+        );
         final result = await handler.send(
           OutboxEntry(
             id: idA,
@@ -458,6 +466,45 @@ void main() {
         expect(remote.commits, 0);
       },
     );
+
+    test('la ubicación sigue el consentimiento VIGENTE al enviar', () async {
+      final cache = DriftDocumentCache(db);
+      final handler = CheckInOutboxHandler(
+        remote: remote,
+        clock: clock,
+        cache: cache,
+      );
+      Future<Json> sendWith(String id, String state, String precision) async {
+        await cache.upsert(
+          BackendPaths.consents(fam),
+          fam,
+          RemoteDoc('ana', {'state': state, 'precision': precision}),
+          clock.now(),
+        );
+        await handler.send(
+          OutboxEntry(
+            id: id,
+            kind: CheckInOutbox.kind,
+            familyId: fam,
+            payload: {
+              'familyId': fam,
+              'uid': 'ana',
+              'kind': 'ok',
+              'lat': 4.61734,
+              'lng': -74.07291,
+              'clientCreatedAt': clock.now().millisecondsSinceEpoch,
+            },
+            createdAt: clock.now(),
+          ),
+        );
+        return backend.serverRead(BackendPaths.event(fam, id))!;
+      }
+
+      final approx = await sendWith(idA, 'sharing', 'approximate');
+      expect((approx['lat'], approx['lng']), (4.62, -74.07));
+      final paused = await sendWith(idB, 'paused', 'exact');
+      expect(paused.keys, isNot(contains('lat')));
+    });
 
     test('expireAt queda dentro de la tolerancia de las reglas', () async {
       await repo.submit(checkIn());

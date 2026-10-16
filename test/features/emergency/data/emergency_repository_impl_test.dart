@@ -11,6 +11,7 @@ import 'package:nexo_familia/features/emergency/data/emergency_repository_impl.d
 import 'package:nexo_familia/features/emergency/data/sos_outbox_handler.dart';
 import 'package:nexo_familia/features/emergency/domain/emergency.dart';
 import 'package:nexo_familia/features/emergency/domain/sos_codes.dart';
+import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/infrastructure/backend_paths.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 import 'package:nexo_familia/infrastructure/database/drift_stores.dart';
@@ -127,6 +128,8 @@ void main() {
             clock: clock,
             random: math.Random(7),
           ),
+          cache: cache,
+          currentUid: () => uid,
         ),
       },
       clock: clock,
@@ -277,6 +280,11 @@ void main() {
 
   test('la ubicación viaja en la carga y vuelve en la alerta', () async {
     mirrorFamily();
+    // Comparte su ubicación exacta: el servidor la conserva tal cual.
+    store.serverWrite('families/$_familyId/consents/ana', {
+      'state': 'sharing',
+      'precision': 'exact',
+    });
     final repo = repoFor();
     final point = GeoPoint(4.6, -74.08);
     await repo.raise(alertOf('sos-1', location: point, accuracy: 1000));
@@ -473,6 +481,48 @@ void main() {
       });
     });
 
+    test('la ubicación sigue el consentimiento VIGENTE', () {
+      SharingConsent consentOf(SharingState state, LocationPrecision p) =>
+          SharingConsent(
+            familyId: _familyId,
+            uid: 'ana',
+            state: state,
+            precision: p,
+          );
+      final point = entry(const {
+        'lat': 4.61734,
+        'lng': -74.07291,
+        'accuracyM': 8,
+      });
+      expect(
+        SosCall.payload(
+          point,
+          consent: consentOf(
+            SharingState.sharing,
+            LocationPrecision.approximate,
+          ),
+        ),
+        containsPair('lat', 4.62),
+      );
+      expect(
+        SosCall.payload(
+          point,
+          consent: consentOf(
+            SharingState.sharing,
+            LocationPrecision.approximate,
+          ),
+        )['accuracyM'],
+        1000.0,
+      );
+      expect(
+        SosCall.payload(
+          point,
+          consent: consentOf(SharingState.paused, LocationPrecision.exact),
+        ),
+        {'familyId': _familyId, 'alertId': 'sos-1'},
+      );
+    });
+
     test('la ubicación viaja completa y la precisión solo con ella', () {
       expect(
         SosCall.payload(
@@ -497,7 +547,11 @@ void main() {
     });
 
     test('el handler propaga el fallo del servidor', () async {
-      final handler = SosOutboxHandler(_FailingFunctions());
+      final handler = SosOutboxHandler(
+        _FailingFunctions(),
+        cache: cache,
+        currentUid: () => uid,
+      );
       final result = await handler.send(entry(const {}));
       expect(
         result.failureOrNull,

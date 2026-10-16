@@ -57,6 +57,20 @@ service cloud.firestore {
       ).data.state == 'sharing';
     }
 
+    // Precisión elegida por la persona (después del lote).
+    function approximateAfter(familyId) {
+      return getAfter(
+        /databases/$(database)/documents/families/$(familyId)/consents/$(me())
+      ).data.precision == 'approximate';
+    }
+
+    // Coordenadas en la rejilla de 0,01° (≈ 1 km) que produce
+    // GeoPoint.approximate(): con precisión aproximada no sale nada más fino.
+    function onApproxGrid(lat, lng) {
+      return math.abs(lat * 100 - math.round(lat * 100)) < 0.000001
+        && math.abs(lng * 100 - math.round(lng * 100)) < 0.000001;
+    }
+
     match /users/{userId} {
       allow read: if signedIn() && me() == userId;
       allow create, update: if signedIn() && me() == userId
@@ -104,6 +118,9 @@ service cloud.firestore {
           && data().accuracyM is number
           && data().accuracyM >= 0 && data().accuracyM < 100000
           && data().approximate is bool
+          && (!approximateAfter(familyId)
+              || (data().approximate == true
+                  && onApproxGrid(data().lat, data().lng)))
           && data().receivedAt == request.time
           && data().capturedAt is timestamp
           // Tolera relojes de dispositivo algo adelantados, no fechas absurdas.
@@ -147,7 +164,9 @@ service cloud.firestore {
             // Solo se adjunta ubicación si la persona la comparte.
             && (!('lat' in data())
                 || (validLatLng(data().lat, data().lng)
-                    && sharingAfter(familyId)));
+                    && sharingAfter(familyId)
+                    && (!approximateAfter(familyId)
+                        || onApproxGrid(data().lat, data().lng))));
         }
 
         function validGeofenceEvent() {

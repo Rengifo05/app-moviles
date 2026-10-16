@@ -258,12 +258,18 @@ void main() {
     expect(store.serverRead(BackendPaths.location(familyId, 'ana')), isNull);
   });
 
-  test('activar no toca la ubicación y guarda la precisión elegida', () async {
+  test('activar en exacta no toca la ubicación; en aproximada la borra '
+      '(pudo quedar una exacta publicada)', () async {
     final repository = repo();
+    await repository.updateConsent(consent(SharingState.sharing));
+    expect(remote.commits.last.map((w) => w.op), [RemoteOp.merge]);
     await repository.updateConsent(
       consent(SharingState.sharing, LocationPrecision.approximate),
     );
-    expect(remote.commits.last.map((w) => w.op), [RemoteOp.merge]);
+    expect(remote.commits.last.map((w) => w.op), [
+      RemoteOp.merge,
+      RemoteOp.remove,
+    ]);
     final saved = store.serverRead(BackendPaths.consent(familyId, 'ana'))!;
     expect(saved['state'], 'sharing');
     expect(saved['precision'], 'approximate');
@@ -290,6 +296,33 @@ void main() {
       expect(saved['precision'], 'approximate');
     },
   );
+
+  test('publicar aplica el consentimiento VIGENTE de la copia local', () async {
+    final repository = repo();
+    // Sin espejo: la copia local es la que fija la prueba.
+    await mirror.stop(familyId);
+    Future<void> cachedConsent(String state, String precision) => cache.upsert(
+      BackendPaths.consents(familyId),
+      familyId,
+      RemoteDoc('ana', {'state': state, 'precision': precision}),
+      clock.now(),
+    );
+    // La pantalla preparó un envío exacto, pero ya eligió "aproximada".
+    await cachedConsent('sharing', 'approximate');
+    await repository.publishMyLocation(
+      familyId,
+      location(lat: 4.61734, lng: -74.07291),
+    );
+    final saved = store.serverRead(BackendPaths.location(familyId, 'ana'))!;
+    expect(saved['lat'], 4.62);
+    expect(saved['approximate'], isTrue);
+    expect(saved['accuracyM'], 1000);
+
+    // Pausó mientras se obtenía la posición: no se publica.
+    await cachedConsent('paused', 'exact');
+    final result = await repository.publishMyLocation(familyId, location());
+    expect(result.failureOrNull?.code, 'not-sharing');
+  });
 
   test('una ubicación aproximada nunca sale con más detalle', () async {
     final repository = repo();

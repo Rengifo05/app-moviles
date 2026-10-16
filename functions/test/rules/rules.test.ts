@@ -195,6 +195,23 @@ describe('ubicaciones', () => {
     );
   });
 
+  it('con precisión aproximada solo se acepta una ubicación marcada y en la rejilla de 0,01°', async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore() as unknown as Firestore;
+      await setDoc(doc(db, 'families/f1/consents/ana'), {
+        state: 'sharing', precision: 'approximate', updatedAt: T0,
+      });
+    });
+    const ref = doc(as('ana'), 'families/f1/locations/ana');
+    const later = (min: number) => Timestamp.fromMillis(T0.toMillis() + min * 60_000);
+    // Exacta (sin marcar o fuera de la rejilla): rechazada.
+    await assertFails(setDoc(ref, location(later(1), { lat: 4.6173, lng: -74.0729 })));
+    await assertFails(setDoc(ref, location(later(2), { lat: 4.6173, lng: -74.0729, approximate: true })));
+    await assertFails(setDoc(ref, location(later(3), { lat: 4.62, lng: -74.07, approximate: false })));
+    // Aproximada de verdad: aceptada.
+    await assertSucceeds(setDoc(ref, location(later(4), { lat: 4.62, lng: -74.07, approximate: true, accuracyM: 1000 })));
+  });
+
   it('descarta actualizaciones fuera de orden; reenviar la misma captura es inocuo', async () => {
     const db = as('ana');
     const older = Timestamp.fromMillis(T0.toMillis() - 60_000);
@@ -303,6 +320,21 @@ describe('eventos (check-ins y zonas)', () => {
     );
     await assertFails(
       setDoc(doc(as('luis'), 'families/f1/events/r2'), checkIn('luis', { expireAt: inDays(365) })),
+    );
+  });
+
+  it('con precisión aproximada el check-in solo lleva coordenadas en la rejilla', async () => {
+    await env.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore() as unknown as Firestore;
+      await setDoc(doc(db, 'families/f1/consents/ana'), {
+        state: 'sharing', precision: 'approximate', updatedAt: T0,
+      });
+    });
+    await assertFails(
+      setDoc(doc(as('ana'), 'families/f1/events/ap1'), checkIn('ana', { lat: 4.6173, lng: -74.0729 })),
+    );
+    await assertSucceeds(
+      setDoc(doc(as('ana'), 'families/f1/events/ap2'), checkIn('ana', { lat: 4.62, lng: -74.07 })),
     );
   });
 
