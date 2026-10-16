@@ -332,6 +332,7 @@ final class FamilyTestEnv {
     this.activeFamilyId = familyId,
     this.syncStatus = SyncStatus.live,
     AuthUser? user = me,
+    this.extraOverrides = const [],
   }) : families =
            families ??
            FakeFamilyRepository(
@@ -353,6 +354,9 @@ final class FamilyTestEnv {
   final String? activeFamilyId;
   final SyncStatus syncStatus;
 
+  /// Dobles de otras funcionalidades (por ejemplo, el servicio de avisos).
+  final List<Override> extraOverrides;
+
   List<Override> get overrides => [
     appConfigProvider.overrideWithValue(testConfig),
     clockProvider.overrideWithValue(clock),
@@ -363,6 +367,7 @@ final class FamilyTestEnv {
     locationRepositoryProvider.overrideWithValue(locations),
     activeFamilyIdProvider.overrideWithValue(activeFamilyId),
     syncStatusProvider.overrideWith((ref) => Stream.value(syncStatus)),
+    ...extraOverrides,
   ];
 }
 

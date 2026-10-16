@@ -10,6 +10,7 @@ import 'package:nexo_familia/features/common/presentation/failure_text.dart';
 import 'package:nexo_familia/features/common/presentation/routes.dart';
 import 'package:nexo_familia/features/family/domain/family.dart';
 import 'package:nexo_familia/features/family/presentation/family_widgets.dart';
+import 'package:nexo_familia/features/settings/presentation/account_actions.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
 /// Con sesión y sin familia: crear una o unirse con un código.
@@ -27,7 +28,9 @@ class _FamilySetupScreenState extends ConsumerState<FamilySetupScreen> {
     final l10n = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _signingOut = true);
-    final result = await ref.read(authRepositoryProvider).signOut();
+    // Igual que en Cuenta: antes de cerrar la sesión se borra el registro
+    // de avisos de este teléfono (ADR-005).
+    final result = await ref.read(accountActionsProvider).signOut();
     if (result case Err(:final failure)) {
       messenger.showSnackBar(
         SnackBar(content: Text(failureMessage(l10n, failure))),

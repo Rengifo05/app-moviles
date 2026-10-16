@@ -109,7 +109,9 @@ export async function raiseSos(ctx: Ctx, data: unknown, notifier: Notifier): Pro
       devices.length === 0
         ? { accepted: 0, invalidTokens: [] }
         : await notifier.notifySos(
-            devices.map((d) => d.token),
+            // Un teléfono que pasó por dos cuentas puede tener el mismo token
+            // dos veces: se avisa (y se cuenta) una sola vez.
+            [...new Set(devices.map((d) => d.token))],
             { familyId, alertId },
           );
     notifiedCount = result.accepted;
@@ -132,16 +134,24 @@ interface Device {
   updateTime: Timestamp;
 }
 
-/** Dispositivos de los DEMÁS integrantes. */
+/**
+ * Dispositivos de los DEMÁS integrantes. Se excluyen los tokens que también
+ * están registrados por quien pide ayuda: su propio teléfono nunca cuenta
+ * como «avisado» aunque otra cuenta lo haya usado antes.
+ */
 async function recipientDevices(ctx: Ctx, familyId: string): Promise<Device[]> {
-  const members = await ctx.db.collection(paths.members(familyId)).get();
+  const [members, mine] = await Promise.all([
+    ctx.db.collection(paths.members(familyId)).get(),
+    ctx.db.collection(paths.devices(ctx.uid)).get(),
+  ]);
+  const ownTokens = new Set(mine.docs.map((d) => d.get('token')));
   const result: Device[] = [];
   for (const member of members.docs) {
     if (member.id === ctx.uid) continue;
     const devices = await ctx.db.collection(paths.devices(member.id)).get();
     for (const device of devices.docs) {
       const token = device.get('token');
-      if (typeof token === 'string' && token.length > 0) {
+      if (typeof token === 'string' && token.length > 0 && !ownTokens.has(token)) {
         result.push({ token, ref: device.ref, updateTime: device.updateTime });
       }
     }

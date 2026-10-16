@@ -153,6 +153,17 @@ void main() {
     expect(mirror.isActive('f1'), isTrue);
   });
 
+  test('un diálogo del sistema (inactive) no detiene las escuchas', () async {
+    coordinator.onSession(const SessionReady(ana, 'f1'));
+    await settle();
+    coordinator.didChangeAppLifecycleState(AppLifecycleState.inactive);
+    await settle();
+    expect(mirror.isActive('f1'), isTrue);
+    coordinator.didChangeAppLifecycleState(AppLifecycleState.hidden);
+    await settle();
+    expect(mirror.isActive('f1'), isFalse);
+  });
+
   test('al cerrar sesión purga la caché y la bandeja de salida', () async {
     coordinator.onSession(const SessionReady(ana, 'f1'));
     await settle();

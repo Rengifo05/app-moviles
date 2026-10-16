@@ -82,7 +82,13 @@ final class SyncCoordinator with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _foreground = state == AppLifecycleState.resumed;
+    // `inactive` sigue siendo primer plano: un diálogo de permisos, la
+    // cortina de notificaciones o una llamada entrante no deben cortar las
+    // escuchas (volver a abrirlas cuesta lecturas y hace parpadear el
+    // estado). Se detienen al pasar a `hidden` o `paused`.
+    _foreground =
+        state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive;
     _enqueue(_apply);
   }
 

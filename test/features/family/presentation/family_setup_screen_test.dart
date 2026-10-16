@@ -4,7 +4,9 @@ import 'package:nexo_familia/core/failure.dart';
 import 'package:nexo_familia/core/result.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/features/common/presentation/routes.dart';
+import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
 
+import '../../notifications/push_fakes.dart';
 import 'family_test_harness.dart';
 
 void main() {
@@ -70,6 +72,24 @@ void main() {
     await pumpFamilyApp(tester, env, initialLocation: AppRoutes.familySetup);
     await scrollAndTap(tester, find.text('Cerrar sesión'));
     await pumpFrames(tester);
+    expect(env.auth.signOutCalls, 1);
+  });
+
+  testWidgets('cerrar sesión borra antes el registro de avisos del '
+      'teléfono', (tester) async {
+    final service = FakePushService();
+    final registry = FakeDeviceRegistry();
+    final env = FamilyTestEnv(
+      extraOverrides: [
+        pushServiceProvider.overrideWithValue(service),
+        deviceRegistryProvider.overrideWithValue(registry),
+      ],
+    );
+    await pumpFamilyApp(tester, env, initialLocation: AppRoutes.familySetup);
+    await scrollAndTap(tester, find.text('Cerrar sesión'));
+    await pumpFrames(tester);
+    expect(registry.unregistered, ['token-a']);
+    expect(service.deletedTokens, 1);
     expect(env.auth.signOutCalls, 1);
   });
 

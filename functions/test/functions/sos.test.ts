@@ -131,6 +131,15 @@ describe('raiseSos', () => {
     expect((await raiseSos(as('luis'), { familyId, alertId: 'sos-1' }, notifier)).notifiedCount).toBe(1);
   });
 
+  it('un token repetido se avisa una vez y el teléfono de quien pide ayuda nunca cuenta', async () => {
+    // El teléfono de Ana lo usó también Sofía, y Ana usó antes el de Luis.
+    await db.doc('users/sofia/devices/s2').set({ token: 'tok-ana', platform: 'android' });
+    await db.doc('users/ana/devices/a2').set({ token: 'tok-luis', platform: 'ios' });
+    const result = await raiseSos(as('luis'), { familyId, alertId: 'dup-1' }, notifier);
+    expect(notifier.calls[0]!.tokens.sort()).toEqual(['tok-ana', 'tok-sofia']);
+    expect(result.notifiedCount).toBe(2);
+  });
+
   it('olvida los dispositivos cuyo token el proveedor declara inválido', async () => {
     notifier.invalid = ['tok-sofia'];
     notifier.accept = (tokens) => tokens.length - 1;

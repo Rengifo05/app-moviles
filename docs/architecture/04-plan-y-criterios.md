@@ -16,7 +16,7 @@ Se marca ✅ solo lo verificado con pruebas ejecutadas en esta sesión y en la C
 | 4 · Identidad, grupos y reglas | ✅ en emulador · 🔒 despliegue (D7) | Reglas con 41/41 mutaciones detectadas; Functions y reglas con 94 pruebas en el emulador; adaptador Firebase de la app con pruebas sobre dobles; retención con TTL e índices validados |
 | 5 · Ubicación, mapa, geocercas y check-ins | ✅ (mapa como lista accesible; Google Maps 🔒 D7; geocercas nativas desactivadas por ADR-003) | Familia, ubicación, zonas, check-ins, inicio y actividad; E2E de familia y de check-in sin conexión |
 | 6 · SOS y resiliencia | ✅ en el host · 🔒📱 push real (D7; cliente de ADR-005 implementado y probado en el host) | E2E del SOS con confirmación entre dos cuentas; `raiseSos` idempotente con el consentimiento vigente |
-| 7 · Endurecimiento | ⏳ Revisiones adversariales (`revisiones.md`), runbook de incidentes, revisión de dependencias e [informe de calidad](06-informe-de-calidad.md) | 1226 pruebas de la app, 94 del backend, 41/41 mutaciones |
+| 7 · Endurecimiento | ⏳ Revisiones adversariales (`revisiones.md`), runbook de incidentes, revisión de dependencias e [informe de calidad](06-informe-de-calidad.md) | 1230 pruebas de la app, 95 del backend, 41/41 mutaciones |
 
 ## Incremento 1 · Base del proyecto (tras aprobar la arquitectura)
 

@@ -92,5 +92,21 @@ Cuatro enfoques: honestidad, privacidad, datos e integración. El límite de uso
 | La ficha del integrante decía a la vez «Sin actualización reciente» y «hace un momento» con el reloj atrasado | Misma regla que Inicio y Mapa: una hora no fiable no se muestra |
 | Cancelar el envío de un SOS cuyo intento fue ambiguo ocultaba para siempre la alerta si el servidor sí la había registrado | Solo se cierran las confirmadas; si aparece registrada, vuelve como activa para terminarla, y el aviso lo advierte |
 
-Quedan sin revisar los enfoques de datos e integración (el límite de uso cortó a esos revisores): se cubren en la revisión de endurecimiento.
+Quedaban sin revisar los enfoques de datos e integración (el límite de uso cortó a esos revisores): se cubrieron en la revisión de endurecimiento (abajo).
+
+## Revisión de endurecimiento: datos, integración y avisos (2026-10-16)
+
+Un revisor con los enfoques de datos (lo que escribe el cliente frente a las reglas y Functions; lo que lee frente a lo que escribe el servidor) e integración (composición, transiciones de sesión, avisos push), más la revisión de seguridad del integrador. El integrador verificó cada hallazgo en el código y escribió primero una prueba que falla sin la corrección.
+
+| Hallazgo | Resolución |
+|---|---|
+| En un teléfono compartido, tras cambiar de cuenta, Inicio, Privacidad, check-in y SOS seguían usando el consentimiento de la cuenta anterior: el SOS de la nueva podía salir sin ubicación, y no podía cambiar su decisión hasta reiniciar la app | `myConsentProvider` se vuelve a suscribir cuando cambia la cuenta |
+| Cerrar sesión desde «Configura tu familia» no borraba el registro de avisos: la siguiente cuenta en ese teléfono podía recibir los avisos de la familia anterior | Esa pantalla usa el mismo cierre de sesión que Cuenta |
+| Sin red al cerrar sesión, el token seguía válido en el teléfono (mismo efecto) | Se invalida el token en FCM (`deleteToken`); FCM lo rechaza y el servidor borra el registro sobrante |
+| `raiseSos` contaba dos veces un token registrado por dos cuentas, y podía contar como «avisado» el propio teléfono de quien pedía ayuda | Tokens sin repetir, excluyendo los que también registró quien pide ayuda (prueba nueva en el emulador) |
+| Un diálogo de permisos, la cortina de notificaciones o una llamada (`inactive`) detenían todas las escuchas: lecturas de más y parpadeo del estado | `inactive` cuenta como primer plano; se detiene en `hidden` o `paused` |
+| El contrato decía que de una cuenta borrada solo quedaba el `uid` en eventos de membresía | Corregido: también en sus alertas SOS, eventos `sos` y confirmaciones «Lo vi», que vencen a los 90 días |
+| Aceptado como limitación: con el reloj del teléfono adelantado más de 1 día, las reglas rechazan los check-ins (`expireAt`) | No se finge el envío: el check-in queda como fallido y visible. Corregirlo exige conocer la hora del servidor; ampliar la tolerancia alargaría la retención |
+
+Sin defectos en: nombres y tipos de campos frente a `onlyKeys`, lectura de datos del servidor, idempotencia de la bandeja, orden de las purgas, valores por defecto de los *providers*, redirecciones, registros (sin tokens ni coordenadas), secretos en el repositorio, copias de seguridad de Android y dependencias del backend (`npm audit`: 0).
 
