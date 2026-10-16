@@ -65,13 +65,22 @@ void main() {
     },
   );
 
-  test('al cerrar sesión borra el registro de este teléfono', () async {
+  test('al cerrar sesión borra el registro e invalida el token', () async {
     await registration.sync();
     await registration.unregister();
     expect(registry.unregistered, ['token-a']);
-    // La siguiente sesión vuelve a registrar.
+    expect(service.deletedTokens, 1);
+    // La siguiente sesión registra el token nuevo.
     await registration.sync();
-    expect(registry.registered, ['token-a', 'token-a']);
+    expect(registry.registered, ['token-a', 'token-2']);
+  });
+
+  test('sin red para borrar el registro, igual invalida el token', () async {
+    await registration.sync();
+    registry.offline = true;
+    await registration.unregister();
+    expect(registry.unregistered, isEmpty);
+    expect(service.deletedTokens, 1);
   });
 
   test('sin registrar en esta ejecución, borra el token actual', () async {
@@ -83,6 +92,7 @@ void main() {
     service.available = false;
     await registration.unregister();
     expect(registry.unregistered, isEmpty);
+    expect(service.deletedTokens, 0);
   });
 
   test('forget permite registrar de nuevo en la próxima sesión', () async {

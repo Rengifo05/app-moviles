@@ -35,6 +35,15 @@ final class FirebasePushService implements PushService {
   }
 
   @override
+  Future<void> deleteToken() async {
+    try {
+      await _messaging.deleteToken();
+    } on Object {
+      // Sin red: queda el borrado del registro, si se pudo hacer.
+    }
+  }
+
+  @override
   Stream<String> get tokenRefreshes => _messaging.onTokenRefresh;
 
   @override

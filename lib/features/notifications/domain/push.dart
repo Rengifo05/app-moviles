@@ -40,6 +40,10 @@ abstract interface class PushService {
 
   /// Avisos SOS tocados (incluido el que abrió la app).
   Stream<PushOpen> get opened;
+
+  /// Invalida el token de este teléfono en el servicio de avisos (el
+  /// siguiente será otro). Nunca lanza: sin red, no hace nada.
+  Future<void> deleteToken();
 }
 
 /// Registro de este dispositivo para recibir los avisos de la familia

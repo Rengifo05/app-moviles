@@ -18,6 +18,7 @@ final class FakePushService implements PushService {
   PushPermission afterRequest;
   String? currentToken;
   int requests = 0;
+  int deletedTokens = 0;
   final StreamController<String> refreshes = StreamController.broadcast();
   final StreamController<PushOpen> opens = StreamController.broadcast();
 
@@ -35,6 +36,12 @@ final class FakePushService implements PushService {
 
   @override
   Future<String?> token() async => currentToken;
+
+  @override
+  Future<void> deleteToken() async {
+    deletedTokens++;
+    currentToken = 'token-${deletedTokens + 1}';
+  }
 
   @override
   Stream<String> get tokenRefreshes => refreshes.stream;

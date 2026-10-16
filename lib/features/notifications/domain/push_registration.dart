@@ -38,11 +38,15 @@ final class PushRegistration {
   void forget() => _registered = null;
 
   /// Antes de cerrar sesión (con la sesión aún abierta: las reglas exigen
-  /// ser el dueño del registro).
+  /// ser el dueño del registro). Además invalida el token: si el borrado
+  /// del registro falla, FCM rechazará ese token y el servidor lo olvidará,
+  /// y la próxima cuenta en este teléfono no recibirá los avisos de la
+  /// familia anterior.
   Future<void> unregister() async {
     if (!_service.isAvailable) return;
     final token = _registered ?? await _service.token();
-    if (token != null) await _registry.unregister(token);
     _registered = null;
+    if (token != null) await _registry.unregister(token);
+    await _service.deleteToken();
   }
 }
