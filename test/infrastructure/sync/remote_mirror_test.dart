@@ -98,6 +98,9 @@ final class _SpyCache implements DocumentCache {
 
   @override
   Future<void> clearAll() => _inner.clearAll();
+
+  @override
+  Future<Set<String>> scopes() => _inner.scopes();
 }
 
 /// Remoto cuyas escuchas controla la prueba. Como Firestore, puede cerrar

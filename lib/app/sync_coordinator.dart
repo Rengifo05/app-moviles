@@ -33,8 +33,13 @@ List<MirrorSpec> familyMirrorSpecs(String familyId) => [
 /// Decide qué se sincroniza y cuándo:
 /// * escuchas remotas solo con sesión iniciada **y** la app en primer plano
 ///   (costo y batería, ver `03-costos.md`);
-/// * solo la familia activa;
-/// * al cerrar sesión se purga la copia local.
+/// * solo la familia activa. Cambiar de familia detiene la escucha de la
+///   anterior pero conserva su copia: al volver a ella sin conexión se ven
+///   los últimos datos guardados, no un estado vacío presentado como cierto;
+/// * las familias que ya no están entre tus membresías (saliste o te
+///   quitaron) se purgan de la copia local y de la bandeja de salida, en
+///   cuanto las membresías llegan del servidor;
+/// * al cerrar sesión se purga todo.
 final class SyncCoordinator with WidgetsBindingObserver {
   new({
     required this._mirror,
@@ -55,6 +60,8 @@ final class SyncCoordinator with WidgetsBindingObserver {
   bool _foreground = true;
   final Set<String> _scopes = {};
   Future<void> _pending = Future.value();
+  StreamSubscription<void>? _membershipsSub;
+  StreamSubscription<void>? _statusSub;
 
   /// Aplica un nuevo estado de sesión.
   void onSession(SessionState session) {
@@ -64,6 +71,7 @@ final class SyncCoordinator with WidgetsBindingObserver {
       _ => (null, null),
     };
     final signedOut = _uid != null && uid == null;
+    if (uid != _uid) _watchMemberships(uid);
     _uid = uid;
     _familyId = familyId;
     _enqueue(() async {
@@ -110,12 +118,11 @@ final class SyncCoordinator with WidgetsBindingObserver {
     };
     final familyId = _familyId;
     if (familyId != null) wanted[familyId] = familyMirrorSpecs(familyId);
-    // Un ámbito que deja de interesar con la app en primer plano (salir del
-    // grupo, cambiar de familia) se detiene —esperando las escrituras en
-    // curso— y después se purga: no debe quedar copia de una familia ajena.
+    // Un ámbito que deja de interesar (otra familia activa) solo se detiene,
+    // esperando las escrituras en curso. Si además ya no es tu familia, lo
+    // purga _purgeFormerFamilies.
     for (final scope in _scopes.difference(wanted.keys.toSet()).toList()) {
       await _mirror.stop(scope);
-      await _cache.clearScope(scope);
       _scopes.remove(scope);
     }
     for (final MapEntry(key: scope, value: specs) in wanted.entries) {
@@ -123,6 +130,48 @@ final class SyncCoordinator with WidgetsBindingObserver {
       _scopes.add(scope);
     }
     await _outbox.start();
+  }
+
+  /// Vigila las membresías y el estado del espejo para purgar las familias
+  /// de las que ya no eres integrante.
+  void _watchMemberships(String? uid) {
+    unawaited(_membershipsSub?.cancel());
+    unawaited(_statusSub?.cancel());
+    _membershipsSub = null;
+    _statusSub = null;
+    if (uid == null) return;
+    void check(Object? _) => _enqueue(_purgeFormerFamilies);
+    _membershipsSub = _cache
+        .watchCollection(BackendPaths.memberships(uid))
+        .listen(check, onError: (_) {});
+    _statusSub = _mirror.status.listen(check);
+  }
+
+  /// Purga la copia local y la bandeja de salida de las familias que ya no
+  /// están entre las membresías. Solo con membresías confirmadas por el
+  /// servidor en esta ejecución: sin conexión no se borra nada por error.
+  Future<void> _purgeFormerFamilies() async {
+    final uid = _uid;
+    if (uid == null) return;
+    final user = _mirror.statusOf(DocumentCache.userScope);
+    if (user.connection != MirrorConnection.live || user.lastSyncedAt == null) {
+      return;
+    }
+    final docs = await _cache
+        .watchCollection(BackendPaths.memberships(uid))
+        .first;
+    final current = {for (final doc in docs) doc.id};
+    for (final scope in await _cache.scopes()) {
+      if (scope == DocumentCache.userScope || current.contains(scope)) continue;
+      await _mirror.stop(scope);
+      _scopes.remove(scope);
+      await _cache.clearScope(scope);
+    }
+    for (final entry in await _outboxStore.watch().first) {
+      if (!current.contains(entry.familyId)) {
+        await _outboxStore.remove(entry.id);
+      }
+    }
   }
 
   Future<void> _stopAll() async {
@@ -142,6 +191,8 @@ final class SyncCoordinator with WidgetsBindingObserver {
   }
 
   Future<void> dispose() async {
+    await _membershipsSub?.cancel();
+    await _statusSub?.cancel();
     await _pending;
     await _stopAll();
     _outbox.stop();

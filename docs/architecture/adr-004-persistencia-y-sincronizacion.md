@@ -25,7 +25,7 @@ La app debe funcionar sin conexión con datos locales seguros, avisar qué funci
 7. **Caché de Firestore:** **solo en memoria** (`persistenceEnabled: false`). La UI no depende de ella. Una caché en disco conservaría datos de la familia después de cerrar sesión, salir o borrar la cuenta (Firestore nunca la purga por sí mismo, y su límite de tamaño ni siquiera se aplicaba sin `persistenceEnabled`). El costo es releer los documentos de la familia en cada arranque en frío. Dos ajustes más en el adaptador (`FirestoreRemoteStore`):
    - Las escrituras usan **transacciones**, que fallan sin conexión, con un tiempo límite aplicado en Dart (el de FlutterFire solo acota al manejador). Si vence, el resultado es ambiguo, y por eso todas las escrituras son idempotentes. Un `WriteBatch` quedaría en la cola interna de Firestore sin fallar y se vería como aplicado antes de que el servidor lo aceptara. Eso bloquearía la bandeja (y el SOS detrás) y permitiría confirmaciones falsas.
    - Las escuchas piden metadatos: una instantánea servida desde la caché local no se trata como dato fresco. Se emite como señal `offlineSignal`, que no es terminal, y el espejo pasa a `offline`. El aviso de la interfaz espera unos segundos antes de mostrarse, para no parpadear al arrancar.
-8. **Cierre de sesión o salida del grupo:** se borran las tablas de caché y la bandeja de esa familia. Los SOS pendientes que no se puedan enviar se reportan antes de confirmar el cierre.
+8. **Cambio de familia activa:** solo se detienen sus escuchas; la copia se conserva. **Cierre de sesión o salida del grupo:** se borran las tablas de caché y la bandeja de esa familia. Los SOS pendientes que no se puedan enviar se reportan antes de confirmar el cierre.
 
 ## Consecuencias
 

@@ -242,6 +242,13 @@ final class DriftDocumentCache implements DocumentCache {
       (_db.delete(_t)..where((d) => d.familyId.equals(scope))).go();
 
   @override
+  Future<Set<String>> scopes() async {
+    final query = _db.selectOnly(_t, distinct: true)..addColumns([_t.familyId]);
+    final rows = await query.get();
+    return {for (final row in rows) row.read(_t.familyId)!};
+  }
+
+  @override
   Future<void> clearAll() => _db.delete(_t).go();
 
   static CachedDocumentsCompanion _companion(

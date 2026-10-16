@@ -86,4 +86,6 @@ Cuatro enfoques: honestidad, privacidad, datos e integración. El límite de uso
 | Un SOS o check-in en la bandeja salía con las coordenadas capturadas antes de pausar o de pasar a «aproximada» | Los *handlers* aplican el consentimiento vigente de la copia local al enviar. `raiseSos` lo vuelve a leer en el servidor. Las reglas exigen la rejilla de 0,01° para check-ins y ubicaciones cuando la precisión es aproximada (3 mutaciones nuevas: **41/41**) |
 | Un envío de ubicación exacta en curso se publicaba después de pasar a «aproximada» | `publishMyLocation` aplica el consentimiento vigente (aproximada → redondea; en pausa → no publica) y las reglas lo garantizan |
 | Pasar a «aproximada» solo borraba la ubicación exacta si la copia local la tenía | Se borra siempre en el mismo lote |
+| Al cambiar de familia sin conexión, la copia vacía de la otra familia se mostraba como cierta («Aún no compartes tu ubicación», sin integrantes, sin SOS activos) | Cambiar de familia ya no purga la anterior: solo detiene su escucha y se ven los últimos datos guardados |
+| Al salir de una familia (o si te quitan) su bandeja de salida (check-ins y SOS con ubicación) quedaba en el teléfono indefinidamente | El coordinador purga copia local y bandeja de las familias que ya no están entre las membresías, solo cuando el servidor las confirmó en esta ejecución |
 

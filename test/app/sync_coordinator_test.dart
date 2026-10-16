@@ -3,12 +3,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexo_familia/app/session.dart';
 import 'package:nexo_familia/app/sync_coordinator.dart';
+import 'package:nexo_familia/core/failure.dart';
 import 'package:nexo_familia/core/logging/safe_logger.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/infrastructure/backend_paths.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 import 'package:nexo_familia/infrastructure/database/drift_stores.dart';
 import 'package:nexo_familia/infrastructure/demo/in_memory_remote_store.dart';
+import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 import 'package:nexo_familia/infrastructure/sync/document_cache.dart';
 import 'package:nexo_familia/infrastructure/sync/outbox.dart';
 import 'package:nexo_familia/infrastructure/sync/remote_mirror.dart';
@@ -57,7 +59,9 @@ void main() {
         'role': 'owner',
       });
     }
-    store.serverWrite('users/ana/memberships/f1', {'familyName': 'Uno'});
+    store
+      ..serverWrite('users/ana/memberships/f1', {'familyName': 'Uno'})
+      ..serverWrite('users/ana/memberships/f2', {'familyName': 'Dos'});
   });
 
   tearDown(() async {
@@ -83,14 +87,58 @@ void main() {
     expect(await members('f1'), isNotEmpty);
   });
 
-  test('al cambiar de familia se detiene y purga la anterior', () async {
+  OutboxEntry entryFor(String id, String familyId) => OutboxEntry(
+    id: id,
+    kind: 'desconocido',
+    familyId: familyId,
+    payload: const {},
+    createdAt: clock.now(),
+  );
+
+  test('al cambiar de familia detiene la anterior pero conserva su copia '
+      '(sin conexión se ven los últimos datos, no un vacío)', () async {
     coordinator.onSession(const SessionReady(ana, 'f1'));
     await settle();
     coordinator.onSession(const SessionReady(ana, 'f2'));
     await settle();
     expect(mirror.isActive('f1'), isFalse);
+    expect(await members('f1'), isNotEmpty);
+    expect(await members('f2'), isNotEmpty);
+  });
+
+  test('al dejar de ser integrante purga la copia y la bandeja de esa '
+      'familia', () async {
+    coordinator.onSession(const SessionReady(ana, 'f1'));
+    await settle();
+    coordinator.onSession(const SessionReady(ana, 'f2'));
+    await settle();
+    await outboxStore.enqueue(entryFor('op-f1', 'f1'));
+    await outboxStore.enqueue(entryFor('op-f2', 'f2'));
+
+    // Sale de f1 (o la quitan): el servidor borra su membresía.
+    store.serverDelete('users/ana/memberships/f1');
+    await settle();
+    await settle();
+
     expect(await members('f1'), isEmpty);
     expect(await members('f2'), isNotEmpty);
+    expect([for (final e in await outboxStore.watch().first) e.id], ['op-f2']);
+  });
+
+  test('sin membresías confirmadas por el servidor no purga nada', () async {
+    await cache.upsert(
+      BackendPaths.members('f9'),
+      'f9',
+      const RemoteDoc('ana', {'role': 'owner'}),
+      clock.now(),
+    );
+    await outboxStore.enqueue(entryFor('op-f9', 'f9'));
+    // Sin conexión desde el arranque: las membresías nunca llegan.
+    store.simulatedFailure = const Failure.network();
+    coordinator.onSession(const SessionReady(ana, 'f1'));
+    await settle();
+    expect(await members('f9'), isNotEmpty);
+    expect(await outboxStore.watch().first, hasLength(1));
   });
 
   test('en segundo plano se detiene sin purgar (datos sin conexión)', () async {

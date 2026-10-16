@@ -46,6 +46,9 @@ abstract interface class DocumentCache {
   /// Purga todo lo de una familia (al salir o perder el acceso).
   Future<void> clearScope(String scope);
 
+  /// Ámbitos con documentos guardados (incluido [userScope] si lo hay).
+  Future<Set<String>> scopes();
+
   Future<void> clearAll();
 }
 
