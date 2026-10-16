@@ -6,7 +6,14 @@ Aplicación móvil (Flutter, iOS y Android) para compartir ubicación de forma v
 
 ## Estado actual
 
-**En desarrollo, por incrementos.** La arquitectura se aprobó el 2026-10-15. El avance de cada incremento y lo que está o no listo para producción se registra en [docs/architecture/04-plan-y-criterios.md](docs/architecture/04-plan-y-criterios.md). Nada de esta app está listo para producción todavía.
+**MVP funcional con el backend de demostración; no listo para producción.**
+- **Funcionalidades:** bienvenida, cuenta, familias con invitaciones, ubicación compartida con consentimiento, zonas, check-ins, SOS con confirmación de lectura, actividad y ajustes de privacidad.
+- **Pruebas:** 1196 de la app (incluidos 6 escenarios de extremo a extremo) y 94 del backend en el emulador; las reglas detectan 41 de 41 mutaciones.
+- **Pendiente:**
+  - proyecto Firebase real, mapas y push (decisión D7);
+  - verificación en dispositivos.
+
+Detalle en el [informe de calidad](docs/architecture/06-informe-de-calidad.md) y en el [plan por incrementos](docs/architecture/04-plan-y-criterios.md).
 
 ## Cómo empezar
 
@@ -44,6 +51,9 @@ tool/check_backend.sh              # tipos, índices, compilación y pruebas en 
 | [docs/architecture/02-modelo-de-datos.md](docs/architecture/02-modelo-de-datos.md) | Entidades, estructura en Firestore, matriz de acceso, máquina de estados del SOS y retención |
 | [docs/architecture/03-costos.md](docs/architecture/03-costos.md) | Estimación de costos por familia, costos fijos y controles |
 | [docs/architecture/04-plan-y-criterios.md](docs/architecture/04-plan-y-criterios.md) | Plan por incrementos con tareas y criterios de aceptación |
+| [docs/architecture/05-api-backend.md](docs/architecture/05-api-backend.md) | Contrato del backend: documentos, funciones y reglas |
+| [docs/architecture/06-informe-de-calidad.md](docs/architecture/06-informe-de-calidad.md) | Qué está probado, qué es manual y por qué no está listo para producción |
+| [docs/architecture/revisiones.md](docs/architecture/revisiones.md) | Revisiones adversariales y defectos corregidos |
 | [docs/architecture/adr-00*.md](docs/architecture/) | Decisiones: backend, mapas, ubicación y sincronización |
 | [docs/privacy/](docs/privacy/) | Modelo de amenazas; datos, permisos y marco legal |
 | [docs/decisions/README.md](docs/decisions/README.md) | Índice de ADR y **decisiones pendientes de aprobación** |
