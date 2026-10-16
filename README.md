@@ -54,7 +54,7 @@ tool/check_backend.sh              # tipos, índices, compilación y pruebas en 
 | [docs/architecture/05-api-backend.md](docs/architecture/05-api-backend.md) | Contrato del backend: documentos, funciones y reglas |
 | [docs/architecture/06-informe-de-calidad.md](docs/architecture/06-informe-de-calidad.md) | Qué está probado, qué es manual y por qué no está listo para producción |
 | [docs/architecture/revisiones.md](docs/architecture/revisiones.md) | Revisiones adversariales y defectos corregidos |
-| [docs/architecture/adr-00*.md](docs/architecture/) | Decisiones: backend, mapas, ubicación y sincronización |
+| [docs/architecture/adr-00*.md](docs/architecture/) | Decisiones: backend, mapas, ubicación, sincronización y notificaciones |
 | [docs/privacy/](docs/privacy/) | Modelo de amenazas; datos, permisos y marco legal |
 | [docs/decisions/README.md](docs/decisions/README.md) | Índice de ADR y **decisiones pendientes de aprobación** |
 | [docs/runbooks/entorno-de-desarrollo.md](docs/runbooks/entorno-de-desarrollo.md) | Cómo preparar el entorno |
