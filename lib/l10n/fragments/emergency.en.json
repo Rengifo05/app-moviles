@@ -13,7 +13,7 @@
   "emergencyOfflineBanner": "You're offline. If you send an alert, it will be saved on your phone and sent as soon as there's a connection.",
   "emergencyNoFamily": "To send alerts to your family, first create a family or join one.",
   "emergencyCancelledNotice": "You cancelled the alert. Nothing was sent.",
-  "emergencyDiscardedNotice": "You cancelled sending. We've stopped trying.",
+  "emergencyDiscardedNotice": "You cancelled sending. We've stopped trying; if it was already registered, it will show up here so you can end it.",
   "emergencyCountdownTitle": "The alert will be sent in",
   "emergencyCountdownAnnouncement": "{seconds, plural, =1{The alert will be sent in 1 second} other{The alert will be sent in {seconds} seconds}}",
   "emergencyCountdownHint": "Was it a mistake? Cancel before the countdown ends.",

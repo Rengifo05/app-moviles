@@ -12,6 +12,7 @@ import 'package:nexo_familia/features/emergency/presentation/emergency_providers
 import 'package:nexo_familia/features/emergency/presentation/sos_text.dart';
 import 'package:nexo_familia/features/emergency/presentation/sos_view_logic.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
+import 'package:nexo_familia/features/family/presentation/family_widgets.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
 /// Alertas SOS activas de **otros** integrantes de la familia activa, para
@@ -109,7 +110,6 @@ class _AlertCardState extends ConsumerState<_AlertCard> {
     final l10n = AppLocalizations.of(context);
     final c = context.nx;
     final alert = widget.alert;
-    final now = ref.watch(clockProvider).now();
     final ink = c.onEmergencyContainer;
     final detailStyle = context.text.bodyMedium?.copyWith(color: ink);
     final acknowledged = widget.acknowledged || _confirmed;
@@ -151,11 +151,26 @@ class _AlertCardState extends ConsumerState<_AlertCard> {
                           ),
                         ),
                         const SizedBox(height: NxSpace.xxs),
-                        Text(
-                          l10n.emergencyBannerTime(
-                            relativeTime(l10n, alert.createdAt, now),
-                          ),
-                          style: detailStyle,
+                        // Se recalcula sola ("hace 3 min" no se congela). Si
+                        // este teléfono va atrasado la hora del servidor
+                        // queda en el futuro: se muestra la hora absoluta y no
+                        // un engañoso "hace un momento".
+                        PeriodicRebuild(
+                          builder: (context) {
+                            final now = ref.read(clockProvider).now();
+                            final createdAt = alert.createdAt;
+                            final unreliable =
+                                createdAt.difference(now) >
+                                const Duration(minutes: 1);
+                            return Text(
+                              unreliable
+                                  ? l10n.emergencyCreatedAt(createdAt.toLocal())
+                                  : l10n.emergencyBannerTime(
+                                      relativeTime(l10n, createdAt, now),
+                                    ),
+                              style: detailStyle,
+                            );
+                          },
                         ),
                         const SizedBox(height: NxSpace.xxs),
                         Row(

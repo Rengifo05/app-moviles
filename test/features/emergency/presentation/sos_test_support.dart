@@ -111,6 +111,14 @@ final class FakeEmergencyRepository implements EmergencyRepository {
   @override
   Future<VoidResult> resolve(String familyId, String alertId) async {
     resolved.add(alertId);
+    // Como el repositorio real: cancelar una sin confirmar la quita de la
+    // bandeja (deja de verse).
+    if (resolveResult.isOk) {
+      alerts.value = [
+        for (final a in alerts.value)
+          if (a.id != alertId || a.delivery == SosDelivery.sent) a,
+      ];
+    }
     return resolveResult;
   }
 

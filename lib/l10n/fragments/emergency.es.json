@@ -42,7 +42,7 @@
   "emergencyOfflineBanner": "Sin conexión. Si envías una alerta, se guardará en tu teléfono y se enviará en cuanto haya conexión.",
   "emergencyNoFamily": "Para enviar alertas a tu familia primero debes crear una familia o unirte a una.",
   "emergencyCancelledNotice": "Cancelaste la alerta. No se envió nada.",
-  "emergencyDiscardedNotice": "Cancelaste el envío. Dejamos de intentarlo.",
+  "emergencyDiscardedNotice": "Cancelaste el envío. Dejamos de intentarlo; si alcanzó a registrarse, aparecerá aquí para que la termines.",
   "emergencyCountdownTitle": "La alerta se enviará en",
   "emergencyCountdownAnnouncement": "{seconds, plural, =1{La alerta se enviará en 1 segundo} other{La alerta se enviará en {seconds} segundos}}",
   "@emergencyCountdownAnnouncement": {

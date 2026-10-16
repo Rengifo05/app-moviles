@@ -446,7 +446,7 @@
   "emergencyDiscard": "Cancelar envío",
   "emergencyDiscardBody": "Aún no tenemos confirmación de que la alerta se haya enviado. Si cancelas, dejaremos de intentarlo.",
   "emergencyDiscardTitle": "¿Cancelar el envío?",
-  "emergencyDiscardedNotice": "Cancelaste el envío. Dejamos de intentarlo.",
+  "emergencyDiscardedNotice": "Cancelaste el envío. Dejamos de intentarlo; si alcanzó a registrarse, aparecerá aquí para que la termines.",
   "emergencyErrorCannotAckOwn": "No puedes confirmar tu propia alerta.",
   "emergencyErrorNotAuthor": "Solo quien envió la alerta puede terminarla.",
   "emergencyErrorNotFound": "Esta alerta ya no está disponible.",

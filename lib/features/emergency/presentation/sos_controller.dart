@@ -276,7 +276,11 @@ final class SosController extends Notifier<SosFlowState> {
     final clock = ref.read(clockProvider);
     final result = await repository.resolve(alert.familyId, alert.id);
     if (!ref.mounted || result is Err) return result;
-    _closed.add(alert.id);
+    // Solo una alerta que el servidor confirmó queda cerrada. Cancelar el
+    // envío de una sin confirmar es ambiguo (un intento pudo registrarla sin
+    // que llegara la respuesta): si aparece registrada, se vuelve a mostrar
+    // como activa para poder terminarla.
+    if (alert.delivery == SosDelivery.sent) _closed.add(alert.id);
     final latest = state;
     if (latest is! SosTracking || latest.alert.id != alert.id) return result;
     state = latest.alert.delivery == SosDelivery.sent

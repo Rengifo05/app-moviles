@@ -59,12 +59,15 @@ MemberLocationSummary summarizeMemberLocation(
   final reportedAt = received != null && received.isBefore(location.capturedAt)
       ? received
       : location.capturedAt;
+  // Como en Inicio y Mapa: una hora muy en el futuro (reloj de este
+  // teléfono atrasado) no es fiable y no se muestra como "hace un momento".
+  final unreliable = reportedAt.difference(now) > staleAfter;
   return MemberLocationSummary(
     state: switch (location.freshnessAt(now, staleAfter)) {
       LocationFreshness.recent => MemberLocationState.recent,
       LocationFreshness.stale => MemberLocationState.stale,
     },
-    reportedAt: reportedAt,
+    reportedAt: unreliable ? null : reportedAt,
     isApproximate: location.isApproximate,
   );
 }

@@ -52,6 +52,25 @@ void main() {
     expect(visibleText(tester), isNot(matches(forbiddenClaims)));
   });
 
+  testWidgets('la hora relativa avanza sola y una hora futura (reloj '
+      'atrasado) se muestra como hora absoluta', (tester) async {
+    await pumpBanner(tester, [alertOf(uid: 'luis')]);
+    expect(find.text('Alerta enviada hace 2 min'), findsOneWidget);
+    clock.advance(const Duration(minutes: 40));
+    await tester.pump(const Duration(seconds: 31));
+    expect(find.text('Alerta enviada hace 42 min'), findsOneWidget);
+  });
+
+  testWidgets('con el reloj atrasado no dice "hace un momento"', (
+    tester,
+  ) async {
+    await pumpBanner(tester, [
+      alertOf(uid: 'luis', age: const Duration(hours: -2)),
+    ]);
+    expect(find.textContaining('hace un momento'), findsNothing);
+    expect(find.textContaining('Creada a las'), findsOneWidget);
+  });
+
   testWidgets('sin ubicación lo dice', (tester) async {
     await pumpBanner(tester, [alertOf(uid: 'luis', withLocation: false)]);
     expect(find.text('Sin ubicación'), findsOneWidget);

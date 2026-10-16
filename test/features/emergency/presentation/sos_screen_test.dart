@@ -495,10 +495,16 @@ void main() {
       await settle(tester);
       expect(repository.resolved, ['sos-1']);
       expect(
-        find.text('Cancelaste el envío. Dejamos de intentarlo.'),
+        find.textContaining('Cancelaste el envío. Dejamos de intentarlo'),
         findsOneWidget,
       );
       expect(find.byType(NxHoldButton), findsOneWidget);
+
+      // Un intento anterior sí la registró (se perdió la respuesta): vuelve a
+      // mostrarse como activa para poder terminarla.
+      repository.put(alertOf(notifiedCount: 1));
+      await settle(tester);
+      expect(find.text('Alerta activa'), findsOneWidget);
     });
   });
 }

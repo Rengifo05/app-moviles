@@ -88,4 +88,9 @@ Cuatro enfoques: honestidad, privacidad, datos e integración. El límite de uso
 | Pasar a «aproximada» solo borraba la ubicación exacta si la copia local la tenía | Se borra siempre en el mismo lote |
 | Al cambiar de familia sin conexión, la copia vacía de la otra familia se mostraba como cierta («Aún no compartes tu ubicación», sin integrantes, sin SOS activos) | Cambiar de familia ya no purga la anterior: solo detiene su escucha y se ven los últimos datos guardados |
 | Al salir de una familia (o si te quitan) su bandeja de salida (check-ins y SOS con ubicación) quedaba en el teléfono indefinidamente | El coordinador purga copia local y bandeja de las familias que ya no están entre las membresías, solo cuando el servidor las confirmó en esta ejecución |
+| La hora del aviso SOS de otro integrante se congelaba («hace un momento» 40 min después) y con el reloj atrasado siempre decía «hace un momento» | Se recalcula cada 30 s; si la hora del servidor queda en el futuro se muestra la hora absoluta |
+| La ficha del integrante decía a la vez «Sin actualización reciente» y «hace un momento» con el reloj atrasado | Misma regla que Inicio y Mapa: una hora no fiable no se muestra |
+| Cancelar el envío de un SOS cuyo intento fue ambiguo ocultaba para siempre la alerta si el servidor sí la había registrado | Solo se cierran las confirmadas; si aparece registrada, vuelve como activa para terminarla, y el aviso lo advierte |
+
+Quedan sin revisar los enfoques de datos e integración (el límite de uso cortó a esos revisores): se cubren en la revisión de endurecimiento.
 

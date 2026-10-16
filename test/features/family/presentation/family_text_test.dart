@@ -183,6 +183,16 @@ void main() {
       expect(s.reportedAt, isNull);
     });
 
+    test('una hora muy en el futuro (reloj atrasado) no se muestra', () {
+      final s = summarizeMemberLocation(
+        sampleLocation('luis', age: const Duration(hours: -2)),
+        now: testNow,
+        staleAfter: staleAfter,
+      );
+      expect(s.state, MemberLocationState.stale);
+      expect(s.reportedAt, isNull);
+    });
+
     test('reciente dentro del umbral (límite incluido)', () {
       final s = summarizeMemberLocation(
         sampleLocation('luis', age: staleAfter),

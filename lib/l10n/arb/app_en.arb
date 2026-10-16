@@ -156,7 +156,7 @@
   "emergencyDiscard": "Cancel sending",
   "emergencyDiscardBody": "We don't have confirmation that the alert was sent yet. If you cancel, we'll stop trying.",
   "emergencyDiscardTitle": "Cancel sending?",
-  "emergencyDiscardedNotice": "You cancelled sending. We've stopped trying.",
+  "emergencyDiscardedNotice": "You cancelled sending. We've stopped trying; if it was already registered, it will show up here so you can end it.",
   "emergencyErrorCannotAckOwn": "You can't confirm your own alert.",
   "emergencyErrorNotAuthor": "Only the person who sent the alert can end it.",
   "emergencyErrorNotFound": "This alert is no longer available.",
