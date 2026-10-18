@@ -12,6 +12,7 @@ import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/core/clock.dart';
 import 'package:nexo_familia/core/config/app_config.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
+import 'package:nexo_familia/features/settings/domain/data_export.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 
 import '../helpers/fakes.dart';
@@ -42,7 +43,12 @@ final class E2EApp {
   final AppDatabase db;
   final AppComposition composition;
 
-  static Future<E2EApp> start(WidgetTester tester) async {
+  /// [fileSharer] sustituye la hoja de compartir del sistema, que la prueba
+  /// no puede abrir.
+  static Future<E2EApp> start(
+    WidgetTester tester, {
+    FileSharer? fileSharer,
+  }) async {
     tester.platformDispatcher.localesTestValue = [const Locale('es', 'CO')];
     tester.view
       ..physicalSize = const Size(390, 844) * 3
@@ -56,6 +62,7 @@ final class E2EApp {
       clock: const _TestTimeClock(),
       logSink: MemoryLogSink(),
       random: math.Random(42),
+      fileSharer: fileSharer,
     );
     final app = E2EApp._(db, composition);
     await tester.pumpWidget(

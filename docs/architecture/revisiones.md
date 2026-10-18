@@ -110,3 +110,14 @@ Un revisor con los enfoques de datos (lo que escribe el cliente frente a las reg
 
 Sin defectos en: nombres y tipos de campos frente a `onlyKeys`, lectura de datos del servidor, idempotencia de la bandeja, orden de las purgas, valores por defecto de los *providers*, redirecciones, registros (sin tokens ni coordenadas), secretos en el repositorio, copias de seguridad de Android y dependencias del backend (`npm audit`: 0).
 
+
+## Revisión de la exportación de datos, las banderas y el canal de Android (2026-10-18)
+
+Un revisor con dos enfoques: privacidad y seguridad de `exportMyData` (también la paridad con el backend de demostración) y correctitud e integración (composición, flujo de compartir, banderas, `MainActivity.kt`). El integrador verificó cada hallazgo en el código de las dependencias y escribió primero una prueba que lo reproduce.
+
+| Hallazgo | Resolución |
+|---|---|
+| `share_plus` escribía el JSON exportado (ubicación, mensajes) en el directorio temporal y nunca lo borraba: sobrevivía a «Eliminar mi cuenta» y a otras cuentas en el mismo teléfono | El archivo se escribe en una carpeta propia, se comparte por ruta y se borra al cerrarse la hoja, también si falla. Al arrancar se borran restos de una exportación interrumpida |
+| Tras un error pasajero de la escucha, las banderas del servicio dejaban de llegar hasta cambiar de cuenta, y un aviso «pushDegraded» activado después no se mostraba | Tras un error se emiten los valores por defecto y se vuelve a escuchar al minuto |
+
+Sin defectos en: qué incluye y excluye la exportación (nada de otras personas: `targetUid` y `acks` fuera, sin tokens), identidad de quien exporta (solo `request.auth`), límite de 3 por hora, índices de grupo de colecciones, paridad con la demostración, documentos de banderas mal escritos (nunca apagan nada), SOS sin interruptor y `MainActivity.kt` (importaciones, guarda de API 26, recursos en ambos idiomas). `MainActivity.kt` sigue sin compilarse en la sesión.

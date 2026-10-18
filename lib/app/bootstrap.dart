@@ -10,6 +10,7 @@ import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
+import 'package:nexo_familia/infrastructure/share/share_plus_file_sharer.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -48,6 +49,9 @@ Future<void> bootstrap(AppConfig config) async {
   };
   WidgetsBinding.instance.addObserver(composition.coordinator);
   final build = await _buildInfo();
+  // Una exportación de datos que quedó a medias (la app se cerró mientras
+  // la hoja de compartir estaba abierta) no se conserva.
+  await const SharePlusFileSharer().discardLeftovers();
 
   runApp(
     ProviderScope(

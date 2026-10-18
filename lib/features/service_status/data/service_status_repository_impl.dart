@@ -8,23 +8,47 @@ import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 /// Cualquier campo ausente, de otro tipo o desconocido se trata como su
 /// valor por defecto: un documento mal escrito nunca apaga nada por error.
 final class ServiceStatusRepositoryImpl implements ServiceStatusRepository {
-  new(this._remote);
+  new(this._remote, {this._retryDelay = const Duration(minutes: 1)});
 
   final RemoteStore _remote;
 
+  /// Tras un error de la escucha (p. ej., `unavailable` o un
+  /// `permission-denied` pasajero al renovar la sesión), se vuelve a
+  /// escuchar pasado este tiempo: un aviso que el equipo active después
+  /// debe llegar igual.
+  final Duration _retryDelay;
+
   @override
-  Stream<ServiceFlags> watchFlags() => _remote
-      .watchDoc(BackendPaths.appConfig)
-      .map((doc) => doc == null ? ServiceFlags.defaults : parse(doc.data))
-      .transform(
-        StreamTransformer.fromHandlers(
-          handleError: (_, _, sink) {
-            sink
-              ..add(ServiceFlags.defaults)
-              ..close();
-          },
-        ),
-      );
+  Stream<ServiceFlags> watchFlags() {
+    late final StreamController<ServiceFlags> controller;
+    StreamSubscription<RemoteDoc?>? subscription;
+    Timer? retry;
+
+    void listen() {
+      subscription = _remote
+          .watchDoc(BackendPaths.appConfig)
+          .listen(
+            (doc) => controller.add(
+              doc == null ? ServiceFlags.defaults : parse(doc.data),
+            ),
+            onError: (Object _) {
+              controller.add(ServiceFlags.defaults);
+              unawaited(subscription?.cancel());
+              retry = Timer(_retryDelay, listen);
+            },
+            cancelOnError: true,
+          );
+    }
+
+    controller = StreamController(
+      onListen: listen,
+      onCancel: () {
+        retry?.cancel();
+        return subscription?.cancel();
+      },
+    );
+    return controller.stream;
+  }
 
   static ServiceFlags parse(Json data) => ServiceFlags(
     // Solo un `false` explícito apaga una función.

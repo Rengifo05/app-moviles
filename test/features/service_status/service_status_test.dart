@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +22,30 @@ import '../../helpers/fakes.dart';
 final class _FailingStore implements RemoteStore {
   @override
   Stream<RemoteDoc?> watchDoc(String path) => Stream.error(StateError('x'));
+
+  @override
+  Stream<List<RemoteDoc>> watchCollection(String path, {RemoteQuery? query}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Result<RemoteDoc?>> getDoc(String path) => throw UnimplementedError();
+
+  @override
+  Future<VoidResult> commit(List<RemoteWrite> writes) =>
+      throw UnimplementedError();
+}
+
+/// Falla la primera escucha y después delega en [inner].
+final class _FlakyStore implements RemoteStore {
+  new(this.inner);
+
+  final RemoteStore inner;
+  int watches = 0;
+
+  @override
+  Stream<RemoteDoc?> watchDoc(String path) => ++watches == 1
+      ? Stream.error(StateError('pasajero'))
+      : inner.watchDoc(path);
 
   @override
   Stream<List<RemoteDoc>> watchCollection(String path, {RemoteQuery? query}) =>
@@ -73,6 +100,27 @@ void main() {
         }),
         ServiceFlags.defaults,
       );
+    });
+
+    test('tras un error vuelve a escuchar y recibe los avisos', () {
+      fakeAsync((async) {
+        final remote = _FlakyStore(store);
+        final seen = <ServiceFlags>[];
+        final sub = ServiceStatusRepositoryImpl(
+          remote,
+          retryDelay: const Duration(minutes: 2),
+        ).watchFlags().listen(seen.add);
+        async.flushMicrotasks();
+        expect(seen, [ServiceFlags.defaults]);
+
+        store.serverWrite('config/app', {'notice': 'pushDegraded'});
+        async
+          ..elapse(const Duration(minutes: 2))
+          ..flushMicrotasks();
+        expect(seen.last.notice, ServiceNotice.pushDegraded);
+        expect(remote.watches, 2);
+        unawaited(sub.cancel());
+      });
     });
 
     test('si la escucha falla, valores por defecto', () async {

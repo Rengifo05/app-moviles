@@ -8,9 +8,9 @@
 |---|---|---|
 | Formato y análisis estático | `dart format` y `flutter analyze --fatal-infos` con very_good_analysis 11 en modo estricto | 0 avisos |
 | Límites entre capas | Prueba de arquitectura de mundo cerrado sobre el AST | En verde |
-| App Flutter (unitarias, integración y widgets) | `flutter test`: 91 archivos de prueba | **1249** en verde |
+| App Flutter (unitarias, integración y widgets) | `flutter test`: 93 archivos de prueba | **1255** en verde |
 | Capturas *golden* | 97 imágenes, claro al 100 % y oscuro al 200 %, revisadas una por una | En verde |
-| De extremo a extremo en el host | App completa con el backend de demostración y Drift en memoria: 6 escenarios | En verde |
+| De extremo a extremo en el host | App completa con el backend de demostración y Drift en memoria: 7 escenarios | En verde |
 | Reglas de Firestore | Emulador con `@firebase/rules-unit-testing` | En verde |
 | Calidad de las pruebas de reglas | Pruebas de mutación: 43 condiciones debilitadas una a una | **43/43** detectadas |
 | Cloud Functions | Emulador de Firestore, proyecto `demo-nexo`, sin credenciales | **100** en verde (incluye las reglas) |
@@ -26,6 +26,7 @@ Los 6 escenarios de extremo a extremo:
 4. Un código de invitación inexistente no confirma nada.
 5. Un check-in sin conexión queda guardado y se envía una sola vez al volver la red.
 6. Un SOS se activa manteniendo presionado, tiene cuenta atrás, informa con honestidad (en el modo demo, sin push, «Nadie pudo ser notificado») y solo cuenta como confirmado con el «Lo vi» de otra persona.
+7. «Descargar mis datos» entrega un JSON con lo propio y nada de otras personas.
 
 Garantías que cubren las pruebas, en resumen:
 - **Honestidad:**

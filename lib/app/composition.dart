@@ -40,6 +40,7 @@ import 'package:nexo_familia/features/service_status/data/service_status_reposit
 import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/features/settings/data/data_export_repository_impl.dart';
 import 'package:nexo_familia/features/settings/data/drift_preferences_repository.dart';
+import 'package:nexo_familia/features/settings/domain/data_export.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 import 'package:nexo_familia/infrastructure/database/drift_stores.dart';
@@ -89,6 +90,7 @@ final class AppComposition {
     Clock clock = const SystemClock(),
     LogSink logSink = const ConsoleLogSink(),
     math.Random? random,
+    FileSharer? fileSharer,
   }) {
     final store = InMemoryRemoteStore(clock: clock);
     late final DemoAuthRepository auth;
@@ -114,6 +116,7 @@ final class AppComposition {
       // Ubicaciones sintéticas: el modo demostración nunca usa el GPS.
       device: DemoLocationService(clock: clock),
       demoStore: store,
+      fileSharer: fileSharer ?? const SharePlusFileSharer(),
       extraDisposers: [auth.dispose, store.dispose],
     );
   }
@@ -158,6 +161,7 @@ final class AppComposition {
     required DeviceLocationService device,
     InMemoryRemoteStore? demoStore,
     PushService? push,
+    FileSharer fileSharer = const SharePlusFileSharer(),
     List<Future<void> Function()> extraDisposers = const [],
   }) {
     final logger = SafeLogger(sink: logSink, clock: clock);
@@ -222,7 +226,7 @@ final class AppComposition {
         dataExportRepositoryProvider.overrideWithValue(
           DataExportRepositoryImpl(functions),
         ),
-        fileSharerProvider.overrideWithValue(const SharePlusFileSharer()),
+        fileSharerProvider.overrideWithValue(fileSharer),
         serviceStatusRepositoryProvider.overrideWithValue(
           ServiceStatusRepositoryImpl(remote),
         ),
