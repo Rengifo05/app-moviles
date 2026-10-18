@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:nexo_familia/features/notifications/domain/push.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 
 /// [PushService] con Firebase Cloud Messaging (ADR-005).
 ///
@@ -31,6 +32,15 @@ final class FirebasePushService implements PushService {
       // Sin red o sin servicios de Google: se reintenta en el próximo
       // arranque o cuando FCM avise de un token nuevo.
       return null;
+    }
+  }
+
+  @override
+  Future<bool> openSystemSettings() async {
+    try {
+      return await ph.openAppSettings();
+    } on Object {
+      return false;
     }
   }
 

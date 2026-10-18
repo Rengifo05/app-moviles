@@ -15,6 +15,7 @@ void main() {
     WidgetTester tester, {
     SettingsFakes? fakes,
     bool pushAvailable = false,
+    String? appVersion = '0.1.0',
   }) async {
     tester.view
       ..physicalSize = const Size(600, 2000)
@@ -23,7 +24,10 @@ void main() {
     final f = fakes ?? SettingsFakes();
     await tester.pumpWidget(
       settingsTestApp(
-        overrides: f.overrides(pushAvailable: pushAvailable),
+        overrides: f.overrides(
+          pushAvailable: pushAvailable,
+          appVersion: appVersion,
+        ),
         home: const SettingsScreen(),
       ),
     );
@@ -44,6 +48,14 @@ void main() {
       find.text(l10n.settingsAboutDisclaimer('Nexo Familia', '123')),
       findsOne,
     );
+  });
+
+  testWidgets('sin versión de la compilación no inventa ninguna', (
+    tester,
+  ) async {
+    await pumpSettings(tester, appVersion: null);
+    expect(find.text('Nexo Familia'), findsOne);
+    expect(find.textContaining('0.1.0'), findsNothing);
   });
 
   testWidgets('abre Privacidad y Cuenta', (tester) async {

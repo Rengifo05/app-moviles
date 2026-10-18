@@ -41,6 +41,10 @@ abstract interface class PushService {
   /// Avisos SOS tocados (incluido el que abrió la app).
   Stream<PushOpen> get opened;
 
+  /// Abre los ajustes de la app en el sistema (para activar los avisos
+  /// después de haberlos denegado). `false` si no se pudieron abrir.
+  Future<bool> openSystemSettings();
+
   /// Invalida el token de este teléfono en el servicio de avisos (el
   /// siguiente será otro). Nunca lanza: sin red, no hace nada.
   Future<void> deleteToken();

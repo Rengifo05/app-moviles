@@ -126,12 +126,13 @@ class _About extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(config.appName, style: context.text.titleSmall),
-                Text(
-                  l10n.settingsAboutVersion(appVersionLabel),
-                  style: context.text.bodyMedium?.copyWith(
-                    color: context.nx.inkMuted,
+                if (ref.watch(appVersionProvider) case final version?)
+                  Text(
+                    l10n.settingsAboutVersion(version),
+                    style: context.text.bodyMedium?.copyWith(
+                      color: context.nx.inkMuted,
+                    ),
                   ),
-                ),
               ],
             ),
           ),

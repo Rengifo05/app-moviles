@@ -7,7 +7,9 @@ import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/core/config/app_config.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
+import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Raíz de composición: valida la configuración, prepara las dependencias y
@@ -44,15 +46,31 @@ Future<void> bootstrap(AppConfig config) async {
     ),
   };
   WidgetsBinding.instance.addObserver(composition.coordinator);
+  final version = await _buildVersion();
 
   runApp(
     ProviderScope(
       overrides: [
         appConfigProvider.overrideWithValue(config),
         activeFamilyIdOverride,
+        appVersionProvider.overrideWithValue(version),
         ...composition.overrides,
       ],
       child: const NexoApp(),
     ),
   );
+}
+
+/// Versión y número de compilación del paquete instalado, o `null` si la
+/// plataforma no los da (nunca impide arrancar).
+Future<String?> _buildVersion() async {
+  try {
+    final info = await PackageInfo.fromPlatform();
+    if (info.version.isEmpty) return null;
+    return info.buildNumber.isEmpty
+        ? info.version
+        : '${info.version} (${info.buildNumber})';
+  } on Object {
+    return null;
+  }
 }

@@ -11,9 +11,10 @@ final preferencesProvider = StreamProvider<AppPreferences>(
   (ref) => ref.watch(preferencesRepositoryProvider).watch(),
 );
 
-/// Versión visible en "Acerca de". Fija hasta que la versión salga de la
-/// compilación (`package_info_plus`).
-const String appVersionLabel = '0.1.0';
+/// Versión de la compilación para "Acerca de" (p. ej. `0.1.0 (1)`). La lee
+/// la raíz de composición al arrancar; `null` si no se pudo leer, y entonces
+/// no se muestra ninguna versión inventada.
+final appVersionProvider = Provider<String?>((ref) => null);
 
 /// Si este teléfono puede recibir avisos SOS con la app cerrada (ADR-005).
 /// Sin servicio de avisos (modo demostración, emuladores) Ajustes lo dice en

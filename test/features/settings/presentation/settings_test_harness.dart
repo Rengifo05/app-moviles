@@ -298,6 +298,7 @@ final class SettingsFakes {
     SyncStatus sync = SyncStatus.live,
     String? activeFamilyId = familyId,
     bool pushAvailable = false,
+    String? appVersion = '0.1.0',
     int? pendingOutbox,
   }) => [
     appConfigProvider.overrideWithValue(testConfig),
@@ -326,6 +327,7 @@ final class SettingsFakes {
     deviceLocationServiceProvider.overrideWithValue(device),
     preferencesRepositoryProvider.overrideWithValue(preferences),
     pushNotificationsAvailableProvider.overrideWithValue(pushAvailable),
+    appVersionProvider.overrideWithValue(appVersion),
     if (pendingOutbox != null)
       pendingOutboxCountProvider.overrideWith(
         (ref) => Stream.value(pendingOutbox),

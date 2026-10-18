@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/design_system/components/nx_banner.dart';
@@ -20,6 +22,38 @@ class PushPromptCard extends ConsumerStatefulWidget {
 
 class _PushPromptCardState extends ConsumerState<PushPromptCard> {
   bool _asking = false;
+
+  /// Al volver a la app (por ejemplo, desde los ajustes del sistema) se
+  /// relee el permiso: si ahora está concedido, se registra el teléfono.
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(onResume: () => unawaited(_recheck()));
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  Future<void> _recheck() async {
+    if (!mounted || !ref.read(pushServiceProvider).isAvailable) return;
+    ref.invalidate(pushPermissionProvider);
+    try {
+      if (await ref.read(pushPermissionProvider.future) ==
+          PushPermission.granted) {
+        await ref.read(pushRegistrationProvider).sync();
+      }
+    } on Object {
+      // Se reintenta en la próxima vuelta a la app o al iniciar sesión.
+    }
+  }
+
+  void _openSettings() =>
+      unawaited(ref.read(pushServiceProvider).openSystemSettings());
 
   Future<void> _activate() async {
     if (_asking) return;
@@ -56,6 +90,8 @@ class _PushPromptCardState extends ConsumerState<PushPromptCard> {
       PushPermission.denied => NxBanner(
         icon: Icons.notifications_off_outlined,
         message: l10n.pushDeniedMessage,
+        actionLabel: l10n.commonOpenSettings,
+        onAction: _openSettings,
       ),
       PushPermission.granted || null => null,
     };

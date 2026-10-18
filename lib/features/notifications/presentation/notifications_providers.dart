@@ -46,6 +46,9 @@ final class _NoPushService implements PushService {
   Future<void> deleteToken() async {}
 
   @override
+  Future<bool> openSystemSettings() async => false;
+
+  @override
   Stream<String> get tokenRefreshes => const Stream.empty();
 
   @override

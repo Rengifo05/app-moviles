@@ -65,6 +65,24 @@ void main() {
     expect(find.text(l10n.pushPromptAction), findsNothing);
   });
 
+  testWidgets('denegado: abre los ajustes y, al volver con el permiso, '
+      'registra el teléfono', (tester) async {
+    service.current = PushPermission.denied;
+    final l10n = await pump(tester);
+    await tester.tap(find.text(l10n.commonOpenSettings));
+    await tester.pumpAndSettle();
+    expect(service.settingsOpened, 1);
+    expect(registry.registered, isEmpty);
+
+    // La persona activa los avisos en el sistema y vuelve a la app.
+    service.current = PushPermission.granted;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(registry.registered, ['token-a']);
+    expect(find.text(l10n.pushDeniedMessage), findsNothing);
+  });
+
   testWidgets('con el permiso concedido no muestra nada', (tester) async {
     service.current = PushPermission.granted;
     final l10n = await pump(tester);
