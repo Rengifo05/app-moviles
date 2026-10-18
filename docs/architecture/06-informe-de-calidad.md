@@ -69,7 +69,7 @@ Las revisiones adversariales y los defectos que encontraron están en [revisione
 - **Notificaciones push:** el cliente está implementado (permiso en contexto, registro del dispositivo, renovación del token, baja al cerrar sesión y apertura de la alerta), pero nunca se ha recibido un aviso real (D7). El canal de Android «Alertas SOS» está escrito en código nativo, pero no se ha compilado (sin SDK de Android en la sesión).
 - **Geocercas nativas:** desactivadas por diseño (ADR-003). El editor de zonas funciona, pero no hay monitoreo de entradas y salidas.
 - **Límite de 10 zonas por familia:** solo se aplica en el cliente, porque las reglas no pueden contar documentos.
-- **FlutterFire:** hay versiones mayores nuevas (`cloud_firestore` 7, `firebase_core` 5). Actualizar es una decisión aparte, con su revisión de cambios incompatibles.
+- **FlutterFire:** salieron versiones mayores el 2026-10-15 (`firebase_core` 5, `cloud_firestore` 7, `firebase_auth` 7, `cloud_functions` 7 y `firebase_messaging` 17). Se esperan al menos dos semanas (hasta el 2026-10-29) antes de actualizar, por posibles regresiones, y la actualización va en su propio cambio, con la revisión de cambios incompatibles y toda la suite.
 - **Reloj del teléfono adelantado más de 1 día:** las reglas rechazan los check-ins (retención con `expireAt`). Se ve como fallido; no se finge el envío.
 
 ## 4. Por qué no está listo para producción
