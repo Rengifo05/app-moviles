@@ -7,6 +7,7 @@ import { onCall, type CallableRequest } from 'firebase-functions/v2/https';
 import * as account from './account.js';
 import { REGION } from './config.js';
 import { reject } from './errors.js';
+import * as dataExport from './export.js';
 import * as families from './families.js';
 import type { Ctx } from './families.js';
 import * as sos from './sos.js';
@@ -76,6 +77,17 @@ export const removeMember = callable('removeMember', families.removeMember);
 export const raiseSos = callable('raiseSos', (ctx, data) => sos.raiseSos(ctx, data, fcmNotifier));
 export const signOutEverywhere = callable('signOutEverywhere', (ctx) =>
   account.signOutEverywhere(ctx, { revokeRefreshTokens: (uid) => getAuth().revokeRefreshTokens(uid) }),
+);
+export const exportMyData = callable('exportMyData', (ctx) =>
+  dataExport.exportMyData(ctx, {
+    async account(uid) {
+      const user = await getAuth().getUser(uid);
+      return {
+        email: user.email ?? null,
+        createdAt: user.metadata.creationTime ? new Date(user.metadata.creationTime).toISOString() : null,
+      };
+    },
+  }),
 );
 export const deleteAccount = callable('deleteAccount', (ctx) =>
   account.deleteAccount(ctx, { deleteUser: (uid) => getAuth().deleteUser(uid) }),

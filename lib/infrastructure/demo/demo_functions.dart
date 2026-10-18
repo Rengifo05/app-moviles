@@ -28,6 +28,7 @@ final class DemoFunctionsClient implements FunctionsClient {
   new({
     required this._store,
     required this._currentUid,
+    this._currentEmail,
     Clock? clock,
     math.Random? random,
   }) : _clock = clock ?? _store.clock,
@@ -35,6 +36,9 @@ final class DemoFunctionsClient implements FunctionsClient {
 
   final InMemoryRemoteStore _store;
   final String? Function() _currentUid;
+
+  /// Correo de la sesión (en Firebase lo da Auth) para la exportación.
+  final String? Function()? _currentEmail;
   final Clock _clock;
   final math.Random _random;
 
@@ -49,6 +53,7 @@ final class DemoFunctionsClient implements FunctionsClient {
   static const _maxActiveInvitations = 10;
   static const _invitationTtl = Duration(hours: 48);
   static const _maxSosPerHour = 5;
+  static const _maxExportsPerHour = 3;
   static const _maxInvitationAttemptsPerHour = 10;
   static const _rateWindow = Duration(hours: 1);
 
@@ -67,6 +72,7 @@ final class DemoFunctionsClient implements FunctionsClient {
         'raiseSos' => _raiseSos(uid, payload),
         'deleteAccount' => _deleteAccount(uid),
         'signOutEverywhere' => _signOutEverywhere(uid),
+        'exportMyData' => _exportMyData(uid),
         _ => throw const _Reject(FailureKind.notFound, 'unknown-function'),
       });
     } on _Reject catch (r) {
@@ -364,6 +370,102 @@ final class DemoFunctionsClient implements FunctionsClient {
     }
     return <String, Object?>{};
   });
+
+  /// Igual que `functions/src/export.ts`: los datos de la persona en todas
+  /// sus familias, sin tokens ni datos de otras personas.
+  Json _exportMyData(String uid) {
+    _rateLimit(uid, 'exportMyData', _maxExportsPerHour);
+    Json? read(String path) => _store.serverRead(path);
+    String familyOf(String path) => path.split('/')[1];
+    Json without(Json data, Set<String> keys) => {
+      for (final MapEntry(:key, :value) in data.entries)
+        if (!keys.contains(key)) key: value,
+    };
+    final families = _store.serverList('families');
+    final events = [
+      for (final family in families)
+        for (final path in _store.serverList('$family/events'))
+          if (read(path)!['actorUid'] == uid) path,
+    ];
+    final emergencies = [
+      for (final family in families)
+        for (final path in _store.serverList('$family/emergencies'))
+          if (read(path)!['uid'] == uid) path,
+    ];
+    return _plain({
+          'schema': 'nexo-familia/export@1',
+          'generatedAt': _clock.now().toUtc(),
+          'data': {
+            'account': {
+              'uid': uid,
+              'email': _currentEmail?.call(),
+              'createdAt': null,
+            },
+            'profile': read('users/$uid'),
+            'devices': [
+              for (final path in _store.serverList('users/$uid/devices'))
+                {
+                  'platform': read(path)!['platform'],
+                  'updatedAt': read(path)!['updatedAt'],
+                },
+            ],
+            'families': [
+              for (final path in _store.serverList('users/$uid/memberships'))
+                {
+                  'familyId': path.split('/').last,
+                  'name': read('families/${path.split('/').last}')?['name'],
+                  'member': read(
+                    'families/${path.split('/').last}/members/$uid',
+                  ),
+                  'sharingConsent': read(
+                    'families/${path.split('/').last}/consents/$uid',
+                  ),
+                  'lastLocation': read(
+                    'families/${path.split('/').last}/locations/$uid',
+                  ),
+                },
+            ],
+            'events': [
+              for (final path in events)
+                {
+                  'familyId': familyOf(path),
+                  'id': path.split('/').last,
+                  ...without(read(path)!, const {
+                    'actorUid',
+                    'targetUid',
+                    'expireAt',
+                  }),
+                },
+            ],
+            'emergencies': [
+              for (final path in emergencies)
+                {
+                  'familyId': familyOf(path),
+                  'id': path.split('/').last,
+                  ...without(read(path)!, const {
+                    'uid',
+                    'acks',
+                    'expireAt',
+                    'notifyStartedAt',
+                  }),
+                  'acknowledgements':
+                      (read(path)!['acks'] as Map?)?.length ?? 0,
+                },
+            ],
+          },
+        })!
+        as Json;
+  }
+
+  /// Como JSON: fechas en ISO 8601 (UTC).
+  static Object? _plain(Object? value) => switch (value) {
+    final DateTime date => date.toUtc().toIso8601String(),
+    final Map<Object?, Object?> map => {
+      for (final MapEntry(:key, :value) in map.entries) '$key': _plain(value),
+    },
+    final List<Object?> list => [for (final v in list) _plain(v)],
+    _ => value,
+  };
 
   Json _deleteAccount(String uid) => _store.serverTransaction(() {
     for (final path in _store.serverList('users/$uid/memberships')) {

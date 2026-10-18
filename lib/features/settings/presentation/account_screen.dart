@@ -17,8 +17,8 @@ import 'package:nexo_familia/features/settings/presentation/settings_providers.d
 import 'package:nexo_familia/features/settings/presentation/settings_widgets.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
-/// Cuenta: correo, cerrar sesión y eliminar la cuenta (con doble
-/// confirmación que explica las consecuencias).
+/// Cuenta: correo, cerrar sesión, descargar los datos y eliminar la cuenta
+/// (con doble confirmación que explica las consecuencias).
 class AccountScreen extends ConsumerWidget {
   const new({super.key});
 
@@ -50,7 +50,7 @@ class AccountScreen extends ConsumerWidget {
   }
 }
 
-enum _AccountOperation { signOut, signOutEverywhere, delete }
+enum _AccountOperation { signOut, signOutEverywhere, export, delete }
 
 class _AccountBody extends ConsumerStatefulWidget {
   const new({required this.user});
@@ -83,6 +83,14 @@ class _AccountBodyState extends ConsumerState<_AccountBody> {
     await _run(
       _AccountOperation.signOut,
       ref.read(accountActionsProvider).signOut,
+    );
+  }
+
+  Future<void> _export() async {
+    if (_busy != null) return;
+    await _run(
+      _AccountOperation.export,
+      ref.read(dataExportActionProvider).call,
     );
   }
 
@@ -187,6 +195,9 @@ class _AccountBodyState extends ConsumerState<_AccountBody> {
             l10n.settingsAccountEverywhereFailed(
               failureMessage(l10n, error!.failure),
             ),
+          _AccountOperation.export => l10n.settingsAccountDataFailed(
+            failureMessage(l10n, error!.failure),
+          ),
           _AccountOperation.delete => l10n.settingsAccountDeleteFailed(
             failureMessage(l10n, error!.failure),
           ),
@@ -256,6 +267,23 @@ class _AccountBodyState extends ConsumerState<_AccountBody> {
         ),
         if (error?.operation == _AccountOperation.signOutEverywhere)
           errorBanner(_AccountOperation.signOutEverywhere),
+        NxSectionHeader(title: l10n.settingsAccountDataTitle),
+        Text(l10n.settingsAccountDataIntro, style: context.text.bodyMedium),
+        FamilyNote(
+          icon: Icons.location_on_outlined,
+          text: l10n.settingsAccountDataWarning,
+          style: muted,
+        ),
+        const SizedBox(height: NxSpace.sm),
+        NxButton(
+          label: l10n.settingsAccountDataExport,
+          icon: Icons.download_outlined,
+          variant: NxButtonVariant.secondary,
+          loading: _busy == _AccountOperation.export,
+          onPressed: idle ? _export : null,
+        ),
+        if (error?.operation == _AccountOperation.export)
+          errorBanner(_AccountOperation.export),
         NxSectionHeader(title: l10n.settingsAccountDeleteTitle),
         Text(l10n.settingsAccountDeleteIntro, style: context.text.bodyMedium),
         const SizedBox(height: NxSpace.md),

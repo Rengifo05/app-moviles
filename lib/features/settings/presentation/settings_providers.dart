@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
+import 'package:nexo_familia/features/settings/domain/data_export.dart';
 import 'package:nexo_familia/features/settings/domain/preferences.dart';
 
 final preferencesRepositoryProvider = Provider<PreferencesRepository>(
@@ -29,4 +30,17 @@ final pushNotificationsAvailableProvider = Provider<bool>(
 /// bandeja; mientras no lo haga, nunca emite y no se muestra ningún aviso.
 final pendingOutboxCountProvider = StreamProvider<int>(
   (ref) => const Stream<int>.empty(),
+);
+
+/// Exportación de los datos de la persona (derecho de acceso). La conecta la
+/// raíz de composición.
+final dataExportRepositoryProvider = Provider<DataExportRepository>(
+  (ref) =>
+      throw UnimplementedError('dataExportRepositoryProvider: ver bootstrap'),
+);
+
+/// Entrega de archivos (hoja de compartir del sistema). La conecta la raíz
+/// de composición.
+final fileSharerProvider = Provider<FileSharer>(
+  (ref) => throw UnimplementedError('fileSharerProvider: ver bootstrap'),
 );

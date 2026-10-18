@@ -1175,6 +1175,13 @@
       }
     }
   },
+  "@settingsAccountDataFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "@settingsAccountDeleteFailed": {
     "placeholders": {
       "reason": {
@@ -1260,6 +1267,11 @@
   "settingsAboutDisclaimer": "{appName} no sustituye a los servicios oficiales de emergencia. En una emergencia, llama al {number}.",
   "settingsAboutPrivacySummary": "Resumen de privacidad",
   "settingsAboutVersion": "Versión {version}",
+  "settingsAccountDataExport": "Descargar mis datos",
+  "settingsAccountDataFailed": "No pudimos preparar el archivo con tus datos. {reason}",
+  "settingsAccountDataIntro": "Descarga un archivo con lo que Nexo Familia guarda de ti en todas tus familias, también en las que ya dejaste: perfil, decisiones sobre tu ubicación, tu última ubicación, check-ins y alertas SOS. No incluye datos de otras personas.",
+  "settingsAccountDataTitle": "Tus datos",
+  "settingsAccountDataWarning": "El archivo contiene tu ubicación: elige con cuidado dónde lo guardas o con quién lo compartes.",
   "settingsAccountDelete": "Eliminar mi cuenta",
   "settingsAccountDeleteAudit": "El registro de cambios del grupo deja de identificarte y se borra a los 180 días.",
   "settingsAccountDeleteBackups": "Las copias de seguridad del proveedor pueden tardar hasta 30 días en borrarse.",

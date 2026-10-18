@@ -36,6 +36,7 @@ import 'package:nexo_familia/features/location_sharing/presentation/location_pro
 import 'package:nexo_familia/features/notifications/data/device_registry_impl.dart';
 import 'package:nexo_familia/features/notifications/domain/push.dart';
 import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
+import 'package:nexo_familia/features/settings/data/data_export_repository_impl.dart';
 import 'package:nexo_familia/features/settings/data/drift_preferences_repository.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
@@ -48,6 +49,7 @@ import 'package:nexo_familia/infrastructure/location/demo_location_service.dart'
 import 'package:nexo_familia/infrastructure/location/geolocator_location_service.dart';
 import 'package:nexo_familia/infrastructure/push/firebase_push_service.dart';
 import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
+import 'package:nexo_familia/infrastructure/share/share_plus_file_sharer.dart';
 import 'package:nexo_familia/infrastructure/sync/backoff.dart';
 import 'package:nexo_familia/infrastructure/sync/outbox.dart';
 import 'package:nexo_familia/infrastructure/sync/remote_mirror.dart';
@@ -91,6 +93,7 @@ final class AppComposition {
     final functions = DemoFunctionsClient(
       store: store,
       currentUid: () => auth.currentUser?.uid,
+      currentEmail: () => auth.currentUser?.email,
       clock: clock,
       random: random,
     );
@@ -214,6 +217,10 @@ final class AppComposition {
           (ref) => outboxStore.watch().map((entries) => entries.length),
         ),
         authRepositoryProvider.overrideWithValue(auth),
+        dataExportRepositoryProvider.overrideWithValue(
+          DataExportRepositoryImpl(functions),
+        ),
+        fileSharerProvider.overrideWithValue(const SharePlusFileSharer()),
         familyRepositoryProvider.overrideWithValue(
           FamilyRepositoryImpl(
             functions: functions,

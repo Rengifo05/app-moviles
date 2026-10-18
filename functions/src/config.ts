@@ -7,6 +7,7 @@ export const LIMITS = {
   invitationMaxUses: 1,
   acceptInvitationPerHour: 10,
   sosPerHour: 5,
+  exportPerHour: 3,
   familyNameMax: 40,
   /** Tiempo tras el cual se puede reintentar una notificación SOS a medias. */
   sosNotifyLeaseMs: 60 * 1000,

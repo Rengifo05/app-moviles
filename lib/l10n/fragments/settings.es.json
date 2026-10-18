@@ -179,6 +179,18 @@
       }
     }
   },
+  "settingsAccountDataTitle": "Tus datos",
+  "settingsAccountDataIntro": "Descarga un archivo con lo que Nexo Familia guarda de ti en todas tus familias, también en las que ya dejaste: perfil, decisiones sobre tu ubicación, tu última ubicación, check-ins y alertas SOS. No incluye datos de otras personas.",
+  "settingsAccountDataWarning": "El archivo contiene tu ubicación: elige con cuidado dónde lo guardas o con quién lo compartes.",
+  "settingsAccountDataExport": "Descargar mis datos",
+  "settingsAccountDataFailed": "No pudimos preparar el archivo con tus datos. {reason}",
+  "@settingsAccountDataFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
   "settingsAccountDeleteTitle": "Borrar tus datos",
   "settingsAccountDeleteIntro": "Borra tu cuenta y tus datos personales. No se puede deshacer.",
   "settingsAccountDelete": "Eliminar mi cuenta",

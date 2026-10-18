@@ -18,6 +18,7 @@ import 'package:nexo_familia/features/family/domain/family.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
+import 'package:nexo_familia/features/settings/domain/data_export.dart';
 import 'package:nexo_familia/features/settings/domain/preferences.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
@@ -257,6 +258,34 @@ final class FakePreferencesRepository implements PreferencesRepository {
   Future<void> clear() async => prefs.value = const AppPreferences();
 }
 
+/// Exportación de datos falsa (contenido sintético).
+final class FakeDataExport implements DataExportRepository {
+  Result<DataExport> result = const Ok(
+    DataExport(
+      fileName: 'nexo-familia-mis-datos-2026-01-01.json',
+      contents: '{"schema": "nexo-familia/export@1"}',
+    ),
+  );
+  int calls = 0;
+
+  @override
+  Future<Result<DataExport>> exportMyData() async {
+    calls++;
+    return result;
+  }
+}
+
+final class FakeFileSharer implements FileSharer {
+  final List<DataExport> shared = [];
+  VoidResult result = const Ok(null);
+
+  @override
+  Future<VoidResult> share(DataExport file) async {
+    shared.add(file);
+    return result;
+  }
+}
+
 FamilyMember member(String uid, String name, [MemberRole? role]) =>
     FamilyMember(
       uid: uid,
@@ -292,6 +321,8 @@ final class SettingsFakes {
   final FakePreferencesRepository preferences;
   final FakeFamilyRepository families;
   final MemoryLogSink logs = MemoryLogSink();
+  final FakeDataExport exports = FakeDataExport();
+  final FakeFileSharer sharer = FakeFileSharer();
 
   List<Override> overrides({
     List<FamilyMember>? members,
@@ -328,6 +359,8 @@ final class SettingsFakes {
     preferencesRepositoryProvider.overrideWithValue(preferences),
     pushNotificationsAvailableProvider.overrideWithValue(pushAvailable),
     appVersionProvider.overrideWithValue(appVersion),
+    dataExportRepositoryProvider.overrideWithValue(exports),
+    fileSharerProvider.overrideWithValue(sharer),
     if (pendingOutbox != null)
       pendingOutboxCountProvider.overrideWith(
         (ref) => Stream.value(pendingOutbox),

@@ -1176,6 +1176,91 @@ void main() {
     });
   });
 
+  group('exportMyData', () {
+    test('reúne sus datos en todas sus familias, sin tokens ni datos de '
+        'otras personas', () async {
+      final familyId = await familyOf('ana', ['bruno']);
+      final formerId = await familyOf('bruno', ['ana']);
+      await ok(callAs('ana', 'leaveFamily', {'familyId': formerId}));
+      store
+        ..serverWrite('users/ana/devices/d1', {
+          'token': 'token-sintetico',
+          'platform': 'android',
+          'updatedAt': clock.now(),
+        })
+        ..serverWrite('families/$familyId/consents/ana', {
+          'state': 'sharing',
+          'precision': 'approximate',
+        })
+        ..serverWrite('families/$familyId/locations/ana', {
+          'lat': 4.61,
+          'lng': -74.07,
+          'approximate': true,
+        })
+        ..serverWrite('families/$familyId/locations/bruno', {
+          'lat': 6.25,
+          'lng': -75.56,
+        })
+        ..serverWrite('families/$familyId/events/c1', {
+          'type': 'checkIn',
+          'actorUid': 'ana',
+          'kind': 'ok',
+          'message': 'Mensaje de Ana',
+        })
+        ..serverWrite('families/$formerId/events/c2', {
+          'type': 'checkIn',
+          'actorUid': 'ana',
+          'kind': 'ok',
+        })
+        ..serverWrite('families/$familyId/events/c3', {
+          'type': 'checkIn',
+          'actorUid': 'bruno',
+          'kind': 'ok',
+          'message': 'Mensaje de Bruno',
+        })
+        ..serverWrite('families/$familyId/emergencies/a1', {
+          'uid': 'ana',
+          'notifiedCount': 0,
+          'acks': {'bruno': clock.now()},
+        });
+
+      final result = await ok(callAs('ana', 'exportMyData'));
+      expect(result['schema'], 'nexo-familia/export@1');
+      expect(result['generatedAt'], clock.now().toUtc().toIso8601String());
+      final data = result['data']! as Json;
+      expect((data['profile']! as Json)['displayName'], 'Ana Prueba');
+      final families = data['families']! as List<Object?>;
+      expect(families, hasLength(1));
+      expect(families.single, containsPair('familyId', familyId));
+      expect(
+        (families.single! as Json)['lastLocation'],
+        containsPair('lat', 4.61),
+      );
+      final checkIns = [
+        for (final e in (data['events']! as List<Object?>).cast<Json>())
+          if (e['type'] == 'checkIn') e['id'],
+      ];
+      expect(checkIns, unorderedEquals(['c1', 'c2']));
+      final alert = (data['emergencies']! as List<Object?>).single! as Json;
+      expect(alert['acknowledgements'], 1);
+
+      final texts = _texts(result).toList();
+      expect(texts, isNot(contains('token-sintetico')));
+      expect(texts, isNot(contains('Mensaje de Bruno')));
+      expect(texts, isNot(contains('6.25')));
+      expect(texts, isNot(contains('bruno')));
+    });
+
+    test('limita a 3 exportaciones por hora', () async {
+      for (var i = 0; i < 3; i++) {
+        await ok(callAs('ana', 'exportMyData'));
+      }
+      expect(await callAs('ana', 'exportMyData'), _rateLimited);
+      clock.advance(const Duration(hours: 1, seconds: 1));
+      await ok(callAs('ana', 'exportMyData'));
+    });
+  });
+
   group('deleteAccount', () {
     test('sale de todas sus familias y borra el perfil con sus '
         'subcolecciones', () async {

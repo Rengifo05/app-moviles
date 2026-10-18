@@ -61,6 +61,41 @@ void main() {
     expect(fakes.preferences.prefs.value.onboardingCompleted, isTrue);
   });
 
+  testWidgets('descargar mis datos entrega el archivo sin registrar su '
+      'contenido', (tester) async {
+    final fakes = await pumpAccount(tester);
+    expect(find.text(l10n.settingsAccountDataWarning), findsOne);
+    await tester.scrollUntilVisible(
+      find.text(l10n.settingsAccountDataExport),
+      200,
+    );
+    await tester.tap(find.text(l10n.settingsAccountDataExport));
+    await settle(tester);
+    expect(fakes.exports.calls, 1);
+    expect(fakes.sharer.shared.single.fileName, endsWith('.json'));
+    expect(fakes.logs.entries, isEmpty);
+  });
+
+  testWidgets('si no se puede preparar el archivo lo dice y no comparte '
+      'nada', (tester) async {
+    final fakes = SettingsFakes();
+    fakes.exports.result = const Err(networkFailure);
+    await pumpAccount(tester, fakes: fakes);
+    await tester.scrollUntilVisible(
+      find.text(l10n.settingsAccountDataExport),
+      200,
+    );
+    await tester.tap(find.text(l10n.settingsAccountDataExport));
+    await settle(tester);
+    expect(fakes.sharer.shared, isEmpty);
+    expect(
+      find.textContaining(l10n.settingsAccountDataFailed('').trim()),
+      findsOne,
+    );
+    // Se registra el fallo, nunca el contenido.
+    expect(fakes.logs.entries.single.fields['operation'], 'exportMyData');
+  });
+
   testWidgets('si cerrar sesión falla lo dice', (tester) async {
     final fakes = SettingsFakes()
       ..auth.signOutResult = const Err(networkFailure);

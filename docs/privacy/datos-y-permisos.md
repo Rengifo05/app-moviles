@@ -30,6 +30,7 @@ Divulgación destacada (requisito de Google Play para el segundo plano): debe ap
 ## Colombia: puntos a revisar con asesoría legal
 
 - **Ley 1581 de 2012 (Habeas Data):** autorización previa, expresa e informada; finalidad; derechos de conocer, actualizar, rectificar y suprimir; política de tratamiento publicada.
+  - Cómo se ejercen en la app: **conocer**, con Cuenta → «Descargar mis datos» (archivo JSON con lo de la persona en todas sus familias, sin datos de otras personas); **actualizar y rectificar**, editando el perfil y las decisiones de ubicación; **suprimir**, con «Eliminar mi cuenta». La revisión legal sigue pendiente.
 - **Menores:** el art. 7 de la Ley 1581 restringe el tratamiento de datos de niños, niñas y adolescentes. El reglamento (Decreto 1377 de 2013, compilado en el Decreto 1074 de 2015) lo permite si responde al interés superior del menor y respeta sus derechos fundamentales, con autorización del representante legal y la opinión del menor valorada según su madurez. **Por eso se propone un MVP solo para adultos.**
 - **Registro Nacional de Bases de Datos (SIC):** verificar si aplica según el tipo y tamaño del responsable.
 - **Transferencia internacional:** los datos se alojarían fuera de Colombia (p. ej. São Paulo o EE. UU.). Revisar los requisitos de la SIC.

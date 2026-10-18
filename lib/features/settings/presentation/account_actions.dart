@@ -5,6 +5,7 @@ import 'package:nexo_familia/core/result.dart';
 import 'package:nexo_familia/features/authentication/domain/auth.dart';
 import 'package:nexo_familia/features/authentication/presentation/auth_providers.dart';
 import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
+import 'package:nexo_familia/features/settings/domain/data_export.dart';
 import 'package:nexo_familia/features/settings/domain/preferences.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 
@@ -86,5 +87,38 @@ final accountActionsProvider = Provider<AccountActions>(
     preferences: ref.watch(preferencesRepositoryProvider),
     logger: ref.watch(loggerProvider),
     beforeSignOut: ref.watch(pushRegistrationProvider).unregister,
+  ),
+);
+
+/// "Descargar mis datos": pide el archivo al servidor y lo entrega con la
+/// hoja de compartir. Nunca registra su contenido.
+final class DataExportAction {
+  new({required this._exports, required this._sharer, required this._logger});
+
+  final DataExportRepository _exports;
+  final FileSharer _sharer;
+  final SafeLogger _logger;
+
+  Future<VoidResult> call() async {
+    final result = switch (await _exports.exportMyData()) {
+      Err(:final failure) => Err<void>(failure),
+      Ok(value: final file) => await _sharer.share(file),
+    };
+    if (result case Err(:final failure)) {
+      _logger.error(
+        'settings.account_failed',
+        fields: {'feature': 'settings', 'operation': 'exportMyData'},
+        failure: failure,
+      );
+    }
+    return result;
+  }
+}
+
+final dataExportActionProvider = Provider<DataExportAction>(
+  (ref) => DataExportAction(
+    exports: ref.watch(dataExportRepositoryProvider),
+    sharer: ref.watch(fileSharerProvider),
+    logger: ref.watch(loggerProvider),
   ),
 );

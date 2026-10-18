@@ -73,7 +73,7 @@ La app permite **eliminar la cuenta** (`deleteAccount`):
 
 El resto vence por TTL (ver `02-modelo-de-datos.md`).
 
-**Pendiente:** exportación de datos en la app (derecho de acceso, Ley 1581 de 2012 en Colombia). Mientras no exista, una solicitud se atiende manualmente con el Admin SDK, leyendo solo estas rutas de la persona:
+**Derecho de acceso (Ley 1581 de 2012):** la persona descarga sus datos desde Cuenta → «Descargar mis datos» (Function `exportMyData`, máximo 3 por hora). Si no puede usar la app (por ejemplo, perdió el acceso a la cuenta), la solicitud se atiende manualmente con el Admin SDK, tras verificar su identidad, leyendo solo estas rutas de la persona:
 
 - `users/{uid}` y sus subcolecciones;
 - `families/{f}/members/{uid}`, `consents/{uid}` y `locations/{uid}`;
