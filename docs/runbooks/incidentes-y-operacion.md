@@ -46,7 +46,14 @@ Del más rápido al más lento:
    ```
    Cualquier cambio de reglas se hace en una rama, con las pruebas de reglas en verde, aunque sea urgente.
 2. **Functions.** Desplegar la versión anterior desde su commit (sección 4). Para apagar una sola función, quitar su `export` en `functions/src/index.ts` y desplegar: la app recibe `not-found` / `unavailable`, que trata como error honesto.
-3. **App.** Las banderas de la app son de compilación (`--dart-define`, ver `config/env.example.json`): cambiarlas exige publicar una versión. **Pendiente:** banderas remotas (p. ej. Remote Config) si se necesitan interruptores sin publicar.
+3. **Banderas del servicio (`config/app`, sin publicar versión).** Se editan en la consola de Firestore o con el Admin SDK; la app las recibe en segundos con su escucha:
+   - `checkInsEnabled: false`: el check-in dice que está en pausa por mantenimiento y remite al SOS y al número de emergencias;
+   - `geofenceEditingEnabled: false`: no se pueden crear, cambiar ni eliminar zonas, y las guardadas se siguen viendo;
+   - `notice: 'pushDegraded'`: Inicio avisa que una alerta SOS podría no llegar con la app cerrada y recuerda llamar al número de emergencias; `'serviceDegraded'`, que los envíos pueden tardar;
+   - `minBuild: N`: Inicio recomienda actualizar a quien tenga una compilación anterior a N (no bloquea nada).
+
+   Son una ayuda para decir la verdad en la interfaz, no un control de seguridad: un cliente antiguo o modificado las ignora. Para **impedir** escrituras, se usan las reglas (punto 1). El SOS no tiene interruptor a propósito. Al terminar el incidente, se borran los campos o el documento.
+4. **App (compilación).** Las banderas de `--dart-define` (ver `config/env.example.json`) exigen publicar una versión.
 
 Exposición de datos (S1):
 - Revocar sesiones de las cuentas afectadas con el Admin SDK (`revokeRefreshTokens(uid)`).

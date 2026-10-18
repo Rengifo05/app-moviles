@@ -52,6 +52,8 @@ const mutations = [
   ['terminar dos veces', '&& resource.data.resolvedAt == null\n            && data().diff', '&& data().diff'],
   ['crear alertas desde el cliente', 'allow update: if isMember(familyId) && (isAck() || isResolve());', 'allow create, update: if isMember(familyId);'],
   ['auditoría para todos', "match /audit/{auditId} {\n        allow read: if isManager(familyId);", "match /audit/{auditId} {\n        allow read: if isMember(familyId);"],
+  ['banderas del servicio sin sesión', "match /config/app {\n      allow read: if signedIn();", "match /config/app {\n      allow read: if true;"],
+  ['banderas del servicio editables', "match /config/app {\n      allow read: if signedIn();", "match /config/app {\n      allow read, write: if signedIn();"],
   ['invitaciones legibles', 'match /{document=**} {\n      allow read, write: if false;', 'match /invitations/{id} {\n      allow read: if signedIn();\n    }\n    match /{document=**} {\n      allow read, write: if false;'],
 ];
 

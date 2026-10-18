@@ -2,6 +2,9 @@
 /// `docs/architecture/05-api-backend.md`). Centralizadas para que la app,
 /// el backend de demostración y las pruebas usen exactamente las mismas.
 abstract final class BackendPaths {
+  /// Banderas del servicio (solo lectura para la app).
+  static const appConfig = 'config/app';
+
   static String user(String uid) => 'users/$uid';
   static String memberships(String uid) => 'users/$uid/memberships';
   static String devices(String uid) => 'users/$uid/devices';

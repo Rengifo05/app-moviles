@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nexo_familia/core/config/app_config.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
 import 'package:nexo_familia/core/failure.dart';
 import 'package:nexo_familia/core/geo/geo_point.dart';
@@ -22,6 +23,8 @@ import 'package:nexo_familia/features/family/presentation/family_providers.dart'
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location_use_cases.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
+import 'package:nexo_familia/features/service_status/domain/service_status.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 import 'package:riverpod/misc.dart';
 
@@ -178,6 +181,7 @@ final class CheckInTestEnv {
     this.precision = LocationPrecision.exact,
     this.syncStatus = SyncStatus.live,
     this.activeFamilyId = familyId,
+    this.serviceFlags = ServiceFlags.defaults,
   }) : repository = repository ?? FakeCheckInRepository(),
        device =
            device ??
@@ -196,6 +200,7 @@ final class CheckInTestEnv {
   final LocationPrecision precision;
   final SyncStatus syncStatus;
   final String? activeFamilyId;
+  final ServiceFlags serviceFlags;
   final FakeClock clock;
 
   SharingConsent get consent => SharingConsent(
@@ -206,6 +211,15 @@ final class CheckInTestEnv {
   );
 
   List<Override> get overrides => [
+    appConfigProvider.overrideWithValue(
+      const AppConfig(
+        appName: 'Nexo Familia',
+        environment: AppEnvironment.dev,
+        backend: BackendMode.demo,
+        useFirebaseEmulators: false,
+        emergencyNumber: '123',
+      ),
+    ),
     clockProvider.overrideWithValue(clock),
     idGeneratorProvider.overrideWithValue(SequentialIdGenerator()),
     loggerProvider.overrideWithValue(
@@ -218,6 +232,7 @@ final class CheckInTestEnv {
     retryCheckInProvider.overrideWithValue(repository.retry),
     discardCheckInProvider.overrideWithValue(repository.discard),
     myConsentProvider.overrideWith((ref, id) => Stream.value(consent)),
+    currentServiceFlagsProvider.overrideWithValue(serviceFlags),
     resolveShareableLocationProvider.overrideWithValue(
       ResolveShareableLocation(device),
     ),

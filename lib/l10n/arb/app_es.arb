@@ -1153,6 +1153,26 @@
   "onboardingNext": "Siguiente",
   "onboardingStart": "Entendido, empezar",
   "onboardingStep": "Paso {current} de {total}",
+  "@checkInPausedByService": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "@serviceNoticePushDegraded": {
+    "description": "Aviso del equipo cuando FCM o APNs fallan.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "checkInPausedByService": "Los check-ins están en pausa por mantenimiento. Si necesitas ayuda, usa SOS o llama al {number}.",
+  "geofenceEditingPausedByService": "Por mantenimiento, ahora no se pueden crear ni cambiar zonas. Las zonas guardadas se siguen viendo.",
+  "serviceNoticeDegraded": "El servicio tiene problemas y los envíos pueden tardar. Revisa el estado de cada envío antes de darlo por hecho.",
+  "serviceNoticePushDegraded": "Los avisos push tienen problemas: una alerta SOS podría no llegar a quien tiene la app cerrada. En una emergencia, llama también al {number}.",
+  "serviceUpdateRecommended": "Hay una versión más reciente con correcciones importantes. Actualiza Nexo Familia desde la tienda de aplicaciones.",
   "@settingsAboutDisclaimer": {
     "description": "Aviso legal en Acerca de.",
     "placeholders": {

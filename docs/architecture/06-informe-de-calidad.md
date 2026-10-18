@@ -8,12 +8,12 @@
 |---|---|---|
 | Formato y análisis estático | `dart format` y `flutter analyze --fatal-infos` con very_good_analysis 11 en modo estricto | 0 avisos |
 | Límites entre capas | Prueba de arquitectura de mundo cerrado sobre el AST | En verde |
-| App Flutter (unitarias, integración y widgets) | `flutter test`: 90 archivos de prueba | **1239** en verde |
+| App Flutter (unitarias, integración y widgets) | `flutter test`: 91 archivos de prueba | **1249** en verde |
 | Capturas *golden* | 97 imágenes, claro al 100 % y oscuro al 200 %, revisadas una por una | En verde |
 | De extremo a extremo en el host | App completa con el backend de demostración y Drift en memoria: 6 escenarios | En verde |
 | Reglas de Firestore | Emulador con `@firebase/rules-unit-testing` | En verde |
-| Calidad de las pruebas de reglas | Pruebas de mutación: 41 condiciones debilitadas una a una | **41/41** detectadas |
-| Cloud Functions | Emulador de Firestore, proyecto `demo-nexo`, sin credenciales | **99** en verde (incluye las reglas) |
+| Calidad de las pruebas de reglas | Pruebas de mutación: 43 condiciones debilitadas una a una | **43/43** detectadas |
+| Cloud Functions | Emulador de Firestore, proyecto `demo-nexo`, sin credenciales | **100** en verde (incluye las reglas) |
 | Índices y TTL | Validador de `firebase-tools` (`npm run check:indexes`) | Válidos |
 | Dependencias del backend | `npm audit --omit=dev` | 0 vulnerabilidades |
 | Licencias de la app | Archivo `LICENSE` de los 163 paquetes de `package_config.json` | BSD, MIT y Apache-2.0. Sin GPL. `dbus`, `geoclue` y `gsettings` son MPL-2.0 y solo los usa `geolocator` en Linux de escritorio, que no es un objetivo de la app |
@@ -68,7 +68,6 @@ Las revisiones adversariales y los defectos que encontraron están en [revisione
   - clave APNs y App Check.
 - **Notificaciones push:** el cliente está implementado (permiso en contexto, registro del dispositivo, renovación del token, baja al cerrar sesión y apertura de la alerta), pero nunca se ha recibido un aviso real (D7). Falta un canal de Android propio para el SOS.
 - **Geocercas nativas:** desactivadas por diseño (ADR-003). El editor de zonas funciona, pero no hay monitoreo de entradas y salidas.
-- **Banderas remotas para apagar funciones sin publicar** una versión.
 - **Límite de 10 zonas por familia:** solo se aplica en el cliente, porque las reglas no pueden contar documentos.
 - **FlutterFire:** hay versiones mayores nuevas (`cloud_firestore` 7, `firebase_core` 5). Actualizar es una decisión aparte, con su revisión de cambios incompatibles.
 - **Reloj del teléfono adelantado más de 1 día:** las reglas rechazan los check-ins (retención con `expireAt`). Se ve como fallido; no se finge el envío.

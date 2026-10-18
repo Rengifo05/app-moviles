@@ -20,6 +20,8 @@ import 'package:nexo_familia/features/geofences/presentation/geofence_editor_scr
 import 'package:nexo_familia/features/geofences/presentation/geofence_providers.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
+import 'package:nexo_familia/features/service_status/domain/service_status.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 import 'package:riverpod/misc.dart';
 
@@ -235,6 +237,7 @@ final class GeofenceTestEnv {
     this.activeFamilyId = familyId,
     this.syncStatus = SyncStatus.live,
     this.mapBuilder,
+    this.serviceFlags = ServiceFlags.defaults,
   }) : repository = repository ?? FakeGeofenceRepository([sampleZone()]),
        device = device ?? FakeDeviceLocationService(),
        clock = FakeClock(testNow),
@@ -246,6 +249,7 @@ final class GeofenceTestEnv {
   final String? activeFamilyId;
   final SyncStatus syncStatus;
   final NxMapBuilder? mapBuilder;
+  final ServiceFlags serviceFlags;
   final FakeClock clock;
   final MemoryLogSink logSink;
 
@@ -269,6 +273,7 @@ final class GeofenceTestEnv {
       ),
     ),
     syncStatusProvider.overrideWith((ref) => Stream.value(syncStatus)),
+    currentServiceFlagsProvider.overrideWithValue(serviceFlags),
   ];
 }
 

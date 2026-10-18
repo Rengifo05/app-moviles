@@ -418,6 +418,13 @@ describe('perfil, dispositivos y auditoría', () => {
     await assertFails(setDoc(doc(as('ana'), 'families/f1/audit/a2'), { action: 'x' }));
   });
 
+  it('las banderas del servicio se leen con sesión y nadie las cambia', async () => {
+    await assertSucceeds(getDoc(doc(as('mallory'), 'config/app')));
+    await assertFails(getDoc(doc(anon(), 'config/app')));
+    await assertFails(setDoc(doc(as('ana'), 'config/app'), { checkInsEnabled: false }));
+    await assertFails(getDoc(doc(as('ana'), 'config/otro')));
+  });
+
   it('rutas no previstas están denegadas', async () => {
     await assertFails(getDoc(doc(as('ana'), 'rateLimits/ana')));
     await assertFails(setDoc(doc(as('ana'), 'cualquier/cosa'), { a: 1 }));

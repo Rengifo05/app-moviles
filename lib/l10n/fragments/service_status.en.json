@@ -1,0 +1,7 @@
+{
+  "serviceNoticePushDegraded": "Push notifications are having problems: an SOS alert might not reach people who have the app closed. In an emergency, also call {number}.",
+  "serviceNoticeDegraded": "The service is having problems and sending may take longer. Check the status of each item before assuming it was sent.",
+  "serviceUpdateRecommended": "A newer version with important fixes is available. Update Nexo Familia from the app store.",
+  "checkInPausedByService": "Check-ins are paused for maintenance. If you need help, use SOS or call {number}.",
+  "geofenceEditingPausedByService": "Zones can't be created or changed right now due to maintenance. Saved zones are still visible."
+}

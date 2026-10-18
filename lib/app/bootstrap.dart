@@ -7,6 +7,7 @@ import 'package:nexo_familia/app/firebase_setup.dart';
 import 'package:nexo_familia/app/session_providers.dart';
 import 'package:nexo_familia/core/config/app_config.dart';
 import 'package:nexo_familia/core/di/core_providers.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -46,14 +47,15 @@ Future<void> bootstrap(AppConfig config) async {
     ),
   };
   WidgetsBinding.instance.addObserver(composition.coordinator);
-  final version = await _buildVersion();
+  final build = await _buildInfo();
 
   runApp(
     ProviderScope(
       overrides: [
         appConfigProvider.overrideWithValue(config),
         activeFamilyIdOverride,
-        appVersionProvider.overrideWithValue(version),
+        appVersionProvider.overrideWithValue(build?.label),
+        appBuildNumberProvider.overrideWithValue(build?.number),
         ...composition.overrides,
       ],
       child: const NexoApp(),
@@ -63,13 +65,16 @@ Future<void> bootstrap(AppConfig config) async {
 
 /// Versión y número de compilación del paquete instalado, o `null` si la
 /// plataforma no los da (nunca impide arrancar).
-Future<String?> _buildVersion() async {
+Future<({String label, int? number})?> _buildInfo() async {
   try {
     final info = await PackageInfo.fromPlatform();
     if (info.version.isEmpty) return null;
-    return info.buildNumber.isEmpty
-        ? info.version
-        : '${info.version} (${info.buildNumber})';
+    return (
+      label: info.buildNumber.isEmpty
+          ? info.version
+          : '${info.version} (${info.buildNumber})',
+      number: int.tryParse(info.buildNumber),
+    );
   } on Object {
     return null;
   }

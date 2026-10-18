@@ -18,6 +18,7 @@ import 'package:nexo_familia/features/common/presentation/sync_status.dart';
 import 'package:nexo_familia/features/family/presentation/family_providers.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
 /// Check-in a pantalla completa: "Estoy bien" o "Necesito ayuda", con
@@ -148,11 +149,23 @@ class _CheckInScreenState extends ConsumerState<CheckInScreen> {
     CheckInFlowState flow,
     CheckInController controller,
   ) {
+    // Interruptor remoto (runbook de incidentes): se dice, no se oculta.
+    final paused = !ref.watch(currentServiceFlagsProvider).checkInsEnabled;
     final canSend =
+        !paused &&
         flow.phase == CheckInPhase.editing &&
         flow.kind != null &&
         _message.text.trim().length <= CheckInRules.maxMessageLength;
     return [
+      if (paused) ...[
+        NxBanner(
+          icon: Icons.pause_circle_outline,
+          message: l10n.checkInPausedByService(
+            ref.watch(appConfigProvider).emergencyNumber,
+          ),
+        ),
+        const SizedBox(height: NxSpace.sm),
+      ],
       if (flow.kind == null && flow.failure == null) ...[
         Text(
           l10n.checkInChooseFirst,

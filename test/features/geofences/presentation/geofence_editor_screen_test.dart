@@ -8,6 +8,7 @@ import 'package:nexo_familia/features/common/presentation/routes.dart';
 import 'package:nexo_familia/features/common/presentation/sync_status.dart';
 import 'package:nexo_familia/features/family/domain/family.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
+import 'package:nexo_familia/features/service_status/domain/service_status.dart';
 
 import 'geofence_test_support.dart';
 
@@ -421,6 +422,17 @@ void main() {
       env.repository.zones.value = const [];
       await pumpFrames(tester);
       expect(find.text(l10n.geofenceErrorNotFound), findsOneWidget);
+      expect(await _enabled(tester, 'Guardar cambios'), isFalse);
+      expect(await _enabled(tester, 'Eliminar zona'), isFalse);
+    });
+
+    testWidgets('en pausa por el equipo lo dice y no deja guardar ni '
+        'eliminar', (tester) async {
+      final env = GeofenceTestEnv(
+        serviceFlags: const ServiceFlags(geofenceEditingEnabled: false),
+      );
+      await pumpGeofenceApp(tester, env, location: location());
+      expect(find.text(l10n.geofenceEditingPausedByService), findsOneWidget);
       expect(await _enabled(tester, 'Guardar cambios'), isFalse);
       expect(await _enabled(tester, 'Eliminar zona'), isFalse);
     });

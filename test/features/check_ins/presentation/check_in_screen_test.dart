@@ -9,6 +9,7 @@ import 'package:nexo_familia/features/check_ins/presentation/check_in_widgets.da
 import 'package:nexo_familia/features/common/presentation/routes.dart';
 import 'package:nexo_familia/features/common/presentation/sync_status.dart';
 import 'package:nexo_familia/features/location_sharing/domain/location.dart';
+import 'package:nexo_familia/features/service_status/domain/service_status.dart';
 
 import 'check_in_test_support.dart';
 
@@ -45,6 +46,22 @@ void main() {
       await choose(tester, CheckInKind.needHelp);
       expect(enabled(tester, sendButton()), isTrue);
       expect(find.text(l10n.checkInChooseFirst), findsNothing);
+    });
+
+    testWidgets('en pausa por el equipo lo dice y no deja enviar', (
+      tester,
+    ) async {
+      await pumpCheckInScreen(
+        tester,
+        CheckInTestEnv(
+          serviceFlags: const ServiceFlags(checkInsEnabled: false),
+        ),
+      );
+      await choose(tester, CheckInKind.ok);
+      expect(find.text(l10n.checkInPausedByService('123')), findsOneWidget);
+      expect(enabled(tester, sendButton()), isFalse);
+      // El SOS sigue disponible.
+      expect(find.text(l10n.checkInGoToSos), findsOneWidget);
     });
 
     testWidgets('las opciones son un grupo de selección única', (tester) async {

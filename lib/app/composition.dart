@@ -36,6 +36,8 @@ import 'package:nexo_familia/features/location_sharing/presentation/location_pro
 import 'package:nexo_familia/features/notifications/data/device_registry_impl.dart';
 import 'package:nexo_familia/features/notifications/domain/push.dart';
 import 'package:nexo_familia/features/notifications/presentation/notifications_providers.dart';
+import 'package:nexo_familia/features/service_status/data/service_status_repository_impl.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/features/settings/data/data_export_repository_impl.dart';
 import 'package:nexo_familia/features/settings/data/drift_preferences_repository.dart';
 import 'package:nexo_familia/features/settings/presentation/settings_providers.dart';
@@ -221,6 +223,9 @@ final class AppComposition {
           DataExportRepositoryImpl(functions),
         ),
         fileSharerProvider.overrideWithValue(const SharePlusFileSharer()),
+        serviceStatusRepositoryProvider.overrideWithValue(
+          ServiceStatusRepositoryImpl(remote),
+        ),
         familyRepositoryProvider.overrideWithValue(
           FamilyRepositoryImpl(
             functions: functions,

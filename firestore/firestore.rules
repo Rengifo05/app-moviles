@@ -219,6 +219,13 @@ service cloud.firestore {
       }
     }
 
+    // Banderas del servicio (docs/runbooks/incidentes-y-operacion.md §3): las
+    // lee cualquiera con sesión; solo se cambian con el Admin SDK o la
+    // consola.
+    match /config/app {
+      allow read: if signedIn();
+    }
+
     // invitations/, rateLimits/, idempotency/ y cualquier otra ruta: sin
     // acceso desde el cliente.
     match /{document=**} {

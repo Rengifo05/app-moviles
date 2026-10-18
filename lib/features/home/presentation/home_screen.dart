@@ -28,6 +28,7 @@ import 'package:nexo_familia/features/home/presentation/home_view_logic.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/sharing_status_card.dart';
 import 'package:nexo_familia/features/notifications/presentation/push_prompt_card.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_notice_banner.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
 /// Pestaña Inicio: alertas SOS activas de otros integrantes (arriba), saludo,
@@ -101,6 +102,7 @@ class _HomeBody extends ConsumerWidget {
           ),
           const SizedBox(height: NxSpace.sm),
         ],
+        const ServiceNoticeBanner(),
         const PushPromptCard(),
         const SharingStatusCard(),
         NxSectionHeader(title: l10n.homeQuickActionsTitle),

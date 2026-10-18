@@ -8,7 +8,7 @@ Aplicación móvil (Flutter, iOS y Android) para compartir ubicación de forma v
 
 **MVP funcional con el backend de demostración; no listo para producción.**
 - **Funcionalidades:** bienvenida, cuenta, familias con invitaciones, ubicación compartida con consentimiento, zonas, check-ins, SOS con confirmación de lectura y avisos push, actividad, ajustes de privacidad y descarga de los datos personales.
-- **Pruebas:** 1239 de la app (incluidos 6 escenarios de extremo a extremo) y 99 del backend en el emulador; las reglas detectan 41 de 41 mutaciones.
+- **Pruebas:** 1249 de la app (incluidos 6 escenarios de extremo a extremo) y 100 del backend en el emulador; las reglas detectan 43 de 43 mutaciones.
 - **Pendiente:**
   - proyecto Firebase real, mapas y la prueba real de los avisos push (decisión D7; el cliente ya está implementado);
   - verificación en dispositivos.

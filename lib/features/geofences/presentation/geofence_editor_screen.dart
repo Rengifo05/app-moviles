@@ -25,6 +25,7 @@ import 'package:nexo_familia/features/geofences/presentation/geofence_providers.
 import 'package:nexo_familia/features/geofences/presentation/geofence_text.dart';
 import 'package:nexo_familia/features/geofences/presentation/geofence_widgets.dart';
 import 'package:nexo_familia/features/location_sharing/presentation/location_providers.dart';
+import 'package:nexo_familia/features/service_status/presentation/service_status_providers.dart';
 import 'package:nexo_familia/l10n/gen/app_localizations.dart';
 
 /// Crea una zona ([geofenceId] nulo) o edita una existente.
@@ -436,11 +437,21 @@ class _GeofenceFormState extends ConsumerState<_GeofenceForm> {
         latest != null &&
         latest.version != base!.version;
     final busy = _busy != null;
-    final canSubmit = !offline && !deletedRemotely && !busy;
+    final paused = !ref
+        .watch(currentServiceFlagsProvider)
+        .geofenceEditingEnabled;
+    final canSubmit = !offline && !deletedRemotely && !busy && !paused;
 
     return NxPageBody(
       children: [
         SizedBox(key: _topKey, height: NxSpace.xs),
+        if (paused) ...[
+          NxBanner(
+            icon: Icons.pause_circle_outline,
+            message: l10n.geofenceEditingPausedByService,
+          ),
+          const SizedBox(height: NxSpace.sm),
+        ],
         if (offline) ...[
           NxBanner(
             icon: Icons.cloud_off_outlined,

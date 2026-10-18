@@ -36,6 +36,7 @@ families/{familyId}/audit/{auditId}           { action, actorUid, targetUid?, cr
 invitations/{tokenHash}                       { familyId, createdBy, createdAt, expiresAt, maxUses, uses, status }  ← solo Functions
 rateLimits/{uid}                              contadores por ventana                              ← solo Functions
 idempotency/{key}                             resultado previo de una llamada                     ← solo Functions
+config/app                                    { checkInsEnabled?, geofenceEditingEnabled?, notice?, minBuild? }  ← lectura con sesión; solo consola o Admin SDK
 ```
 
 Valores enumerados:
@@ -44,6 +45,9 @@ Valores enumerados:
 - `consents.state`: `notConfigured` | `sharing` | `paused`
 - `consents.precision`: `exact` | `approximate`
 - `invitations.status`: `active` | `exhausted` | `revoked`
+- `config/app.notice`: `pushDegraded` | `serviceDegraded` (la app tiene los textos traducidos; un código desconocido se ignora)
+
+`config/app` son las banderas del servicio (runbook de incidentes, §3). Solo un `false` explícito apaga una función, y un campo ausente o de otro tipo vale lo mismo que su valor por defecto. El SOS no tiene interruptor.
 
 ### Eventos (historial familiar)
 

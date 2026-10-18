@@ -1,0 +1,22 @@
+{
+  "serviceNoticePushDegraded": "Los avisos push tienen problemas: una alerta SOS podría no llegar a quien tiene la app cerrada. En una emergencia, llama también al {number}.",
+  "@serviceNoticePushDegraded": {
+    "description": "Aviso del equipo cuando FCM o APNs fallan.",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "serviceNoticeDegraded": "El servicio tiene problemas y los envíos pueden tardar. Revisa el estado de cada envío antes de darlo por hecho.",
+  "serviceUpdateRecommended": "Hay una versión más reciente con correcciones importantes. Actualiza Nexo Familia desde la tienda de aplicaciones.",
+  "checkInPausedByService": "Los check-ins están en pausa por mantenimiento. Si necesitas ayuda, usa SOS o llama al {number}.",
+  "@checkInPausedByService": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "geofenceEditingPausedByService": "Por mantenimiento, ahora no se pueden crear ni cambiar zonas. Las zonas guardadas se siguen viendo."
+}
