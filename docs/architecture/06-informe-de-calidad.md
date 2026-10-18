@@ -19,7 +19,7 @@
 | Licencias de la app | Archivo `LICENSE` de los 163 paquetes de `package_config.json` | BSD, MIT y Apache-2.0. Sin GPL. `dbus`, `geoclue` y `gsettings` son MPL-2.0 y solo los usa `geolocator` en Linux de escritorio, que no es un objetivo de la app |
 | Licencias del backend | `license-checker --production` | MIT, Apache-2.0, ISC, BSD, BlueOak-1.0.0 y 0BSD (todas permisivas) |
 
-Los 6 escenarios de extremo a extremo:
+Los 7 escenarios de extremo a extremo:
 1. Primer uso: bienvenida, registro con mayoría de edad y privacidad, y configuración de la familia.
 2. Credenciales incorrectas con un error genérico.
 3. Crear una familia, invitar y unirse desde otra cuenta.
