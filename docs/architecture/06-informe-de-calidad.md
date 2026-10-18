@@ -66,7 +66,7 @@ Las revisiones adversariales y los defectos que encontraron están en [revisione
   - proyecto Firebase de *staging* con Blaze, presupuesto y *spend cap*;
   - API key de Google Maps (hoy el mapa es la lista accesible);
   - clave APNs y App Check.
-- **Notificaciones push:** el cliente está implementado (permiso en contexto, registro del dispositivo, renovación del token, baja al cerrar sesión y apertura de la alerta), pero nunca se ha recibido un aviso real (D7). Falta un canal de Android propio para el SOS.
+- **Notificaciones push:** el cliente está implementado (permiso en contexto, registro del dispositivo, renovación del token, baja al cerrar sesión y apertura de la alerta), pero nunca se ha recibido un aviso real (D7). El canal de Android «Alertas SOS» está escrito en código nativo, pero no se ha compilado (sin SDK de Android en la sesión).
 - **Geocercas nativas:** desactivadas por diseño (ADR-003). El editor de zonas funciona, pero no hay monitoreo de entradas y salidas.
 - **Límite de 10 zonas por familia:** solo se aplica en el cliente, porque las reglas no pueden contar documentos.
 - **FlutterFire:** hay versiones mayores nuevas (`cloud_firestore` 7, `firebase_core` 5). Actualizar es una decisión aparte, con su revisión de cambios incompatibles.

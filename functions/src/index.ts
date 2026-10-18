@@ -56,7 +56,8 @@ const fcmNotifier: Notifier = {
         body: 'Un integrante de tu familia pidió ayuda. Abre Nexo Familia.',
       },
       data: { type: 'sos', familyId: data.familyId, alertId: data.alertId },
-      android: { priority: 'high' },
+      // Canal propio con importancia alta (MainActivity.kt crea `sos_alerts`).
+      android: { priority: 'high', notification: { channelId: 'sos_alerts' } },
       apns: { headers: { 'apns-priority': '10' } },
     });
     return {

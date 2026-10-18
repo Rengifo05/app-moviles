@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Canal de notificaciones de las alertas SOS (ADR-005). -->
+    <string name="sos_channel_name">Alertas SOS</string>
+    <string name="sos_channel_description">Cuando alguien de tu familia pide ayuda. El aviso no muestra nombres ni ubicación.</string>
+</resources>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sos_channel_name">SOS alerts</string>
+    <string name="sos_channel_description">When someone in your family asks for help. The notification doesn\'t show names or location.</string>
+</resources>

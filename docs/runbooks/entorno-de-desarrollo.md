@@ -81,7 +81,7 @@ Después: las alertas de presupuesto (ver `docs/architecture/03-costos.md`).
    - en un iPhone real (el simulador no recibe avisos de APNs de forma fiable): inicia sesión con una familia, pulsa «Activar avisos», acepta el diálogo y comprueba que aparece `users/{uid}/devices/{id}` en Firestore;
    - con la app cerrada, lanza un SOS desde otra cuenta: debe llegar «Alerta SOS» sin nombres ni ubicación, y al tocarlo se abre Inicio con la alerta;
    - cierra sesión y comprueba que el documento del dispositivo desaparece.
-5. Android 13 o superior: repite la prueba anterior; el diálogo de `POST_NOTIFICATIONS` debe aparecer solo al pulsar «Activar avisos».
+5. Android 13 o superior: repite la prueba anterior; el diálogo de `POST_NOTIFICATIONS` debe aparecer solo al pulsar «Activar avisos». En Ajustes del sistema → Apps → Nexo Familia → Notificaciones debe existir el canal «Alertas SOS» (importancia alta), y el aviso de un SOS debe llegar por ese canal. `flutter build apk --debug` compila `MainActivity.kt` (nunca compilado en la sesión en la nube).
 
 ## Limitaciones conocidas de la sesión en la nube
 
