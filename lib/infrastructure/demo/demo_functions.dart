@@ -54,6 +54,7 @@ final class DemoFunctionsClient implements FunctionsClient {
   static const _invitationTtl = Duration(hours: 48);
   static const _maxSosPerHour = 5;
   static const _maxExportsPerHour = 3;
+  static const _maxGeofences = 10;
   static const _maxInvitationAttemptsPerHour = 10;
   static const _rateWindow = Duration(hours: 1);
 
@@ -73,6 +74,7 @@ final class DemoFunctionsClient implements FunctionsClient {
         'deleteAccount' => _deleteAccount(uid),
         'signOutEverywhere' => _signOutEverywhere(uid),
         'exportMyData' => _exportMyData(uid),
+        'createGeofence' => _createGeofence(uid, payload),
         _ => throw const _Reject(FailureKind.notFound, 'unknown-function'),
       });
     } on _Reject catch (r) {
@@ -370,6 +372,66 @@ final class DemoFunctionsClient implements FunctionsClient {
     }
     return <String, Object?>{};
   });
+
+  /// Igual que `functions/src/geofences.ts`: crea la zona aplicando el
+  /// máximo por familia; idempotente por `geofenceId`.
+  Json _createGeofence(String uid, Json p) {
+    final familyId = _id(p, 'familyId');
+    final geofenceId = _id(p, 'geofenceId');
+    final name = p['name'] is String ? (p['name']! as String).trim() : '';
+    if (name.length > 40 || !_visibleName.hasMatch(name)) {
+      throw const _Reject(FailureKind.validation, 'geofence-name-invalid');
+    }
+    final lat = p['lat'];
+    final lng = p['lng'];
+    final radius = p['radiusM'];
+    if (lat is! num || !lat.isFinite || lat.abs() > 90) {
+      throw const _Reject(FailureKind.validation, 'lat-invalid');
+    }
+    if (lng is! num || !lng.isFinite || lng.abs() > 180) {
+      throw const _Reject(FailureKind.validation, 'lng-invalid');
+    }
+    if (radius is! num || radius < 100 || radius > 2000) {
+      throw const _Reject(FailureKind.validation, 'radius-invalid');
+    }
+    final role = _roleOf(familyId, uid);
+    if (role == null) {
+      throw const _Reject(FailureKind.permissionDenied, 'not-member');
+    }
+    if (role == 'member') {
+      throw const _Reject(FailureKind.permissionDenied, 'not-allowed');
+    }
+    final path = 'families/$familyId/geofences/$geofenceId';
+    return _store.serverTransaction(() {
+      final existing = _store.serverRead(path);
+      if (existing != null) {
+        if (existing['createdBy'] != uid) {
+          throw const _Reject(FailureKind.conflict, 'conflict');
+        }
+        return <String, Object?>{
+          'geofenceId': geofenceId,
+          'alreadyExisted': true,
+        };
+      }
+      if (_store.serverList('families/$familyId/geofences').length >=
+          _maxGeofences) {
+        throw const _Reject(FailureKind.rateLimited, 'too-many-geofences');
+      }
+      _store.serverWrite(path, {
+        'name': name,
+        'lat': lat,
+        'lng': lng,
+        'radiusM': radius,
+        'createdBy': uid,
+        'version': 1,
+        'updatedAt': serverTimestamp,
+      });
+      return <String, Object?>{
+        'geofenceId': geofenceId,
+        'alreadyExisted': false,
+      };
+    });
+  }
 
   /// Igual que `functions/src/export.ts`: los datos de la persona en todas
   /// sus familias, sin tokens ni datos de otras personas.

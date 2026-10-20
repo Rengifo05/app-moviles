@@ -256,21 +256,23 @@ describe('zonas seguras', () => {
     updatedAt: serverTimestamp(), ...extra,
   });
 
-  it('solo owner o admin crean zonas', async () => {
-    await assertSucceeds(setDoc(doc(as('ana'), 'families/f1/geofences/g2'), zone()));
+  it('nadie crea zonas desde el cliente (solo la Function createGeofence)', async () => {
+    await assertFails(setDoc(doc(as('ana'), 'families/f1/geofences/g2'), zone()));
     await assertFails(setDoc(doc(as('luis'), 'families/f1/geofences/g3'), zone({ createdBy: 'luis' })));
   });
 
-  it('valida radio, nombre y versión inicial', async () => {
-    const db = as('ana');
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ radiusM: 50 })));
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ radiusM: 2500 })));
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ name: '' })));
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ name: '   ' })));
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ name: '\u200B\u200B' })));
-    await assertSucceeds(setDoc(doc(db, 'families/f1/geofences/g5'), zone({ name: 'Casa de la abuela 2' })));
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ version: 3 })));
-    await assertFails(setDoc(doc(db, 'families/f1/geofences/g4'), zone({ createdBy: 'luis' })));
+  it('las ediciones validan radio, nombre y autor; solo owner o admin', async () => {
+    const ref = (uid: string) => doc(as(uid), 'families/f1/geofences/g1');
+    const edit = (extra: Record<string, unknown> = {}) =>
+      zone({ name: 'Casa', lat: 4.6, lng: -74.08, radiusM: 200, version: 2, ...extra });
+    await assertFails(setDoc(ref('ana'), edit({ radiusM: 50 })));
+    await assertFails(setDoc(ref('ana'), edit({ radiusM: 2500 })));
+    await assertFails(setDoc(ref('ana'), edit({ name: '' })));
+    await assertFails(setDoc(ref('ana'), edit({ name: '   ' })));
+    await assertFails(setDoc(ref('ana'), edit({ name: '\u200B\u200B' })));
+    await assertFails(setDoc(ref('ana'), edit({ createdBy: 'luis' })));
+    await assertFails(setDoc(ref('luis'), edit()));
+    await assertSucceeds(setDoc(ref('ana'), edit({ name: 'Casa de la abuela 2' })));
   });
 
   it('las ediciones exigen versión anterior + 1 (concurrencia optimista)', async () => {

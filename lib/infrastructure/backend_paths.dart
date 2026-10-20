@@ -44,4 +44,5 @@ abstract final class BackendFunctions {
   static const deleteAccount = 'deleteAccount';
   static const signOutEverywhere = 'signOutEverywhere';
   static const exportMyData = 'exportMyData';
+  static const createGeofence = 'createGeofence';
 }

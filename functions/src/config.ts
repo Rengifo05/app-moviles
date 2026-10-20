@@ -9,6 +9,10 @@ export const LIMITS = {
   sosPerHour: 5,
   exportPerHour: 3,
   familyNameMax: 40,
+  maxGeofencesPerFamily: 10,
+  geofenceNameMax: 40,
+  geofenceRadiusMin: 100,
+  geofenceRadiusMax: 2000,
   /** Tiempo tras el cual se puede reintentar una notificación SOS a medias. */
   sosNotifyLeaseMs: 60 * 1000,
   eventTtlDays: 30,

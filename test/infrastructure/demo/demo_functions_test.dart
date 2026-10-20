@@ -1176,6 +1176,71 @@ void main() {
     });
   });
 
+  group('createGeofence', () {
+    Json zone(String familyId, String id, [Json extra = const {}]) => {
+      'familyId': familyId,
+      'geofenceId': id,
+      'name': 'Colegio',
+      'lat': -40.0,
+      'lng': -30.0,
+      'radiusM': 300,
+      ...extra,
+    };
+
+    test('crea con versión 1, es idempotente y aplica el máximo', () async {
+      final familyId = await createFamily('ana');
+      expect(
+        await callAs('ana', 'createGeofence', zone(familyId, 'z0')),
+        _isOk({'geofenceId': 'z0', 'alreadyExisted': false}),
+      );
+      expect(
+        store.serverRead('families/$familyId/geofences/z0'),
+        containsPair('version', 1),
+      );
+      expect(
+        await callAs('ana', 'createGeofence', zone(familyId, 'z0')),
+        _isOk({'geofenceId': 'z0', 'alreadyExisted': true}),
+      );
+      for (var i = 1; i < 10; i++) {
+        await ok(callAs('ana', 'createGeofence', zone(familyId, 'z$i')));
+      }
+      expect(
+        await callAs('ana', 'createGeofence', zone(familyId, 'z10')),
+        const Err<Json>(Failure(FailureKind.rateLimited, 'too-many-geofences')),
+      );
+    });
+
+    test('solo owner o admin; valida radio y nombre', () async {
+      final familyId = await familyOf('ana', ['bruno']);
+      expect(
+        await callAs('bruno', 'createGeofence', zone(familyId, 'z1')),
+        _notAllowed,
+      );
+      expect(
+        await callAs('carla', 'createGeofence', zone(familyId, 'z1')),
+        const Err<Json>(Failure(FailureKind.permissionDenied, 'not-member')),
+      );
+      expect(
+        await callAs(
+          'ana',
+          'createGeofence',
+          zone(familyId, 'z1', {'radiusM': 50}),
+        ),
+        const Err<Json>(Failure(FailureKind.validation, 'radius-invalid')),
+      );
+      expect(
+        await callAs(
+          'ana',
+          'createGeofence',
+          zone(familyId, 'z1', {'name': '\u200B'}),
+        ),
+        const Err<Json>(
+          Failure(FailureKind.validation, 'geofence-name-invalid'),
+        ),
+      );
+    });
+  });
+
   group('exportMyData', () {
     test('reúne sus datos en todas sus familias, sin tokens ni datos de '
         'otras personas', () async {

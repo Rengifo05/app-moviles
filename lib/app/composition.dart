@@ -263,6 +263,7 @@ final class AppComposition {
         geofenceRepositoryProvider.overrideWithValue(
           GeofenceRepositoryImpl(
             remote: remote,
+            functions: functions,
             cache: cache,
             currentUid: uid,
             clock: clock,

@@ -9,6 +9,7 @@ import { REGION } from './config.js';
 import { reject } from './errors.js';
 import * as dataExport from './export.js';
 import * as families from './families.js';
+import * as geofences from './geofences.js';
 import type { Ctx } from './families.js';
 import * as sos from './sos.js';
 import type { Notifier } from './sos.js';
@@ -75,6 +76,7 @@ export const createInvitation = callable('createInvitation', families.createInvi
 export const acceptInvitation = callable('acceptInvitation', families.acceptInvitation);
 export const leaveFamily = callable('leaveFamily', families.leaveFamily);
 export const removeMember = callable('removeMember', families.removeMember);
+export const createGeofence = callable('createGeofence', geofences.createGeofence);
 export const raiseSos = callable('raiseSos', (ctx, data) => sos.raiseSos(ctx, data, fcmNotifier));
 export const signOutEverywhere = callable('signOutEverywhere', (ctx) =>
   account.signOutEverywhere(ctx, { revokeRefreshTokens: (uid) => getAuth().revokeRefreshTokens(uid) }),

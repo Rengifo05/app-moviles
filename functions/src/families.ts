@@ -115,7 +115,7 @@ export async function createFamily(ctx: Ctx, data: unknown): Promise<{ familyId:
   return { familyId };
 }
 
-async function roleOf(ctx: Ctx, tx: Transaction, familyId: string, uid: string): Promise<Role | null> {
+export async function roleOf(ctx: Ctx, tx: Transaction, familyId: string, uid: string): Promise<Role | null> {
   const member = await tx.get(ctx.db.doc(paths.member(familyId, uid)));
   return member.exists ? (member.get('role') as Role) : null;
 }

@@ -146,8 +146,8 @@ service cloud.firestore {
         }
 
         allow read: if isMember(familyId);
-        allow create: if isManager(familyId) && validGeofence()
-          && data().version == 1 && data().createdBy == me();
+        // Se crean con la Function `createGeofence`, que aplica el máximo
+        // por familia (las reglas no pueden contar documentos).
         allow update: if isManager(familyId) && validGeofence()
           && data().version == resource.data.version + 1
           && data().createdBy == resource.data.createdBy;

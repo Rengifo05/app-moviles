@@ -32,10 +32,11 @@ typedef _CreateAttempt = ({
 
 /// Zonas de una familia (`families/{f}/geofences/{id}`).
 ///
-/// Lee de la caché local (reflejada por `RemoteMirror`) y escribe directo
-/// en el almacén remoto: las reglas de Firestore exigen ser `owner` o
-/// `admin`, un nombre y un radio válidos, `version` 1 al crear y la
-/// anterior + 1 al editar, y conservar `createdBy` (contrato:
+/// Lee de la caché local (reflejada por `RemoteMirror`). Crea con la
+/// Function `createGeofence`, que aplica el máximo de zonas por familia (las
+/// reglas no pueden contar documentos); edita y elimina directo en el
+/// almacén remoto: las reglas exigen ser `owner` o `admin`, un nombre y un
+/// radio válidos, la versión anterior + 1 y conservar `createdBy` (contrato:
 /// `docs/architecture/05-api-backend.md`).
 ///
 /// No usa la bandeja de salida: la edición necesita la respuesta del
@@ -43,8 +44,8 @@ typedef _CreateAttempt = ({
 /// solo confirma después de un `Ok`. Sin conexión `commit` falla rápido
 /// (fallo transitorio) y no se sabe si el servidor alcanzó a aplicarlo, así
 /// que los reintentos son idempotentes:
-/// * crear: el mismo intento reutiliza el id y se escribe con
-///   `RemoteWrite.create`, que no hace nada si la zona ya existe;
+/// * crear: el mismo intento reutiliza el id, y `createGeofence` devuelve la
+///   zona existente sin contarla dos veces;
 /// * editar: si la zona ya tiene exactamente el contenido y la versión que
 ///   se iban a escribir, el cambio ya se aplicó y se da por bueno;
 /// * eliminar: borrar algo que ya no existe no cambia nada.
@@ -53,6 +54,7 @@ typedef _CreateAttempt = ({
 final class GeofenceRepositoryImpl implements GeofenceRepository {
   new({
     required this._remote,
+    required this._functions,
     required this._cache,
     required this._currentUid,
     required this._clock,
@@ -60,6 +62,7 @@ final class GeofenceRepositoryImpl implements GeofenceRepository {
   });
 
   final RemoteStore _remote;
+  final FunctionsClient _functions;
   final DocumentCache _cache;
   final String? Function() _currentUid;
   final Clock _clock;
@@ -103,9 +106,9 @@ final class GeofenceRepositoryImpl implements GeofenceRepository {
       (attempt: final previous, :final id) when previous == attempt => id,
       _ => _ids.newId(),
     };
-    // Las reglas no pueden contar documentos: el límite se aplica aquí con
-    // lo que ya se sincronizó (sin contar la propia zona si un intento
-    // anterior sí llegó al servidor).
+    // El servidor aplica el límite; comprobarlo antes con lo ya sincronizado
+    // da la respuesta sin esperar a la red (sin contar la propia zona si un
+    // intento anterior sí llegó al servidor).
     final existing = await _cache
         .watchCollection(BackendPaths.geofences(familyId))
         .first;
@@ -123,12 +126,23 @@ final class GeofenceRepositoryImpl implements GeofenceRepository {
       version: 1,
       updatedAt: _clock.now(),
     );
-    final written = await _remote.commit([
-      RemoteWrite.create(
-        BackendPaths.geofence(familyId, id),
-        _document(geofence),
+    final written = switch (await _functions.call(
+      BackendFunctions.createGeofence,
+      {
+        'familyId': familyId,
+        'geofenceId': id,
+        'name': trimmed,
+        'lat': center.latitude,
+        'lng': center.longitude,
+        'radiusM': radiusMeters,
+      },
+    )) {
+      Ok() => const Ok<void>(null),
+      Err(failure: Failure(code: 'too-many-geofences')) => const Err<void>(
+        Failure.validation(GeofenceFailureCodes.limit),
       ),
-    ]);
+      Err(:final failure) => Err<void>(failure),
+    };
     _unconfirmedCreate = switch (written) {
       Err(:final failure) when failure.isTransient => (
         attempt: attempt,

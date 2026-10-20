@@ -9,6 +9,7 @@ import 'package:nexo_familia/features/geofences/domain/geofence.dart';
 import 'package:nexo_familia/infrastructure/backend_paths.dart';
 import 'package:nexo_familia/infrastructure/database/app_database.dart';
 import 'package:nexo_familia/infrastructure/database/drift_stores.dart';
+import 'package:nexo_familia/infrastructure/demo/demo_functions.dart';
 import 'package:nexo_familia/infrastructure/demo/in_memory_remote_store.dart';
 import 'package:nexo_familia/infrastructure/remote/remote_store.dart';
 import 'package:nexo_familia/infrastructure/sync/remote_mirror.dart';
@@ -57,12 +58,33 @@ final class _ScriptedStore implements RemoteStore {
   Stream<RemoteDoc?> watchDoc(String path) => _inner.watchDoc(path);
 }
 
+/// Functions de demostración sobre el mismo almacén, con los mismos
+/// fallos simulables que [_ScriptedStore].
+final class _ScriptedFunctions implements FunctionsClient {
+  new(this._inner);
+
+  final DemoFunctionsClient _inner;
+  Failure? rejectCalls;
+  Failure? failAfterApplying;
+  final List<(String, Json)> calls = [];
+
+  @override
+  Future<Result<Json>> call(String name, Json payload) async {
+    calls.add((name, payload));
+    if (rejectCalls case final failure?) return Err(failure);
+    final result = await _inner.call(name, payload);
+    if (failAfterApplying case final failure?) return Err(failure);
+    return result;
+  }
+}
+
 /// Integración: repositorio + almacén de demostración + espejo + caché de
 /// Drift en memoria.
 void main() {
   late FakeClock clock;
   late InMemoryRemoteStore store;
   late _ScriptedStore remote;
+  late _ScriptedFunctions functions;
   late AppDatabase db;
   late DriftDocumentCache cache;
   late RemoteMirror mirror;
@@ -71,6 +93,7 @@ void main() {
 
   GeofenceRepositoryImpl repoFor() => GeofenceRepositoryImpl(
     remote: remote,
+    functions: functions,
     cache: cache,
     currentUid: () => uid,
     clock: clock,
@@ -103,6 +126,14 @@ void main() {
     clock = FakeClock();
     store = InMemoryRemoteStore(clock: clock);
     remote = _ScriptedStore(store);
+    functions = _ScriptedFunctions(
+      DemoFunctionsClient(store: store, currentUid: () => uid),
+    );
+    // Ana gestiona la familia (la Function lo exige para crear zonas).
+    store.serverWrite(BackendPaths.member(_familyId, 'ana'), {
+      'uid': 'ana',
+      'role': 'owner',
+    });
     db = AppDatabase(NativeDatabase.memory());
     cache = DriftDocumentCache(db);
     ids = SequentialIdGenerator();
@@ -188,7 +219,7 @@ void main() {
       );
       // El nombre se mide ya recortado (las reglas miden el texto tal cual).
       expect(await attempt('  ${'x' * 40}  ', 200), isNull);
-      expect(remote.commits, hasLength(1));
+      expect(functions.calls, hasLength(1));
     });
 
     test('respeta el límite de zonas por familia según la caché', () async {
@@ -209,7 +240,25 @@ void main() {
         result.failureOrNull,
         const Failure.validation(GeofenceFailureCodes.limit),
       );
-      expect(remote.commits, isEmpty);
+      expect(functions.calls, isEmpty);
+    });
+
+    test('el servidor aplica el límite aunque la caché no lo sepa', () async {
+      for (var i = 0; i < GeofenceRules.maxPerFamily; i++) {
+        seedZone('z$i', name: 'Zona $i');
+      }
+      // Sin espejo: la caché no tiene ninguna zona.
+      final result = await repoFor().create(
+        familyId: _familyId,
+        name: 'Una más',
+        center: _center,
+        radiusMeters: 200,
+      );
+      expect(
+        result.failureOrNull,
+        const Failure.validation(GeofenceFailureCodes.limit),
+      );
+      expect(functions.calls, hasLength(1));
     });
 
     test('sin sesión no se crea', () async {
@@ -221,11 +270,11 @@ void main() {
         radiusMeters: 200,
       );
       expect(result.failureOrNull?.kind, FailureKind.unauthenticated);
-      expect(remote.commits, isEmpty);
+      expect(functions.calls, isEmpty);
     });
 
     test('devuelve el rechazo del servidor (sin rol de gestión)', () async {
-      remote.rejectCommits = const Failure.permissionDenied();
+      functions.rejectCalls = const Failure.permissionDenied();
       final result = await repoFor().create(
         familyId: _familyId,
         name: 'Casa',
@@ -235,17 +284,28 @@ void main() {
       expect(result.failureOrNull, const Failure.permissionDenied());
     });
 
-    test('crea solo si no existe (escritura de inserción)', () async {
-      await repoFor().create(
-        familyId: _familyId,
-        name: 'Casa',
-        center: _center,
-        radiusMeters: 200,
-      );
-      final write = remote.commits.single.single;
-      expect(write.op, RemoteOp.create);
-      expect(write.path, BackendPaths.geofence(_familyId, 'id-1'));
-    });
+    test(
+      'crea con la Function createGeofence, nunca escribiendo directo',
+      () async {
+        await repoFor().create(
+          familyId: _familyId,
+          name: 'Casa',
+          center: _center,
+          radiusMeters: 200,
+        );
+        expect(remote.commits, isEmpty);
+        final (name, payload) = functions.calls.single;
+        expect(name, 'createGeofence');
+        expect(payload, {
+          'familyId': _familyId,
+          'geofenceId': 'id-1',
+          'name': 'Casa',
+          'lat': -40.0,
+          'lng': -30.0,
+          'radiusM': 200.0,
+        });
+      },
+    );
 
     test('sin conexión falla rápido como transitorio y no escribe', () async {
       store.simulatedFailure = const Failure.unavailable();
@@ -268,7 +328,7 @@ void main() {
       () async {
         final repo = repoFor();
         mirrorFamily();
-        remote.failAfterApplying = const Failure.network();
+        functions.failAfterApplying = const Failure.network();
         final first = await repo.create(
           familyId: _familyId,
           name: 'Casa',
@@ -279,7 +339,7 @@ void main() {
         // El servidor sí la guardó.
         await zonesWhere(repo, (z) => z.length == 1);
 
-        remote.failAfterApplying = null;
+        functions.failAfterApplying = null;
         final retry = await repo.create(
           familyId: _familyId,
           name: ' Casa ',
@@ -287,8 +347,8 @@ void main() {
           radiusMeters: 200,
         );
         expect(retry.valueOrNull?.id, 'id-1');
-        expect(remote.commits.map((c) => c.single.path).toSet(), {
-          BackendPaths.geofence(_familyId, 'id-1'),
+        expect(functions.calls.map((c) => c.$2['geofenceId']).toSet(), {
+          'id-1',
         });
         final zones = await zonesWhere(repo, (z) => z.isNotEmpty);
         expect(zones.single.id, 'id-1');
@@ -316,7 +376,7 @@ void main() {
           repo,
           (z) => z.length == GeofenceRules.maxPerFamily - 1,
         );
-        remote.failAfterApplying = const Failure.unavailable('timeout');
+        functions.failAfterApplying = const Failure.unavailable('timeout');
         await repo.create(
           familyId: _familyId,
           name: 'Casa',
@@ -325,7 +385,7 @@ void main() {
         );
         await zonesWhere(repo, (z) => z.length == GeofenceRules.maxPerFamily);
 
-        remote.failAfterApplying = null;
+        functions.failAfterApplying = null;
         final retry = await repo.create(
           familyId: _familyId,
           name: 'Casa',
